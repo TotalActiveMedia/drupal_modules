@@ -234,7 +234,7 @@ function drs_search_page_item($results) {
     $output = '';
     foreach ($results as $result) {
         $output .= '<tr>';
-//        $output .= '<td valign="top" width="120">' . $result['image'] . '</td>';
+        $output .= '<td valign="top" width="120">' . $result['image'] . '</td>';
         $output .= '<td valign="top">';
         $output .= '<h4><a href="' . $result['link'] . '" target="_blank">' . check_plain($result['title']) . '</a></h4>';
         $output .= check_markup($result['snippet']);
@@ -271,7 +271,6 @@ function drs_block($op = 'list', $delta = 0, $edit = array()){
               case 0:
                 // Get the facets to fill $content
                 $facets_ar = drs_facets();
-//                $queryTerms = $facets_ar['query'][0];
                 $content = '';
                 foreach ($facets_ar['facets'] as $facet) {
                     // Only display if the facet has any links
