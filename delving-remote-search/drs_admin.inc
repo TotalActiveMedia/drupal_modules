@@ -30,6 +30,7 @@ function drs_admin_settings() {
         '#title' => t('Return only results with digital objects'),
         '#default_value' =>  variable_get('drs_search_digital_objects', DRS_SEARCH_DIGITAL_OBJECTS),
         '#options' => $options_do,
+        '#description' => t('This setting is currently disabled for developement purposes.'),
     );
     $form['api-settings']['drs_search_rows'] = array(
         '#type' => 'textfield',
