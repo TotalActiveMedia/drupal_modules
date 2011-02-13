@@ -1,0 +1,30 @@
+table.search-results.delving tr:nth-child(odd) td {
+    background: #efefef;
+}
+
+table.search-results.delving td {
+    vertical-align: top;
+    padding: .5em;
+}
+
+table.search-results.delving td p {
+    margin: 0px;
+}
+
+table.search-results.delving td label {
+    font-weight: bold;
+}
+
+div.delving-facets-container h4 {
+
+}
+
+div.delving-facets {
+    font-size: .85em;
+    max-height: 120px;
+    overflow: auto;
+    padding: .5em;
+    width: 250px;
+    margin: 0 0 2em 0;
+    background: #fffff0;
+}

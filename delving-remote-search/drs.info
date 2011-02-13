@@ -1,0 +1,6 @@
+; $Id:
+name = Delving Remote Search
+description = Remote-Search and Retrieve module to point to a Delving-Framework powered URL
+dependencies[] = search
+package = Delving
+core = 6.x
