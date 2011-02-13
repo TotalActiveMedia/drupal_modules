@@ -44,10 +44,10 @@ function drs_search($op = 'search', $keys = NULL) {
             // Before we do anything lets get some css loaded
             drupal_add_css(drupal_get_path('module', 'drs') . '/drs.css');
 
-            // Lets gather some conditions
+            // Lets gather some conditions for pageing
             $page = isset($_GET['page']) ? $_GET['page'] : 0;
 
-            $rows = 10;
+            $rows = variable_get('drs_search_rows', DRS_SEARCH_ROWS);
             $start = $page * $rows;
 
             // Lets do a search
@@ -72,7 +72,7 @@ function drs_search($op = 'search', $keys = NULL) {
  */
 function drs_do_search($search_text, $start = 0, $rows = 10, $sort = NULL, $response_format = 'xml') {
 
-    $target = variable_get('drssearch_url', DRS_SEARCH_URL);
+    $target = variable_get('drs_search_url', DRS_SEARCH_URL);
     $show_objects =  variable_get('drs_search_digital_objects', DRS_SEARCH_DIGITAL_OBJECTS);
 
     // Build the URL to send
@@ -83,6 +83,7 @@ function drs_do_search($search_text, $start = 0, $rows = 10, $sort = NULL, $resp
 //    }
 
     //Todo: Find better way to retrieve QF's.
+    //Using array_unique cleans up the querystring array for sending, but the display is still polluted in the adres bar
     if(isset($_GET['qf'])){
         $qfs = array_unique($_GET['qf']);
         $qf_string = '';
@@ -234,7 +235,7 @@ function drs_search_page_item($results) {
     $output = '';
     foreach ($results as $result) {
         $output .= '<tr>';
-        $output .= '<td valign="top" width="120">' . $result['image'] . '</td>';
+//        $output .= '<td valign="top" width="120">' . $result['image'] . '</td>';
         $output .= '<td valign="top">';
         $output .= '<h4><a href="' . $result['link'] . '" target="_blank">' . check_plain($result['title']) . '</a></h4>';
         $output .= check_markup($result['snippet']);
