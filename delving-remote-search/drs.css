@@ -28,3 +28,10 @@ div.delving-facets {
     margin: 0 0 2em 0;
     background: #fffff0;
 }
+
+.delving-breadcrumbs {
+    margin: 1em 0;
+}
+.delving-breadcrumbs a.crumb {
+    padding-right: 1em;
+}
