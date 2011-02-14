@@ -4,7 +4,7 @@ define('DRS_SETTINGS_MENU_PATH', 'Administer > Site configuration > Delving Remo
 define('DRS_SEARCH_PAGE', 'search/drs');
 define('DRS_SEARCH_NAME', 'Delving Remote Search');
 define('DRS_SEARCH_URL', 'http://localhost:8983/services/api/search');
-define('DRS_SEARCH_DIGITAL_OBJECTS' ,1);
+define('DRS_SEARCH_DIGITAL_OBJECTS', 1);
 //define('DRS_SEARCH_SHOW_FACETS', 1);
 define('DRS_SEARCH_ROWS', 10);
 
@@ -73,10 +73,10 @@ function drs_search($op = 'search', $keys = NULL) {
 function drs_do_search($search_text, $start = 0, $rows = 10, $sort = NULL, $response_format = 'xml') {
 
     $target = variable_get('drs_search_url', DRS_SEARCH_URL);
-    $show_objects =  variable_get('drs_search_digital_objects', DRS_SEARCH_DIGITAL_OBJECTS);
+    $show_objects = variable_get('drs_search_digital_objects', DRS_SEARCH_DIGITAL_OBJECTS);
 
     // Build the URL to send
-    $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+',$search_text)) ;
+    $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+', $search_text));
 
 //    if (!$show_objects==0) {
 //        $url .= '&qf=HASDIGITALOBJECT:true';
@@ -84,13 +84,13 @@ function drs_do_search($search_text, $start = 0, $rows = 10, $sort = NULL, $resp
 
     //Todo: Find better way to retrieve QF's.
     //Using array_unique cleans up the querystring array for sending, but the display is still polluted in the adres bar
-    if(isset($_GET['qf'])){
+    if (isset($_GET['qf'])) {
         $qfs = array_unique($_GET['qf']);
         $qf_string = '';
-        foreach($qfs as $qf){
+        foreach ($qfs as $qf) {
             $qf_string .= '&qf=' . $qf;
         }
-        $url .= '&qf=' . str_replace(" ","+",$qf_string); // Without this replacement any query facet containing a space or %20 will break the query
+        $url .= '&qf=' . str_replace(" ", "+", $qf_string); // Without this replacement any query facet containing a space or %20 will break the query
     }
 
     // Send out the request
@@ -138,7 +138,11 @@ function drs_results($xml) {
 
     // Are there any results?
     if ($xml->query['numFound'] > 0) {
+
         // Great! We have results, lets go through the xml and pull out what we want to display
+
+        drs_has_facets(TRUE);
+
         foreach ($xml->items->item as $result) {
             // First we need to deal with the namespaces
             $ns_dc = $result->children('http://purl.org/dc/elements/1.1/');
@@ -256,89 +260,95 @@ function drs_search_page_item($results) {
 /**
  * Implementation of hook_block
  */
-function drs_block($op = 'list', $delta = 0, $edit = array()){
-    $block = array();
-    switch($op){
-        case 'list':
-            $block[0] = array(
-                'info' => 'Delving Remote-Search Facets',
-                'status' => 1,
-                'visibility' => 1,
-                'pages' => 'search/drs/*',
-            );
-            return $block;
-            break;
-        case 'view':
-            switch ($delta) {
-              case 0:
-                // Get the facets array
-                $facets_ar = drs_facets();
 
-                // Get the query terms from the $facets_ar['query'] array
-                $terms = '';
-                foreach($facets_ar['query'] as $term){
-                    $terms .= $term;
-                }
-
-                $content = '';
-
-                // Get the facets from the $facets_ar['facets'] array
-                foreach($facets_ar['facets'] as $facet) {
-                    // Only display if the facet has any links
-                    if($facet->link){
-                        $content .= '<div class="delving-facets-container">';
-                        $content .= '<h4>' . $facet['name'] . '</h4>';
-                        $content .= '<div class="delving-facets">';
-                        foreach ($facet->link as $link) {
-
-                            $facet_link = $link['url'];
-
-                            $qstring = $keywords;
-
-                            $furl = url(variable_get('drs_search_page', DRS_SEARCH_PAGE)) . '/' . $terms . $facet_link;
-
-                            if (!empty($facet_link)) {
-                                if($link['isSelected']!='true'){
-                                    $content .= '<a href="' . $furl . '">'. trim($link) . '</a><br/>';
-                                }
-                                else {
-                                   $content .= '<strong><a href="' . $furl . '">'. trim($link) .'</a></strong><br/>';
-                                }
-                            }
-                            // Checkboxes for later
-                            // Todo onclick functionality for checkbox to launch search (js)
-                            /*
-                            if (!empty($facet_link)) {
-                                if($link['isSelected']!='true'){
-                                    $content .= '<input type="checkbox" class="delving-facets-checkbox" value="' . $furl . '"/>';
-                                }
-                                else {
-                                   $content .= '<input type="checkbox" class="delving-facets-checkbox" checked="checked" value="' . $furl . '"/>'; 
-                                }
-                                $content .= '<a href="?' . $furl . '">' . trim($link) .'</a><br/>';
-                            }
-                            */
-
-                        }
-                        $content .= '</div></div>';
-                    }
-                }
-                $block['subject'] = t('Refine your search');
-                $block['content'] = $content;
+function drs_block($op = 'list', $delta = 0, $edit = array()) {
+    if (drs_has_facets() == TRUE) {
+        $block = array();
+        switch ($op) {
+            case 'list':
+                $block[0] = array(
+                    'info' => 'Delving Remote-Search Facets',
+                    'status' => 1,
+                    'visibility' => 1,
+                    'pages' => 'search/drs/*',
+                );
+                return $block;
                 break;
-            }
-            return $block;
-            break;
-        
+            case 'view':
+                switch ($delta) {
+                    case 0:
+                        // Get the facets array
+                        $facets_ar = drs_facets();
+
+                        // Get the query terms from the $facets_ar['query'] array
+                        $terms = '';
+
+                        foreach ($facets_ar['query'] as $term) {
+                            $terms .= $term;
+                        }
+
+                        $content = '';
+
+                        // Get the facets from the $facets_ar['facets'] array
+                        foreach ($facets_ar['facets'] as $facet) {
+                            // Only display if the facet has any links
+                            if ($facet->link) {
+                                $content .= '<div class="delving-facets-container">';
+                                $content .= '<h4>' . $facet['name'] . '</h4>';
+                                $content .= '<div class="delving-facets">';
+                                foreach ($facet->link as $link) {
+
+                                    $facet_link = $link['url'];
+
+                                    $qstring = $keywords;
+
+                                    $furl = url(variable_get('drs_search_page', DRS_SEARCH_PAGE)) . '/' . $terms . $facet_link;
+
+                                    if (!empty($facet_link)) {
+                                        if ($link['isSelected'] != 'true') {
+                                            $content .= '<a href="' . $furl . '">' . trim($link) . '</a><br/>';
+                                        }
+                                        else {
+                                            $content .= '<strong><a href="' . $furl . '">' . trim($link) . '</a></strong><br/>';
+                                        }
+                                    }
+                                    // Checkboxes for later
+                                    // Todo onclick functionality for checkbox to launch search (js)
+                                    /*
+                                    if (!empty($facet_link)) {
+                                        if($link['isSelected']!='true'){
+                                            $content .= '<input type="checkbox" class="delving-facets-checkbox" value="' . $furl . '"/>';
+                                        }
+                                        else {
+                                           $content .= '<input type="checkbox" class="delving-facets-checkbox" checked="checked" value="' . $furl . '"/>';
+                                        }
+                                        $content .= '<a href="?' . $furl . '">' . trim($link) .'</a><br/>';
+                                    }
+                                    */
+
+                                }
+                                $content .= '</div></div>';
+                            }
+                        }
+                        $block['subject'] = t('Refine your search');
+                        $block['content'] = $content;
+                        break;
+                }
+                return $block;
+                break;
+
+        }
     }
 }
 
 
 function drs_facets() {
+
     if (drs_has_searched() == TRUE) {
+        $facets = array();
         // Use the response cache to grab the facets
         $xml = drs_static_response_cache();
-        $facets = array();
+
         // Check to make sure we have an XML object to work with
         if (!is_object($xml)) {
             $xml = new SimpleXMLElement($xml);
@@ -347,11 +357,11 @@ function drs_facets() {
         if ($xml->query['numFound'] > 0) {
             // Use xpath to create facets as array
             $facets['facets'] = $xml->xpath('/results/facets/facet');
-            $facets['query']= $xml->xpath('/results/query/terms');
+            $facets['query'] = $xml->xpath('/results/query/terms');
         }
-//        drupal_set_message(print_r($facets));
-        return $facets;
+       return $facets;
     }
+
 }
 
 /** BREADCRUMBS ********************************************************************************************************/
@@ -359,39 +369,39 @@ function drs_facets() {
 /*
  * Todo: feed the breadcrumbs and display as links above search results
  */
-function drs_breadcrumbs(){
-   if (drs_has_searched() == TRUE){
+function drs_breadcrumbs() {
+    if (drs_has_searched() == TRUE) {
         $xml = drs_static_response_cache();
         $breadcrumbs = array();
         // Check to make sure we have an XML object to work with
         if (!is_object($xml)) {
             $xml = new SimpleXMLElement($xml);
         }
-       if ($xml->query['numFound'] > 0) {
-           $breadcrumbs = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
-//           drupal_set_message(print_r($breadcrumbs));
-       }
+        if ($xml->query['numFound'] > 0) {
+            $breadcrumbs = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
+            //           drupal_set_message(print_r($breadcrumbs));
+        }
         $out .= '<div class="delving-breadcrumbs">';
         $out .= 'Your searched for: ';
         $numItems = count($breadcrumbs);
-        $i=1;
-       foreach($breadcrumbs as $crumb){
-           $text = $crumb;
-           $href = url(variable_get('drs_search_page', DRS_SEARCH_PAGE)) . '/' . str_replace('query=','',$crumb['href']);
+        $i = 1;
+        foreach ($breadcrumbs as $crumb) {
+            $text = $crumb;
+            $href = url(variable_get('drs_search_page', DRS_SEARCH_PAGE)) . '/' . str_replace('query=', '', $crumb['href']);
 
-           if($i != $numItems) {
-               $out .=  '<a class="crumb" href="' . $href . '">' . $crumb . '</a>&#160;>&#160;';
-           }
-           else {
-               $out .= $crumb;
-           }
+            if ($i != $numItems) {
+                $out .= '<a class="crumb" href="' . $href . '">' . $crumb . '</a>&#160;>&#160;';
+            }
+            else {
+                $out .= $crumb;
+            }
 
-           $i++;
-            
-       }
-       $out .= '</div>';
-       return $out;
-   }
+            $i++;
+
+        }
+        $out .= '</div>';
+        return $out;
+    }
 }
 
 /** HELPER FUNCTIONS ***************************************************************************************************/
@@ -415,6 +425,14 @@ function drs_has_searched($searched = NULL) {
     return $_searched;
 }
 
+function drs_has_facets($has_facets = NULL) {
+    static $_has_facets = FALSE;
+    if (is_bool($has_facets)) {
+        $_has_facets = $has_facets;
+    }
+    return $_has_facets;
+}
+
 /**
  * It is important to hold on to the search response object for the duration of the
  * page request so that we can use it for things like building facet blocks.
@@ -429,14 +447,14 @@ function drs_static_response_cache($response = NULL) {
 }
 
 function drs_help($path, $arg) {
-  switch ($path) {
-    // Main module help for the block module
-    case 'admin/settings/delving-api':
-      return '<p>' . t('Here you can configure the settings for the Delving Remote-Search API and display options.<br/>
+    switch ($path) {
+        // Main module help for the block module
+        case 'admin/settings/delving-api':
+            return '<p>' . t('Here you can configure the settings for the Delving Remote-Search API and display options.<br/>
                         To configure the display of the Facets block please see the <strong class="drupal_link_admin_settings">
                         <a href="@blocks">Blocks Configuration Page</a></strong>.', array('@blocks' => url('admin/build/block')))
-              . '</p>';
-}
+                    . '</p>';
+    }
 }
 
 
