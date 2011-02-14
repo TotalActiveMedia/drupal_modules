@@ -264,7 +264,6 @@ function drs_block($op = 'list', $delta = 0, $edit = array()){
                 'info' => 'Delving Remote-Search Facets',
                 'status' => 1,
                 'visibility' => 1,
-                'region' => 'sidebar-right',
                 'pages' => 'search/drs/*',
             );
             return $block;
