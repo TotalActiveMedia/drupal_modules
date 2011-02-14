@@ -216,17 +216,19 @@ function drs_results($xml) {
  */
 function drs_search_page($results) {
     $output = '';
-    // Todo: grab breadcrumbs and display
-//    $crumbs = $results->breadCrumbs;
+    // Display query breadcrumbs
     $output .= '<h5>' . drs_breadcrumbs() . '</h5>';
-
+    // Display top pager
     $output .= theme('pager', NULL, variable_get('rows', 10), 0);
+    // Display results table
     $output .= '<table class="search-results delving">';
+    // Display restult items table rows
     $output .= drs_search_page_item($results);
     $output .= '</table>';
+    // Display bottom pager
     $output .= theme('pager', NULL, variable_get('rows', 10), 0);
-
-    $output .= '<a href="http://delving.org/" target="_blank">Search Results Powered by Delving</a>';
+    // Display powered by
+    $output .= '<div class="powererd-by-delving"><a href="http://delving.org/" target="_blank">Search Results Powered by Delving</a></div>';
 
     return $output;
 }

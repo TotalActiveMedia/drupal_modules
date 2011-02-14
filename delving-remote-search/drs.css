@@ -35,3 +35,9 @@ div.delving-facets {
 .delving-breadcrumbs a.crumb {
     padding-right: 1em;
 }
+
+div.powererd-by-delving {
+    text-align: center;
+    width: 100%;
+    margin: 1em 0 0 0;
+}
