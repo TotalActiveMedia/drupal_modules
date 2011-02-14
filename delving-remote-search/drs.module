@@ -270,10 +270,19 @@ function drs_block($op = 'list', $delta = 0, $edit = array()){
         case 'view':
             switch ($delta) {
               case 0:
-                // Get the facets to fill $content
+                // Get the facets array
                 $facets_ar = drs_facets();
+
+                // Get the query terms from the $facets_ar['query'] array
+                $terms = '';
+                foreach($facets_ar['query'] as $term){
+                    $terms .= $term;
+                }
+
                 $content = '';
-                foreach ($facets_ar['facets'] as $facet) {
+
+                // Get the facets from the $facets_ar['facets'] array
+                foreach($facets_ar['facets'] as $facet) {
                     // Only display if the facet has any links
                     if($facet->link){
                         $content .= '<div class="delving-facets-container">';
@@ -283,15 +292,16 @@ function drs_block($op = 'list', $delta = 0, $edit = array()){
 
                             $facet_link = $link['url'];
 
-                            $qstring = $_SERVER['QUERY_STRING'];
+                            $qstring = $keywords;
 
-                            $furl = $qstring . $facet_link;
-                             if (!empty($facet_link)) {
+                            $furl = url(variable_get('drs_search_page', DRS_SEARCH_PAGE)) . '/' . $terms . $facet_link;
+
+                            if (!empty($facet_link)) {
                                 if($link['isSelected']!='true'){
-                                    $content .= '<a href="?' . $furl . '">'. trim($link) . '</a><br/>';
+                                    $content .= '<a href="' . $furl . '">'. trim($link) . '</a><br/>';
                                 }
                                 else {
-                                   $content .= '<strong><a href="?' . $furl . '">'. trim($link) .'</a></strong><br/>';
+                                   $content .= '<strong><a href="' . $furl . '">'. trim($link) .'</a></strong><br/>';
                                 }
                             }
                             // Checkboxes for later
@@ -336,8 +346,9 @@ function drs_facets() {
         if ($xml->query['numFound'] > 0) {
             // Use xpath to create facets as array
             $facets['facets'] = $xml->xpath('/results/facets/facet');
-            //  $facets['query']= $xml->xpath('/results/query/terms');
+            $facets['query']= $xml->xpath('/results/query/terms');
         }
+//        drupal_set_message(print_r($facets));
         return $facets;
     }
 }
