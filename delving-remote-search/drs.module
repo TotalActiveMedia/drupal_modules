@@ -262,7 +262,8 @@ function drs_search_page_item($results) {
  */
 
 function drs_block($op = 'list', $delta = 0, $edit = array()) {
-    if (drs_has_facets() == TRUE) {
+
+    if ($facets != 0) {
         $block = array();
         switch ($op) {
             case 'list':
@@ -359,8 +360,11 @@ function drs_facets() {
             $facets['facets'] = $xml->xpath('/results/facets/facet');
             $facets['query'] = $xml->xpath('/results/query/terms');
         }
-       return $facets;
     }
+    else {
+        $facets = 0;
+    }
+    return $facets;
 
 }
 
@@ -423,14 +427,6 @@ function drs_has_searched($searched = NULL) {
         $_searched = $searched;
     }
     return $_searched;
-}
-
-function drs_has_facets($has_facets = NULL) {
-    static $_has_facets = FALSE;
-    if (is_bool($has_facets)) {
-        $_has_facets = $has_facets;
-    }
-    return $_has_facets;
 }
 
 /**
