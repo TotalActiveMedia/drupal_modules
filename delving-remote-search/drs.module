@@ -263,7 +263,8 @@ function drs_search_page_item($results) {
 
 function drs_block($op = 'list', $delta = 0, $edit = array()) {
 
-    if ($facets != 0) {
+//    if ($facets != 0) {
+    if (drs_has_facets(TRUE)) {
         $block = array();
         switch ($op) {
             case 'list':
@@ -271,6 +272,7 @@ function drs_block($op = 'list', $delta = 0, $edit = array()) {
                     'info' => 'Delving Remote-Search Facets',
                     'status' => 1,
                     'visibility' => 1,
+                    'region' => 'Right sidebar',
                     'pages' => 'search/drs/*',
                 );
                 return $block;
@@ -427,6 +429,14 @@ function drs_has_searched($searched = NULL) {
         $_searched = $searched;
     }
     return $_searched;
+}
+
+function drs_has_facets($has_facets = NULL) {
+    static $_has_facets = FALSE;
+    if (is_bool($has_facets)) {
+        $_has_facets = $has_facets;
+    }
+    return $_has_facets;
 }
 
 /**
