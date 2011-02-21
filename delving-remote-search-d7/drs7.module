@@ -7,7 +7,7 @@
  *  A module for querying a remote delving framework target and returning and displaying the results
  *
  */
-define('DRS_SEARCH_PAGE_PATH', 'delving');
+define('DRS7_SEARCH_PAGE_PATH', 'delving');
 define('DRS7_SEARCH_TAB_NAME', 'Delving Remote Search');
 define('DRS7_SEARCH_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
 define('DRS7_SEARCH_RESULTS_ROWS', 10);
