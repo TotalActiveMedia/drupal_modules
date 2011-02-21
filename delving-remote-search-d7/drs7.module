@@ -8,36 +8,36 @@
  *
  */
 define('DRS_SEARCH_PAGE_PATH', 'delving');
-define('DRS_SEARCH_TAB_NAME', 'Delving Remote Search');
-define('DRS_SEARCH_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
-define('DRS_SEARCH_RESULTS_ROWS', 10);
-define('DRS_SEARCH_DIGITAL_OBJECT', TRUE);
+define('DRS7_SEARCH_TAB_NAME', 'Delving Remote Search');
+define('DRS7_SEARCH_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
+define('DRS7_SEARCH_RESULTS_ROWS', 10);
+define('DRS7_SEARCH_DIGITAL_OBJECT', TRUE);
 
 /**
  * Implementation of hook_search_info()
  */
-function drs_search_info() {
+function drs7_search_info() {
   return array(
-    'title' => variable_get('drs_search_tab_name', DRS_SEARCH_TAB_NAME),
-    'path' => variable_get('drs_search_page_path', DRS_SEARCH_PAGE_PATH),
-//    'callback' => 'drs_search_conditions_callback',
+    'title' => variable_get('drs7_search_tab_name', DRS7_SEARCH_TAB_NAME),
+    'path' => variable_get('drs7_search_page_path', DRS7_SEARCH_PAGE_PATH),
+//    'callback' => 'drs7_search_conditions_callback',
   );
 }
 
 /**
  * Implementation of hook_search_execute()
  */
-function drs_search_execute($keys = NULL, $conditions = NULL) {
+function drs7_search_execute($keys = NULL, $conditions = NULL) {
 
-  $target = variable_get('drs_search_url', DRS_SEARCH_REMOTE_URL);
+  $target = variable_get('drs7_search_url', DRS7_SEARCH_REMOTE_URL);
 
-  $rows = variable_get('drs_search_results_rows', DRS_SEARCH_RESULTS_ROWS);
+  $rows = variable_get('drs7_search_results_rows', DRS7_SEARCH_RESULTS_ROWS);
 
   $page = isset($_GET['page']) ? $_GET['page'] : 0;
 
   $start = $page * $rows;
 
-  $has_digital_object = variable_get('drs_search_digital_object', DRS_SEARCH_DIGITAL_OBJECT);
+  $has_digital_object = variable_get('drs7_search_digital_object', DRS7_SEARCH_DIGITAL_OBJECT);
 
   $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+', $keys));
 
@@ -54,7 +54,7 @@ function drs_search_execute($keys = NULL, $conditions = NULL) {
     // Set the root of the response data
     $data = $response->data;
 
-    $results = drs_process_results($data);
+    $results = drs7_process_results($data);
 
     return $results;
   }
@@ -76,7 +76,7 @@ function drs_search_execute($keys = NULL, $conditions = NULL) {
 /**
  * Takes the remote response and returns a results array
  */
-function drs_process_results($data) {
+function drs7_process_results($data) {
   $xml = $data;
   if (!is_object($xml)) {
     $xml = new SimpleXMLElement($data);
