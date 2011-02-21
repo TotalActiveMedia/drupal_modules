@@ -1,0 +1,9 @@
+;$Id$
+name = Delving Test Search
+description = A module for remote search
+package = Delving
+core = 7.x
+files[] = drs.module
+dependencies[] = search
+engine = phptemplate
+;php = 5.2
