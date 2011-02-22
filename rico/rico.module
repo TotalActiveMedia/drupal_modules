@@ -28,25 +28,7 @@ function rico_menu() {
 }
 
 function rico_show_page() {
-//  theme('pager');
   return drupal_get_form('rico_show_form');
-}
-
-function drs_page_build(&$page) {
-  if (menu_get_object('node', RICO_SEARCH_PAGE_PATH)) {
-    // We are on a node detail page. Append a standard disclaimer to the
-    // content region.
-    $page['content'] = array(
-      '#markup' => t('Acme, Inc. is not responsible for the contents of this sample code.'),
-      '#weight' => 25,
-    );
-  }
-}
-
-
-function rico_get_vars() {
-  drupal_set_message('toot');
-  debug('toot');
 }
 
 function rico_show_form($edit) {
