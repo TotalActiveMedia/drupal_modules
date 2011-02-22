@@ -1,0 +1,8 @@
+;$Id$
+name = Rico
+description = A test module.
+package = Delving
+core = 7.x
+files[] = rico.module
+;dependencies[] = autoload
+;php = 5.2
