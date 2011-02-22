@@ -28,7 +28,25 @@ function rico_menu() {
 }
 
 function rico_show_page() {
+//  theme('pager');
   return drupal_get_form('rico_show_form');
+}
+
+function drs_page_build(&$page) {
+  if (menu_get_object('node', RICO_SEARCH_PAGE_PATH)) {
+    // We are on a node detail page. Append a standard disclaimer to the
+    // content region.
+    $page['content'] = array(
+      '#markup' => t('Acme, Inc. is not responsible for the contents of this sample code.'),
+      '#weight' => 25,
+    );
+  }
+}
+
+
+function rico_get_vars() {
+  drupal_set_message('toot');
+  debug('toot');
 }
 
 function rico_show_form($edit) {
@@ -87,7 +105,8 @@ function rico_show_form_validate($form, &$form_state) {
 
       // This function parses the data into a useable array for themeing. Todo: expand function to include more fields
       // and implement themeing functions.
-      rico_set_results($data, $query);
+      $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
+      rico_set_results($data, $query, $rows);
 
     }
     else {
@@ -116,7 +135,7 @@ function rico_show_form_validate($form, &$form_state) {
  * @param  $query
  * @return $results
  */
-function rico_set_results($data, $query){
+function rico_set_results($data, $query, $rows){
 
   $xml = $data;
 
@@ -128,9 +147,14 @@ function rico_set_results($data, $query){
   $results['total'] = $xml->query['numFound'];
   $results['breadcrumbs'] = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
   $results['pagination']['start'] = $xml->pagination->start;
+  $results['pagination']['rows'] = $rows;
+  $results['pagination']['current'] = $xml->pagination->currentPage;
+  $results['pagination']['next'] = $xml->pagination->nextPage;
+  $results['pagination']['previous'] = $xml->pagination->previousPage;
+  $results['items'] = $xml->xpath('/results/items');
+  $results['facets'] = $xml->xpath('/results/facets');
 
   return $results;
-
 }
 
 /**
@@ -151,7 +175,19 @@ function rico_show_results($xml, $query){
     $output .= '<h2>You searched for: ' . $query . '</h2>';
     $output .=  '<h3>Number of records found: ' . $total_records . '</h3>';
 
+    $page = pager_find_page();
+    $num_per_page = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
+
+    // Now that we have the total number of results, initialize the pager.
+    pager_default_initialize($data->query['numFound'], $num_per_page);
+
+
     if ($data->query['numFound'] > 0) {
+
+        // The pager!!!!!
+        // TODO: get proper urls and module functionality in there to get the next result set
+        debug(theme('pager'));
+        $output .= theme('pager');
 
         $output .= "<table>";
         $counter = 0;
@@ -222,7 +258,7 @@ function rico_show_results($xml, $query){
     // Load the output into the $_SESSION which is used by  rico_show_form($edit) to display page content
     // TODO: change this so that the rico_show_form() is not responsible for showing the data
     $_SESSION['rico_data'] = $output;
-
+//    $page['content'] = $output;
 }
 
 /**
