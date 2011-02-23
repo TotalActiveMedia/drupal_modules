@@ -59,14 +59,17 @@ function rico_show_form($edit) {
 function rico_show_form_validate($form, &$form_state) {
 
   $query = trim($form_state['values']['query']);
+  rico_remote_search($query);
+
+}
+
+function rico_remote_search($query) {
   $query = urlencode($query);
   $start = 1;
   $target = variable_get('drs_search_url', RICO_SEARCH_REMOTE_URL);
   $rows = variable_get('drs_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
   $has_digital_object = variable_get('drs_search_digital_object', RICO_SEARCH_DIGITAL_OBJECT);
   $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+', $query));
-
-
 
   if ($has_digital_object == TRUE) {
     $url .= '&qf=HASDIGITALOBJECT:true';
@@ -108,6 +111,8 @@ function rico_show_form_validate($form, &$form_state) {
   catch (Exception $e) {
     drupal_set_message('Error: ' . $e->getMessage(), 'status');
   }
+
+
 }
 
 /**
@@ -164,13 +169,21 @@ function rico_show_results($xml, $query){
     pager_default_initialize($data->query['numFound'], $num_per_page);
 
 
+
+    $variables = array(
+      'parameters' => array(
+        'query'=>$query,
+        'start'=>$data->pagination->start,
+        'rows'=>$num_per_page,
+      )
+    );
+
     if ($data->query['numFound'] > 0) {
 
         // The pager!!!!!
         // TODO: get proper urls and module functionality in there to get the next result set
-        debug(theme('pager'));
-        $output .= theme('pager');
-
+//        debug(theme('pager'));
+        $output .= theme('pager', $variables);
         $output .= "<table>";
         $counter = 0;
 
