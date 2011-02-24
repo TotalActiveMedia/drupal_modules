@@ -1,37 +1,64 @@
 <?php
 // $Id$
 
-/**
- * @file
- *   display a page with a search form that sumbits to a remote delving framework api
+/** * @file
+ *
+ *  A module for making query to and getting results from a remote Delving Platform Search API.
+ *
  */
-
-define('RICO_SEARCH_PAGE_PATH', 'rico/search');
+define('RICO_SETTINGS_MENU_PATH', 'Administer > Site configuration > Delving Remote-Search API Settings');
+define('RICO_SEARCH_PAGE_PATH', 'RICO/search');
 define('RICO_SEARCH_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
-define('RICO_SEARCH_RESULTS_ROWS', 10);
+define('RICO_SEARCH_RESULTS_ROWS', 12);
 define('RICO_SEARCH_DIGITAL_OBJECT', TRUE);
 
 /**
  * Implementation of hook_menu()
  */
 function rico_menu() {
-  $items[RICO_SEARCH_PAGE_PATH] = array(
-    'title'             => 'Rico Search',
-    'description'       => 'Page for searching remote Delving Framework API without dependency on the Search module.',
-    'page callback'     => 'rico_show_page',
-    'page arguments'    => array(),
-    'access callback'   => TRUE,
-    'type'              => MENU_NORMAL_ITEM,
+  $items[RICO_SETTINGS_MENU_PATH] = array(
+    'title' => t('Delving Remote-Search Settings'),
+    'description' => t('Configure Search URL, etc. for Delving Remote-Search API'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rico_admin_settings'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'rico_admin.inc'
+  );
+  $items[variable_get('rico_search_page_path', RICO_SEARCH_PAGE_PATH)] = array(
+    'title' => 'RICO Search',
+    'description' => 'Page for searching remote Delving Framework API without dependency on the Search module.',
+    'page callback' => 'rico_load_page',
+    'access callback' => TRUE,
+    'type' => MENU_NORMAL_ITEM,
   );
 
   return $items;
 }
 
-function rico_show_page() {
-  return drupal_get_form('rico_show_form');
+/**
+ * The hook_menu() page callback
+ *
+ * Displays the page and calls necessary functions needed to run the page functionality
+ */
+function rico_load_page() {
+  return drupal_get_form('rico_form');
 }
 
-function rico_show_form($edit) {
+/**
+ * Implement hook_form()
+ */
+function rico_form($form, &$form_state) {
+
+  $qps = rico_get_query_params();
+
+  $html = '';
+
+  if (!empty($qps['query'])) {
+    $html .= rico_remote_search($qps['query'], $qps);
+  }
+
   $form['query'] = array(
     '#type' => 'textfield',
     '#title' => t('Enter a search term'),
@@ -43,32 +70,34 @@ function rico_show_form($edit) {
     '#type' => 'submit',
     '#value' => t('Find'),
   );
-
-  if (!empty($_SESSION['rico_data'])) {
-    $form['out'] = array(
-      '#type' => 'markup',
-      '#markup' => $_SESSION['rico_data'],
-    );
-    // uncomment if you want the page to be emptied on a page refresh
-    //unset($_SESSION['rico_data']);
-  }
+  $form['#suffix'] = $html;
 
   return $form;
 }
 
-function rico_show_form_validate($form, &$form_state) {
-
-  $query = trim($form_state['values']['query']);
-  rico_remote_search($query);
-
+function rico_form_submit($form, &$form_state) {
+  // A simulated 'GET'
+  global $base_url;
+  $redirect_url = $base_url . '/' . variable_get('rico_search_page_path', RICO_SEARCH_PAGE_PATH);
+  $redirect_url .= '?query=' . $form_state['values']['query'];
+  $form_state['redirect'] = $redirect_url;
 }
 
-function rico_remote_search($query) {
-  $query = urlencode($query);
-  $start = 1;
-  $target = variable_get('drs_search_url', RICO_SEARCH_REMOTE_URL);
-  $rows = variable_get('drs_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
-  $has_digital_object = variable_get('drs_search_digital_object', RICO_SEARCH_DIGITAL_OBJECT);
+
+/****** REMOTE SEARCH *************************************************************************************************/
+
+function rico_remote_search($query = NULL, $qps) {
+  //  if (!empty($query)) {
+  //    $query = urlencode($query);
+  //  }
+  //  else {
+  //    $query = urlencode($qps['query']);
+  //  }
+
+  $target = variable_get('rico_search_url', RICO_SEARCH_REMOTE_URL);
+  $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
+  $start = $qps['start'];
+  $has_digital_object = variable_get('rico_search_digital_object', RICO_SEARCH_DIGITAL_OBJECT);
   $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+', $query));
 
   if ($has_digital_object == TRUE) {
@@ -86,19 +115,21 @@ function rico_remote_search($query) {
       $data = $response->data;
 
       // This function grabs the data and displays it on the page
-      rico_show_results($data, $query);
+      //rico_show_results($data, $query);
 
       // This function parses the data into a useable array for themeing. Todo: expand function to include more fields
       // and implement themeing functions.
       $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
-      rico_set_results($data, $query, $rows);
+      //$results = array();
+      $results = rico_show_results($data, $query);
+      return $results;
 
     }
     else {
       // Deal with HTTP errors
       switch ($response->code) {
         case 401:
-          drupal_set_message(t('Yikes! A 401. Do we have the correct target url?'));
+          drupal_set_message(t('Oh no! A 401. Do we have the correct target url?'));
           break;
         default:
           drupal_set_message(t('Something went wrong @error', array(
@@ -116,145 +147,124 @@ function rico_remote_search($query) {
 }
 
 /**
- * Parses data to return an array of values to be displayed using theme() functions
- *
- * @param  $data
- * @param  $query
- * @return $results
- */
-function rico_set_results($data, $query, $rows){
-
-  $xml = $data;
-
-  if (!is_object($data)) {
-    $xml = new SimpleXMLElement($data);
-  }
-
-  $results = array();
-  $results['total'] = $xml->query['numFound'];
-  $results['breadcrumbs'] = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
-  $results['pagination']['start'] = $xml->pagination->start;
-  $results['pagination']['rows'] = $rows;
-  $results['pagination']['current'] = $xml->pagination->currentPage;
-  $results['pagination']['next'] = $xml->pagination->nextPage;
-  $results['pagination']['previous'] = $xml->pagination->previousPage;
-  $results['items'] = $xml->xpath('/results/items');
-  $results['facets'] = $xml->xpath('/results/facets');
-
-  return $results;
-}
-
-/**
  * Outputs html to display the returned results
  *
  * @param  $xml
  * @param  $query
  * @return void
  */
-function rico_show_results($xml, $query){
+function rico_show_results($xml, $query) {
 
-    $data = simplexml_load_string($xml);
-
-
-   $total_records = $data->query['numFound'];
-
-    $output = '<hr/><div id="drs">';
-    $output .= '<h2>You searched for: ' . $query . '</h2>';
-    $output .=  '<h3>Number of records found: ' . $total_records . '</h3>';
-
-    $page = pager_find_page();
-    $num_per_page = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
-
-    // Now that we have the total number of results, initialize the pager.
-    pager_default_initialize($data->query['numFound'], $num_per_page);
+  $data = simplexml_load_string($xml);
 
 
+  $total_records = $data->query['numFound'];
 
-    $variables = array(
-      'parameters' => array(
-        'query'=>$query,
-        'start'=>$data->pagination->start,
-        'rows'=>$num_per_page,
-      )
-    );
+  $output = '<hr/><div id="drs">';
+  $output .= '<h2>You searched for: ' . $query . '</h2>';
+  $output .= '<h3>Number of records found: ' . $total_records . '</h3>';
 
-    if ($data->query['numFound'] > 0) {
+  //$page = pager_find_page();
+  $page = isset($_GET['page']) ? $_GET['page'] : 0;
 
-        // The pager!!!!!
-        // TODO: get proper urls and module functionality in there to get the next result set
-//        debug(theme('pager'));
-        $output .= theme('pager', $variables);
-        $output .= "<table>";
-        $counter = 0;
+  $num_per_page = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
+  $start = $num_per_page * $page;
 
-        foreach ($data->items->item as $item){
-
-            // set for namespaces
-            $ns_dc = $item->children('http://purl.org/dc/elements/1.1/');
-            $ns_dcterms = $item->children('http://purl.org/dc/terms/');
-            $ns_abm = $item->children('http://to_be_decided/abm/');
-            $ns_eu = $item->children('http://www.europeana.eu/schemas/ese/');
-
-            // dc
-            $dc_title = $ns_dc->title;
-            $dc_creator = $ns_dc->creator;
-            $dc_description = $ns_dc->description;
-            $dc_subject = $ns_dc->subject;
-
-            // dcterms
-            $dcterms_created = $ns_dcterms->created;
-            $dcterms_temporal = $ns_dcterms->termporal;
-            $dcterms_rights_holder = $ns_dcterms->rightsHolder;
-
-            // abm
-            $abm_county = $ns_abm->county;
-            $abm_municipality = $ns_abm->municipality;
-            $abm_named_place = $ns_abm->namedPlace;
-            $abm_about_person = $ns_abm->aboutPerson;
-
-            // europeana
-            $eu_country = $ns_eu->country;
-            $eu_object = $ns_eu->object;
-            $eu_data_provider = $ns_eu->dataProvider;
-            $eu_is_shown_by = $ns_eu->isShownBy;
-
-            $fields_arr = array(
-                "Title" => $dc_title,
-                "Creator" => $dc_creator,
-                "Description" => $dc_description,
-                "Subject(s)" => $dc_subject,
-                "County" => $abm_county,
-                "Municipality" => $abm_municipality,
-                "Place" => $abm_named_place,
-                "Person(s)" => $abm_about_person
-            );
-
-            $output .= '<tr><td width="60px">';
-
-            if (!empty($eu_object)) {$output .= '<img width="100px" class="overlay" src="' . $eu_object . '"/>';}
-
-            $output .= '</td><td>';
-            $output .= rico_show_fields($fields_arr);
-            $output .= '</td></tr>';
-
-            $counter++;
-        }
-
-        $output .= '</table>';
+  // Now that we have the total number of results, initialize the pager.
+  pager_default_initialize($data->query['numFound'], $num_per_page);
+  //
+  $variables = array(
+    'parameters' => array(
+      'query' => $query,
+      'rows' => $num_per_page,
+    ),
+  );
 
 
-    }
-    else {
-        $output .= "No results found. Please try another search";
+  if ($data->query['numFound'] > 0) {
+
+    // The pager!!!!!
+    // TODO: get proper urls and module functionality in there to get the next result set
+    //        debug(theme('pager', $variables));
+    //        $output .= theme('pager');
+    $output .= theme('pager', $variables);
+    //        $output .= theme_pager($variables);
+    $output .= "<table>";
+    $counter = 0;
+
+    foreach ($data->items->item as $item) {
+
+      // set for namespaces
+      $ns_dc = $item->children('http://purl.org/dc/elements/1.1/');
+      $ns_dcterms = $item->children('http://purl.org/dc/terms/');
+      $ns_abm = $item->children('http://to_be_decided/abm/');
+      $ns_eu = $item->children('http://www.europeana.eu/schemas/ese/');
+
+      // dc
+      $dc_title = $ns_dc->title;
+      $dc_creator = $ns_dc->creator;
+      $dc_description = $ns_dc->description;
+      $dc_subject = $ns_dc->subject;
+
+      // dcterms
+      $dcterms_created = $ns_dcterms->created;
+      $dcterms_temporal = $ns_dcterms->termporal;
+      $dcterms_rights_holder = $ns_dcterms->rightsHolder;
+
+      // abm
+      $abm_county = $ns_abm->county;
+      $abm_municipality = $ns_abm->municipality;
+      $abm_named_place = $ns_abm->namedPlace;
+      $abm_about_person = $ns_abm->aboutPerson;
+
+      // europeana
+      $eu_country = $ns_eu->country;
+      $eu_object = $ns_eu->object;
+      $eu_data_provider = $ns_eu->dataProvider;
+      $eu_is_shown_by = $ns_eu->isShownBy;
+
+      $fields_arr = array(
+        "Title" => $dc_title,
+        "Creator" => $dc_creator,
+        "Description" => $dc_description,
+        "Subject(s)" => $dc_subject,
+        "County" => $abm_county,
+        "Municipality" => $abm_municipality,
+        "Place" => $abm_named_place,
+        "Person(s)" => $abm_about_person
+      );
+
+      $output .= '<tr><td width="60px">';
+
+      if (!empty($eu_object)) {
+        $output .= '<img width="100px" class="overlay" src="' . $eu_object . '"/>';
+      }
+
+      $output .= '</td><td>';
+      $output .= rico_show_fields($fields_arr);
+      $output .= '</td></tr>';
+
+      $counter++;
     }
 
-    $output .= '</div>';
+    $output .= '</table>';
+    $output .= theme('pager', $variables);
 
-    // Load the output into the $_SESSION which is used by  rico_show_form($edit) to display page content
-    // TODO: change this so that the rico_show_form() is not responsible for showing the data
-    $_SESSION['rico_data'] = $output;
-//    $page['content'] = $output;
+
+  }
+  else {
+    $output .= "No results found. Please try another search";
+  }
+
+  $output .= '</div>';
+  //$_SESSION['rico']['results'] = $output;
+  // Load the output into the $_SESSION which is used by  rico_show_form($edit) to display page content
+  // TODO: change this so that the rico_show_form() is not responsible for showing the data
+
+  return $output;
+  //    $page['content'] = $output;
 }
+
 
 /**
  * Takes an array and outputs rows of 'key: value' data.
@@ -265,28 +275,88 @@ function rico_show_results($xml, $query){
  */
 
 function rico_show_fields($arr_fields) {
-    $out = "";
-    foreach ($arr_fields as $key => $value) {
-        // Only one value to show
-        if (count($value) == 1) {
-            $out .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
-        }
-        // Multiple values to show
-        elseif (count($value) > 1) {
-            $counter = 1;
-            $size = count($value);
-            $out .= '<strong>' . $key . ': </strong>';
-            foreach ($value as $key => $val) {
-                $out .= $val;
-                if ($counter != $size) {
-                    $out .= ', ';
-                }
-                $counter++;
-            }
-            $out .= '<br/>';
-        }
+  $out = "";
+  foreach ($arr_fields as $key => $value) {
+    // Only one value to show
+    if (count($value) == 1) {
+      $out .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
     }
-    return $out;
+      // Multiple values to show
+    elseif (count($value) > 1) {
+      $counter = 1;
+      $size = count($value);
+      $out .= '<strong>' . $key . ': </strong>';
+      foreach ($value as $key => $val) {
+        $out .= $val;
+        if ($counter != $size) {
+          $out .= ', ';
+        }
+        $counter++;
+      }
+      $out .= '<br/>';
+    }
+  }
+  return $out;
 }
 
+/**
+ * Parses data to return an array of values to be displayed using theme() functions
+ *
+ * @param  $data
+ * @param  $query
+ * @return $results
+ */
+function rico_set_results($data, $query, $rows) {
+
+  $xml = $data;
+
+  if (!is_object($data)) {
+    $xml = new SimpleXMLElement($data);
+  }
+
+  $results = array();
+  $results['total'] = $xml->query['numFound'];
+  $results['query'] = $xml->query->terms;
+  $results['breadcrumbs'] = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
+  $results['pagination']['start'] = $xml->pagination->start;
+  $results['pagination']['rows'] = $rows;
+  $results['pagination']['current'] = $xml->pagination->currentPage;
+  $results['pagination']['next'] = $xml->pagination->nextPage;
+  $results['pagination']['previous'] = $xml->pagination->previousPage;
+  $results['items'] = $xml->xpath('/results/items/item');
+  $results['facets'] = $xml->xpath('/results/facets');
+
+  return $results;
+}
+
+/****** HELPER FUNCTIONS **********************************************************************************************/
+
+/**
+ * Grab parameters necessary for search from URL
+ *
+ * @return array
+ */
+function rico_get_query_params() {
+
+  $page = isset($_GET['page']) ? $_GET['page'] : 0;
+  $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
+  $start = $page * $rows + 1;
+  $query = isset($_GET['query']) ? $_GET['query'] : '';
+  $qf_string = '';
+  if (isset($_GET['qf'])) {
+    $qfs = array_unique($_GET['qf']);
+    foreach ($qfs as $qf) {
+      $qf_string .= '&qf=' . $qf;
+    }
+  }
+  $query_params = array(
+    'page' => $page,
+    'start' => $start,
+    'query' => $query,
+    'qf' => $qf_string,
+  );
+
+
+  return $query_params;
+}
 
