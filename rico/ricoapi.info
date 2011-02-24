@@ -1,8 +1,8 @@
 ;$Id$
-name = Rico
+name = Rico API
 description = A test module.
 package = Delving
 core = 7.x
-files[] = rico.module
-dependencies[] = ricoapi
+files[] = ricoapi.module
+;dependencies[] = autoload
 ;php = 5.2

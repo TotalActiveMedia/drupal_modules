@@ -6,26 +6,11 @@
  *  A module for making query to and getting results from a remote Delving Platform Search API.
  *
  */
-define('RICO_SETTINGS_MENU_PATH', 'Administer > Site configuration > Delving Remote-Search API Settings');
-define('RICO_SEARCH_PAGE_PATH', 'RICO/search');
-define('RICO_SEARCH_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
-define('RICO_SEARCH_RESULTS_ROWS', 12);
-define('RICO_SEARCH_DIGITAL_OBJECT', TRUE);
 
 /**
- * Implementation of hook_menu()
+ * Implements hook_menu()
  */
 function rico_menu() {
-  $items[RICO_SETTINGS_MENU_PATH] = array(
-    'title' => t('Delving Remote-Search Settings'),
-    'description' => t('Configure Search URL, etc. for Delving Remote-Search API'),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer site configuration'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rico_admin_settings'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'rico_admin.inc'
-  );
   $items[variable_get('rico_search_page_path', RICO_SEARCH_PAGE_PATH)] = array(
     'title' => 'RICO Search',
     'description' => 'Page for searching remote Delving Framework API without dependency on the Search module.',
@@ -38,11 +23,116 @@ function rico_menu() {
 }
 
 /**
+ * Implements hook_block_info()
+ */
+function rico_block_info() {
+  $blocks = array();
+
+  // The array key defines the $delta parameter used in all other block hooks
+  $blocks['facets'] = array(
+    // The name of the block on the blocks administration page
+    'info' => t('Facets block for the Delving Remote Search result page'),
+    'status' => 1,
+    'region' => 'Sidebar second',
+    'visibility' => 'BLOCK_VISIBILITY_LISTED',
+    'pages' => variable_get('rico_search_page_path', RICO_SEARCH_PAGE_PATH),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implement hook_block_view()
+ *
+ * @param $delta
+ *  The name of the requested block
+ */
+function rico_block_view($delta = '') {
+
+
+  //  Create an empty block
+  $block = array(
+    'subject' => '',
+    'content' => '',
+  );
+
+  if (rico_has_searched() == TRUE) {
+
+    //  Check which block is being requested
+    if ($delta == 'facets') {
+      // Set the block title
+      $block['subject'] = t('Refine your search');
+
+      //  Check if the user can access content
+      if (user_access('access content')) {
+
+        // Get the facets array
+        $facets_ar = rico_facets();
+
+        // Get the query terms from the $facets_ar['query'] array
+        $terms = '';
+
+        foreach ($facets_ar['query'] as $term) {
+          $terms .= $term;
+        }
+
+        $content = '';
+
+        // Get the facets from the $facets_ar['facets'] array
+        foreach ($facets_ar['facets'] as $facet) {
+          // Only display if the facet has any links
+          if ($facet->link) {
+            $content .= '<div class="delving-facets-container">';
+            $content .= '<h4>' . $facet['name'] . '</h4>';
+            $content .= '<div class="delving-facets">';
+            foreach ($facet->link as $link) {
+
+              $facet_link = $link['url'];
+
+              $furl = url(variable_get('rico_search_page_path',RICO_SEARCH_PAGE_PATH)) . '?query=' . $terms . $facet_link;
+
+              if (!empty($facet_link)) {
+                if ($link['isSelected'] != 'true') {
+                  $content .= '<a href="' . $furl . '">' . trim($link) . '</a><br/>';
+                }
+                else {
+                  $content .= '<strong><a href="' . $furl . '">' . trim($link) . '</a></strong><br/>';
+                }
+              }
+              // Checkboxes for later
+              // Todo onclick functionality for checkbox to launch search (js)
+              /*
+              if (!empty($facet_link)) {
+                  if($link['isSelected']!='true'){
+                      $content .= '<input type="checkbox" class="delving-facets-checkbox" value="' . $furl . '"/>';
+                  }
+                  else {
+                     $content .= '<input type="checkbox" class="delving-facets-checkbox" checked="checked" value="' . $furl . '"/>';
+                  }
+                  $content .= '<a href="?' . $furl . '">' . trim($link) .'</a><br/>';
+              }
+              */
+
+            }
+            $content .= '</div></div>';
+          }
+        }
+        $block['subject'] = t('Refine your search');
+        $block['content'] = $content;
+      }
+    }
+
+  }
+  return $block;
+}
+
+/**
  * The hook_menu() page callback
  *
  * Displays the page and calls necessary functions needed to run the page functionality
  */
 function rico_load_page() {
+  drupal_add_css(drupal_get_path('module', 'rico') . '/rico.css');
   return drupal_get_form('rico_form');
 }
 
@@ -50,13 +140,19 @@ function rico_load_page() {
  * Implement hook_form()
  */
 function rico_form($form, &$form_state) {
-
-  $qps = rico_get_query_params();
-
+  // grab query parameters if there are any
+  $qps = ricoapi_get_query_params();
   $html = '';
-
+  // there is a query in the URL, do a search and fill up $html
   if (!empty($qps['query'])) {
-    $html .= rico_remote_search($qps['query'], $qps);
+
+    $results = ricoapi_remote_search($qps['query'], $qps);
+    //$results_ar = array();
+    //$results_ar =  rico_set_results($results);
+    // Cache response and set semaphore for use by blocks.
+    //rico_static_response_cache($results);
+    //rico_has_searched(TRUE);
+    $html .= $results;
   }
 
   $form['query'] = array(
@@ -76,61 +172,14 @@ function rico_form($form, &$form_state) {
 }
 
 function rico_form_submit($form, &$form_state) {
-  // A simulated 'GET'
+  // A simulated 'GET', a bit dirty but it does the job nicely
+  // This way when a query is resubmitted using the pager or facet refinement, the same process is followed each time
   global $base_url;
   $redirect_url = $base_url . '/' . variable_get('rico_search_page_path', RICO_SEARCH_PAGE_PATH);
   $redirect_url .= '?query=' . $form_state['values']['query'];
   $form_state['redirect'] = $redirect_url;
 }
 
-
-/****** REMOTE SEARCH *************************************************************************************************/
-
-function rico_remote_search($query = NULL, $qps) {
-
-  $target = variable_get('rico_search_url', RICO_SEARCH_REMOTE_URL);
-  $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
-  $start = $qps['start'];
-  $has_digital_object = variable_get('rico_search_digital_object', RICO_SEARCH_DIGITAL_OBJECT);
-  $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+', $query));
-
-  if ($has_digital_object == TRUE) {
-    $url .= '&qf=HASDIGITALOBJECT:true';
-  }
-
-  try {
-
-    // Send out the request
-    $response = drupal_http_request($url);
-    // We have a response code 200: success!
-    if ($response->code == 200) {
-
-      // Set the root of the response data
-      $data = $response->data;
-      $results = rico_show_results($data, $query);
-      return $results;
-
-    }
-    else {
-      // Deal with HTTP errors
-      switch ($response->code) {
-        case 401:
-          drupal_set_message(t('Oh no! A 401. Do we have the correct target url?'));
-          break;
-        default:
-          drupal_set_message(t('Something went wrong @error', array(
-            '@error' => 'HTTP ' . $response->code . ': ' . strip_tags($response->data),
-          )), 'error');
-          break;
-      }
-    }
-  }
-  catch (Exception $e) {
-    drupal_set_message('Error: ' . $e->getMessage(), 'status');
-  }
-
-
-}
 
 /**
  * Outputs html to display the returned results
@@ -277,7 +326,7 @@ function rico_show_fields($arr_fields) {
  * @param  $query
  * @return $results
  */
-function rico_set_results($data, $query, $rows) {
+function rico_set_results($data) {
 
   $xml = $data;
 
@@ -289,45 +338,39 @@ function rico_set_results($data, $query, $rows) {
   $results['total'] = $xml->query['numFound'];
   $results['query'] = $xml->query->terms;
   $results['breadcrumbs'] = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
-  $results['pagination']['start'] = $xml->pagination->start;
-  $results['pagination']['rows'] = $rows;
-  $results['pagination']['current'] = $xml->pagination->currentPage;
-  $results['pagination']['next'] = $xml->pagination->nextPage;
-  $results['pagination']['previous'] = $xml->pagination->previousPage;
+  //  $results['pagination']['start'] = $xml->pagination->start;
+  //  $results['pagination']['rows'] = $rows;
+  //  $results['pagination']['current'] = $xml->pagination->currentPage;
+  //  $results['pagination']['next'] = $xml->pagination->nextPage;
+  //  $results['pagination']['previous'] = $xml->pagination->previousPage;
   $results['items'] = $xml->xpath('/results/items/item');
   $results['facets'] = $xml->xpath('/results/facets');
 
   return $results;
 }
 
-/****** HELPER FUNCTIONS **********************************************************************************************/
+function rico_facets() {
 
-/**
- * Grab parameters necessary for search from URL
- *
- * @return array
- */
-function rico_get_query_params() {
-
-  $page = isset($_GET['page']) ? $_GET['page'] : 0;
-  $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
-  $start = $page * $rows + 1;
-  $query = isset($_GET['query']) ? $_GET['query'] : '';
-  $qf_string = '';
-  if (isset($_GET['qf'])) {
-    $qfs = array_unique($_GET['qf']);
-    foreach ($qfs as $qf) {
-      $qf_string .= '&qf=' . $qf;
+  if (rico_has_searched() == TRUE) {
+    $facets = array();
+    // Use the response cache to grab the facets
+    $xml = rico_static_response_cache();
+    // Check to make sure we have an XML object to work with
+    if (!is_object($xml)) {
+      $xml = new SimpleXMLElement($xml);
+    }
+    // Are there any results?
+    if ($xml->query['numFound'] > 0) {
+      // Use xpath to create facets as array
+      $facets['facets'] = $xml->xpath('/results/facets/facet');
+      $facets['query'] = $xml->xpath('/results/query/terms');
     }
   }
-  $query_params = array(
-    'page' => $page,
-    'start' => $start,
-    'query' => $query,
-    'qf' => $qf_string,
-  );
+  else {
+    $facets = 0;
+  }
+  return $facets;
 
-
-  return $query_params;
 }
+
 

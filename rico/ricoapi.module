@@ -1,0 +1,164 @@
+<?php
+/**
+ *
+ * @file
+ * Wrapper for a Delving Remote Search API
+ *
+ * @author eric@delving.eu
+ *
+ *
+ */
+
+define('RICO_SETTINGS_MENU_PATH', 'Administer > Site configuration > Delving Remote-Search API Settings');
+define('RICO_SEARCH_PAGE_PATH', 'RICO/search');
+define('RICO_SEARCH_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
+define('RICO_SEARCH_RESULTS_ROWS', 12);
+define('RICO_SEARCH_DIGITAL_OBJECT', TRUE);
+
+/**
+ * Implement hook_menu()
+ */
+function ricoapi_menu() {
+  $items[RICO_SETTINGS_MENU_PATH] = array(
+    'title' => t('Delving Remote-Search Settings'),
+    'description' => t('Configure Search URL, etc. for Delving Remote-Search API'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rico_admin_settings'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'rico_admin.inc'
+  );
+  return $items;
+}
+
+/**
+ * Sends query to a Delving Platform instance Remote-Search API
+ *
+ * @param null $query
+ * @param  $qps
+ * @return void
+ */
+function ricoapi_remote_search($query = NULL, $qps) {
+
+  $target = variable_get('rico_search_url', RICO_SEARCH_REMOTE_URL);
+  $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
+  $start = $qps['start'];
+  $has_digital_object = variable_get('rico_search_digital_object', RICO_SEARCH_DIGITAL_OBJECT);
+  $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+', $query)) . '&' . $qps['qf'];
+
+  if ($has_digital_object == TRUE) {
+    $url .= '&qf[]=HASDIGITALOBJECT:true';
+  }
+
+  try {
+
+    // Send out the request
+    $response = drupal_http_request($url);
+    // We have a response code 200: success!
+    if ($response->code == 200) {
+
+      // Set the root of the response data
+      $data = $response->data;
+
+      // Cache response and set semaphore for use by blocks.
+      rico_static_response_cache($data);
+      rico_has_searched(TRUE);
+
+      // output results as html for now
+      // TODO: put this into a themeable block
+      $results = rico_show_results($data, $query);
+      return $results;
+
+
+    }
+    else {
+      // Deal with HTTP errors
+      switch ($response->code) {
+        case 401:
+          drupal_set_message(t('Oh no! A 401. Do we have the correct target url?'));
+          break;
+        default:
+          drupal_set_message(t('Something went wrong @error', array(
+            '@error' => 'HTTP ' . $response->code . ': ' . strip_tags($response->data),
+          )), 'error');
+          break;
+      }
+    }
+  }
+  catch (Exception $e) {
+    drupal_set_message('Error: ' . $e->getMessage(), 'status');
+  }
+}
+
+/****** HELPER FUNCTIONS **********************************************************************************************/
+
+/**
+ * Grab parameters necessary for search from URL
+ *
+ * @return array
+ */
+function ricoapi_get_query_params() {
+
+  $page = isset($_GET['page']) ? $_GET['page'] : 0;
+  $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
+  $start = $page * $rows + 1;
+  $query = isset($_GET['query']) ? $_GET['query'] : '';
+  $qf_string = '';
+  if (isset($_GET['qf'])) {
+    $qfs = array_unique($_GET['qf']);
+    foreach ($qfs as $qf) {
+      $qf_string .= '&qf=' . $qf;
+    }
+  }
+  $query_params = array(
+    'page' => $page,
+    'start' => $start,
+    'query' => $query,
+    'qf' => $qf_string,
+  );
+
+
+  return $query_params;
+}
+
+
+/**
+ * Semaphore that indicates whether a search has been done. Blocks use this
+ * later to decide whether they should load or not.
+ *
+ * @param $searched
+ *   A boolean indicating whether a search has been executed.
+ *
+ * @return
+ *   TRUE if a search has been executed.
+ *   FALSE otherwise.
+ */
+function rico_has_searched($searched = NULL) {
+  static $_searched = FALSE;
+  if (is_bool($searched)) {
+    $_searched = $searched;
+  }
+  return $_searched;
+}
+
+function rico_has_facets($has_facets = NULL) {
+  static $_has_facets = FALSE;
+  if (is_bool($has_facets)) {
+    $_has_facets = $has_facets;
+  }
+  return $_has_facets;
+}
+
+/**
+ * It is important to hold on to the search response object for the duration of the
+ * page request so that we can use it for things like building facet blocks.
+ */
+function rico_static_response_cache($response = NULL) {
+  static $_response;
+
+  if (!empty($response)) {
+    $_response = $response;
+  }
+  return $_response;
+}
