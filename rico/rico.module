@@ -87,12 +87,6 @@ function rico_form_submit($form, &$form_state) {
 /****** REMOTE SEARCH *************************************************************************************************/
 
 function rico_remote_search($query = NULL, $qps) {
-  //  if (!empty($query)) {
-  //    $query = urlencode($query);
-  //  }
-  //  else {
-  //    $query = urlencode($qps['query']);
-  //  }
 
   $target = variable_get('rico_search_url', RICO_SEARCH_REMOTE_URL);
   $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
@@ -113,14 +107,6 @@ function rico_remote_search($query = NULL, $qps) {
 
       // Set the root of the response data
       $data = $response->data;
-
-      // This function grabs the data and displays it on the page
-      //rico_show_results($data, $query);
-
-      // This function parses the data into a useable array for themeing. Todo: expand function to include more fields
-      // and implement themeing functions.
-      $rows = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
-      //$results = array();
       $results = rico_show_results($data, $query);
       return $results;
 
@@ -156,23 +142,12 @@ function rico_remote_search($query = NULL, $qps) {
 function rico_show_results($xml, $query) {
 
   $data = simplexml_load_string($xml);
-
-
   $total_records = $data->query['numFound'];
-
-  $output = '<hr/><div id="drs">';
-  $output .= '<h2>You searched for: ' . $query . '</h2>';
-  $output .= '<h3>Number of records found: ' . $total_records . '</h3>';
-
-  //$page = pager_find_page();
-  $page = isset($_GET['page']) ? $_GET['page'] : 0;
-
   $num_per_page = variable_get('rico_search_results_rows', RICO_SEARCH_RESULTS_ROWS);
-  $start = $num_per_page * $page;
 
-  // Now that we have the total number of results, initialize the pager.
+  // initialize the pager.
   pager_default_initialize($data->query['numFound'], $num_per_page);
-  //
+  // set up the variables to pass along to the pager
   $variables = array(
     'parameters' => array(
       'query' => $query,
@@ -180,15 +155,15 @@ function rico_show_results($xml, $query) {
     ),
   );
 
+  $output = '<hr/><div id="drs">';
+  $output .= '<h2>You searched for: ' . $query . '</h2>';
+  $output .= '<h3>Number of records found: ' . $total_records . '</h3>';
 
   if ($data->query['numFound'] > 0) {
 
-    // The pager!!!!!
-    // TODO: get proper urls and module functionality in there to get the next result set
-    //        debug(theme('pager', $variables));
-    //        $output .= theme('pager');
+    // The pager
     $output .= theme('pager', $variables);
-    //        $output .= theme_pager($variables);
+    // The results table
     $output .= "<table>";
     $counter = 0;
 
@@ -257,12 +232,8 @@ function rico_show_results($xml, $query) {
   }
 
   $output .= '</div>';
-  //$_SESSION['rico']['results'] = $output;
-  // Load the output into the $_SESSION which is used by  rico_show_form($edit) to display page content
-  // TODO: change this so that the rico_show_form() is not responsible for showing the data
 
   return $output;
-  //    $page['content'] = $output;
 }
 
 
