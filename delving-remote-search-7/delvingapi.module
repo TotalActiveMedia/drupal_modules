@@ -67,7 +67,7 @@ function delvingapi_remote_search($query = NULL, $qps) {
 
       // output results as html for now
       // TODO: put this into a themeable block
-      $results = delving_show_results($data, $query);
+      $results = delvingsearch_show_results($data, $query);
       return $results;
 
 

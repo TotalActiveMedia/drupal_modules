@@ -14,7 +14,7 @@ function delvingsearch_menu() {
   $items[variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)] = array(
     'title' => 'DELVING Search',
     'description' => 'Page for searching remote Delving Framework API without dependency on the Search module.',
-    'page callback' => 'delving_load_page',
+    'page callback' => 'delvingsearch_load_page',
     'access callback' => TRUE,
     'type' => MENU_NORMAL_ITEM,
   );
@@ -25,7 +25,7 @@ function delvingsearch_menu() {
 /**
  * Implements hook_block_info()
  */
-function delving_block_info() {
+function delvingsearch_block_info() {
   $blocks = array();
 
   // The array key defines the $delta parameter used in all other block hooks
@@ -47,9 +47,9 @@ function delving_block_info() {
  * @param $delta
  *  The name of the requested block
  */
-function delving_block_view($delta = '') {
+function delvingsearch_block_view($delta = '') {
 
-  $facets_ar = delving_facets();
+  $facets_ar = delvingsearch_facets();
 
   //  Create an empty block
   $block = array(
@@ -68,7 +68,7 @@ function delving_block_view($delta = '') {
       if (user_access('access content')) {
 
         // Get the facets array
-        $facets_ar = delving_facets();
+        $facets_ar = delvingsearch_facets();
 
         $qps = delvingapi_get_query_params();
         $terms = $qps['query'];
@@ -127,15 +127,15 @@ function delving_block_view($delta = '') {
  *
  * Displays the page and calls necessary functions needed to run the page functionality
  */
-function delving_load_page() {
+function delvingsearch_load_page() {
   drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delving.css');
-  return drupal_get_form('delving_form');
+  return drupal_get_form('delvingsearch_form');
 }
 
 /**
  * Implement hook_form()
  */
-function delving_form($form, &$form_state) {
+function delvingsearch_form($form, &$form_state) {
   // grab query parameters if there are any
   $qps = delvingapi_get_query_params();
   $html = '';
@@ -167,7 +167,7 @@ function delving_form($form, &$form_state) {
   return $form;
 }
 
-function delving_form_submit($form, &$form_state) {
+function delvingsearch_form_submit($form, &$form_state) {
   // A simulated 'GET', a bit dirty but it does the job nicely
   // This way when a query is resubmitted using the pager or facet refinement, the same process is followed each time
   global $base_url;
@@ -184,7 +184,7 @@ function delving_form_submit($form, &$form_state) {
  * @param  $query
  * @return void
  */
-function delving_show_results($xml, $query) {
+function delvingsearch_show_results($xml, $query) {
 
   $data = simplexml_load_string($xml);
   $total_records = $data->query['numFound'];
@@ -261,7 +261,7 @@ function delving_show_results($xml, $query) {
       }
 
       $output .= '</td><td>';
-      $output .= delving_show_fields($fields_arr);
+      $output .= delvingsearch_show_fields($fields_arr);
       $output .= '</td></tr>';
 
       $counter++;
@@ -290,7 +290,7 @@ function delving_show_results($xml, $query) {
  * @return string
  */
 
-function delving_show_fields($arr_fields) {
+function delvingsearch_show_fields($arr_fields) {
   $out = "";
   foreach ($arr_fields as $key => $value) {
     // Only one value to show
@@ -322,7 +322,7 @@ function delving_show_fields($arr_fields) {
  * @param  $query
  * @return $results
  */
-function delving_set_results($data) {
+function delvingsearch_set_results($data) {
 
   $xml = $data;
 
@@ -345,7 +345,7 @@ function delving_set_results($data) {
   return $results;
 }
 
-function delving_facets() {
+function delvingsearch_facets() {
 
   if (delving_has_searched() == TRUE) {
     $facets = array();
