@@ -19,6 +19,27 @@
 }
 
 
+
+.block.block-delvingsearch {
+    padding: 0;
+    margin: 0;
+    border: none;
+    width: 250px;
+}
+
+.block.block-delvingsearch .content {
+    font-size: .85em;
+    max-height: 120px;
+    overflow: auto;
+    padding: .5em !important;
+    width: 250px;
+    margin: 0 0 2em 0;
+    background: #F6F6F2;
+}
+
+
+
+
 #delving table.search-results tr:nth-child(odd) td {
     background: #F6F6F2;
 }

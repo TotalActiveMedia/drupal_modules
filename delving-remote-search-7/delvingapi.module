@@ -34,6 +34,7 @@ function delvingapi_menu() {
 }
 
 /**
+ *
  * Sends query to a Delving Platform instance Remote-Search API
  *
  * @param null $query
@@ -55,8 +56,10 @@ function delvingapi_remote_search($query = NULL, $qps) {
   $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
 
   if ($has_digital_object == TRUE) {
-    $url .= '&hqf=HASDIGITALOBJECT:true';
+    $url .= '&hqf=HASDIGITALOBJECT:true&hqf=COUNTY:Oslo';
   }
+
+  drupal_set_message($url);
 
   try {
 
