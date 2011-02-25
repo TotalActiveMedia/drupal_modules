@@ -1,0 +1,372 @@
+<?php
+// $Id$
+
+/** * @file
+ *
+ *  A module for making query to and getting results from a remote Delving Platform Search API.
+ *
+ */
+
+/**
+ * Implements hook_menu()
+ */
+function delving_menu() {
+  $items[variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)] = array(
+    'title' => 'DELVING Search',
+    'description' => 'Page for searching remote Delving Framework API without dependency on the Search module.',
+    'page callback' => 'delving_load_page',
+    'access callback' => TRUE,
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_block_info()
+ */
+function delving_block_info() {
+  $blocks = array();
+
+  // The array key defines the $delta parameter used in all other block hooks
+  $blocks['facets'] = array(
+    // The name of the block on the blocks administration page
+    'info' => t('Facets block for the Delving Remote Search result page'),
+    'status' => 1,
+    'region' => 'Sidebar second',
+    'visibility' => 'BLOCK_VISIBILITY_LISTED',
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implement hook_block_view()
+ *
+ * @param $delta
+ *  The name of the requested block
+ */
+function delving_block_view($delta = '') {
+
+  $facets_ar = delving_facets();
+
+  //  Create an empty block
+  $block = array(
+    'subject' => '',
+    'content' => '',
+  );
+
+  if (delving_has_searched() == TRUE && count($facets_ar) > 0) {
+
+    //  Check which block is being requested
+    if ($delta == 'facets') {
+      // Set the block title
+      $block['subject'] = t('Refine your search');
+
+      //  Check if the user can access content
+      if (user_access('access content')) {
+
+        // Get the facets array
+        $facets_ar = delving_facets();
+
+        $qps = delvingapi_get_query_params();
+        $terms = $qps['query'];
+
+        $content = '';
+        // Get the facets from the $facets_ar['facets'] array
+        foreach ($facets_ar['facets'] as $facet) {
+          // Only display if the facet has any links
+          if ($facet->link) {
+            $content .= '<div class="delving-facets-container">';
+            $content .= '<h4>' . $facet['name'] . '</h4>';
+            $content .= '<div class="delving-facets">';
+            foreach ($facet->link as $link) {
+
+              $facet_link = $link['url'];
+
+              $furl = url(variable_get('delving_search_page_path',DELVING_SEARCH_PAGE_PATH)) . '?query=' . $terms . $facet_link;
+
+              if (!empty($facet_link)) {
+                if ($link['isSelected'] != 'true') {
+                  $content .= '<a href="' . $furl . '">' . trim($link) . '</a><br/>';
+                }
+                else {
+                  $content .= '<strong><a href="' . $furl . '">' . trim($link) . '</a></strong><br/>';
+                }
+              }
+              // Checkboxes for later
+              // Todo onclick functionality for checkbox to launch search (js)
+              /*
+              if (!empty($facet_link)) {
+                  if($link['isSelected']!='true'){
+                      $content .= '<input type="checkbox" class="delving-facets-checkbox" value="' . $furl . '"/>';
+                  }
+                  else {
+                     $content .= '<input type="checkbox" class="delving-facets-checkbox" checked="checked" value="' . $furl . '"/>';
+                  }
+                  $content .= '<a href="?' . $furl . '">' . trim($link) .'</a><br/>';
+              }
+              */
+
+            }
+            $content .= '</div></div>';
+          }
+        }
+        $block['subject'] = t('Refine your search');
+        $block['content'] = $content;
+      }
+    }
+
+  }
+  return $block;
+}
+
+/**
+ * The hook_menu() page callback
+ *
+ * Displays the page and calls necessary functions needed to run the page functionality
+ */
+function delving_load_page() {
+  drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delving.css');
+  return drupal_get_form('delving_form');
+}
+
+/**
+ * Implement hook_form()
+ */
+function delving_form($form, &$form_state) {
+  // grab query parameters if there are any
+  $qps = delvingapi_get_query_params();
+  $html = '';
+  // there is a query in the URL, do a search and fill up $html
+  if (!empty($qps['query'])) {
+
+    $results = delvingapi_remote_search($qps['query'], $qps);
+    //$results_ar = array();
+    //$results_ar =  delving_set_results($results);
+    // Cache response and set semaphore for use by blocks.
+    //delving_static_response_cache($results);
+    //delving_has_searched(TRUE);
+    $html .= $results;
+  }
+
+  $form['query'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Enter a search term'),
+    '#size' => 60,
+    '#maxlength' => 256,
+    '#required' => TRUE,
+  );
+  $form['submit_query'] = array(
+    '#type' => 'submit',
+    '#value' => t('Find'),
+  );
+  $form['#suffix'] = $html;
+
+  return $form;
+}
+
+function delving_form_submit($form, &$form_state) {
+  // A simulated 'GET', a bit dirty but it does the job nicely
+  // This way when a query is resubmitted using the pager or facet refinement, the same process is followed each time
+  global $base_url;
+  $redirect_url = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH);
+  $redirect_url .= '?query=' . $form_state['values']['query'];
+  $form_state['redirect'] = $redirect_url;
+}
+
+
+/**
+ * Outputs html to display the returned results
+ *
+ * @param  $xml
+ * @param  $query
+ * @return void
+ */
+function delving_show_results($xml, $query) {
+
+  $data = simplexml_load_string($xml);
+  $total_records = $data->query['numFound'];
+  $num_per_page = variable_get('delving_search_results_rows', DELVING_SEARCH_RESULTS_ROWS);
+
+  // initialize the pager.
+  pager_default_initialize($data->query['numFound'], $num_per_page);
+  // set up the variables to pass along to the pager
+  $variables = array(
+    'parameters' => array(
+      'query' => $query,
+      'rows' => $num_per_page,
+    ),
+  );
+
+  $output = '<hr/><div id="drs">';
+  $output .= '<h2>You searched for: ' . $query . '</h2>';
+  $output .= '<h3>Number of records found: ' . $total_records . '</h3>';
+
+  if ($data->query['numFound'] > 0) {
+
+    // The pager
+    $output .= theme('pager', $variables);
+    // The results table
+    $output .= "<table>";
+    $counter = 0;
+
+    foreach ($data->items->item as $item) {
+
+      // set for namespaces
+      $ns_dc = $item->children('http://purl.org/dc/elements/1.1/');
+      $ns_dcterms = $item->children('http://purl.org/dc/terms/');
+      $ns_abm = $item->children('http://to_be_decided/abm/');
+      $ns_eu = $item->children('http://www.europeana.eu/schemas/ese/');
+
+      // dc
+      $dc_title = $ns_dc->title;
+      $dc_creator = $ns_dc->creator;
+      $dc_description = $ns_dc->description;
+      $dc_subject = $ns_dc->subject;
+
+      // dcterms
+      $dcterms_created = $ns_dcterms->created;
+      $dcterms_temporal = $ns_dcterms->termporal;
+      $dcterms_rights_holder = $ns_dcterms->rightsHolder;
+
+      // abm
+      $abm_county = $ns_abm->county;
+      $abm_municipality = $ns_abm->municipality;
+      $abm_named_place = $ns_abm->namedPlace;
+      $abm_about_person = $ns_abm->aboutPerson;
+
+      // europeana
+      $eu_country = $ns_eu->country;
+      $eu_object = $ns_eu->object;
+      $eu_data_provider = $ns_eu->dataProvider;
+      $eu_is_shown_by = $ns_eu->isShownBy;
+
+      $fields_arr = array(
+        "Title" => $dc_title,
+        "Creator" => $dc_creator,
+        "Description" => $dc_description,
+        "Subject(s)" => $dc_subject,
+        "County" => $abm_county,
+        "Municipality" => $abm_municipality,
+        "Place" => $abm_named_place,
+        "Person(s)" => $abm_about_person
+      );
+
+      $output .= '<tr><td width="60px">';
+
+      if (!empty($eu_object)) {
+        $output .= '<img width="100px" class="overlay" src="' . $eu_object . '"/>';
+      }
+
+      $output .= '</td><td>';
+      $output .= delving_show_fields($fields_arr);
+      $output .= '</td></tr>';
+
+      $counter++;
+    }
+
+    $output .= '</table>';
+    $output .= theme('pager', $variables);
+
+
+  }
+  else {
+    $output .= "No results found. Please try another search";
+  }
+
+  $output .= '</div>';
+
+  return $output;
+}
+
+
+/**
+ * Takes an array and outputs rows of 'key: value' data.
+ * If multiple values, then outputs as comma separated.
+ *
+ * @param  $arr_fields
+ * @return string
+ */
+
+function delving_show_fields($arr_fields) {
+  $out = "";
+  foreach ($arr_fields as $key => $value) {
+    // Only one value to show
+    if (count($value) == 1) {
+      $out .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+    }
+      // Multiple values to show
+    elseif (count($value) > 1) {
+      $counter = 1;
+      $size = count($value);
+      $out .= '<strong>' . $key . ': </strong>';
+      foreach ($value as $key => $val) {
+        $out .= $val;
+        if ($counter != $size) {
+          $out .= ', ';
+        }
+        $counter++;
+      }
+      $out .= '<br/>';
+    }
+  }
+  return $out;
+}
+
+/**
+ * Parses data to return an array of values to be displayed using theme() functions
+ *
+ * @param  $data
+ * @param  $query
+ * @return $results
+ */
+function delving_set_results($data) {
+
+  $xml = $data;
+
+  if (!is_object($data)) {
+    $xml = new SimpleXMLElement($data);
+  }
+
+  $results = array();
+  $results['total'] = $xml->query['numFound'];
+  $results['query'] = $xml->query->terms;
+  $results['breadcrumbs'] = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
+  //  $results['pagination']['start'] = $xml->pagination->start;
+  //  $results['pagination']['rows'] = $rows;
+  //  $results['pagination']['current'] = $xml->pagination->currentPage;
+  //  $results['pagination']['next'] = $xml->pagination->nextPage;
+  //  $results['pagination']['previous'] = $xml->pagination->previousPage;
+  $results['items'] = $xml->xpath('/results/items/item');
+  $results['facets'] = $xml->xpath('/results/facets');
+
+  return $results;
+}
+
+function delving_facets() {
+
+  if (delving_has_searched() == TRUE) {
+    $facets = array();
+    // Use the response cache to grab the facets
+    $xml = delving_static_response_cache();
+    // Check to make sure we have an XML object to work with
+    if (!is_object($xml)) {
+      $xml = new SimpleXMLElement($xml);
+    }
+    // Are there any results?
+    if ($xml->query['numFound'] > 0) {
+      // Use xpath to create facets as array
+      $facets['facets'] = $xml->xpath('/results/facets/facet');
+      $facets['query'] = $xml->xpath('/results/query/terms');
+    }
+  }
+  else {
+    $facets = 0;
+  }
+  return $facets;
+
+}
+
+

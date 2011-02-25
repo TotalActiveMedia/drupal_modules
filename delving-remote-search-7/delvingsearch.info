@@ -1,0 +1,8 @@
+;$Id$
+name = Delving Search
+description = A module for displaying results from the Delving API Module.
+package = Delving
+core = 7.x
+files[] = delvingsearch.module
+dependencies[] = delvingapi
+;php = 5.2
