@@ -15,6 +15,7 @@ define('DELVING_SEARCH_REMOTE_URL', 'http://norvegiana2.delving.org/services/api
 define('DELVING_SEARCH_RESULTS_ROWS', 12);
 define('DELVING_SEARCH_DIGITAL_OBJECT', TRUE);
 
+
 /**
  * Implement hook_menu()
  */
@@ -45,11 +46,18 @@ function delvingapi_remote_search($query = NULL, $qps) {
   $rows = variable_get('delving_search_results_rows', DELVING_SEARCH_RESULTS_ROWS);
   $start = $qps['start'];
   $has_digital_object = variable_get('delving_search_digital_object', DELVING_SEARCH_DIGITAL_OBJECT);
-  $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+', $query)) . '&' . $qps['qf'];
+  // remove the [] from the qf[] key before being sent to search api
+  $query_facets = str_replace('qf[]=','qf=', $qps['qf']);
+  // clean up the search terms before sending
+  $search_terms = urlencode(str_replace(' ', '+', $query));
+
+  $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . $query_facets;
 
   if ($has_digital_object == TRUE) {
     $url .= '&qf[]=HASDIGITALOBJECT:true';
   }
+
+  drupal_set_message($url);
 
   try {
 
@@ -108,7 +116,7 @@ function delvingapi_get_query_params() {
   if (isset($_GET['qf'])) {
     $qfs = array_unique($_GET['qf']);
     foreach ($qfs as $qf) {
-      $qf_string .= '&qf=' . $qf;
+      $qf_string .= '&qf[]=' . $qf;
     }
   }
   $query_params = array(
