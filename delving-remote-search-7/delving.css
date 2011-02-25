@@ -1,17 +1,42 @@
-table.search-results.delving tr:nth-child(odd) td {
-    background: #efefef;
+#delvingsearch-form input#edit-query {
+    width: 100%;
 }
 
-table.search-results.delving td {
+#block-delvingsearch-facets {
+    padding: 0;
+    margin: 0;
+    background: #fff;
+    border: none;
+    width: 250px;
+}
+
+#delving h2.element-invisible {
+    display: none;
+}
+#delving ul.pager {
+    margin: 0 0 0 0;
+    padding: 0;
+}
+
+
+#delving table.search-results tr:nth-child(odd) td {
+    background: #F6F6F2;
+}
+
+#delving table.search-results tr:nth-child(even) td {
+    background: #fff;
+}
+
+#delving table.search-results td {
     vertical-align: top;
     padding: .5em;
 }
 
-table.search-results.delving td p {
+#delving table.search-results td p {
     margin: 0px;
 }
 
-table.search-results.delving td label {
+#delving table.search-results td label {
     font-weight: bold;
 }
 
@@ -26,7 +51,7 @@ div.delving-facets {
     padding: .5em;
     width: 250px;
     margin: 0 0 2em 0;
-    background: #fffff0;
+    background: #F6F6F2;
 }
 
 .delving-breadcrumbs {

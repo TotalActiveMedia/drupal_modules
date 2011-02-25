@@ -21,8 +21,8 @@ define('DELVING_SEARCH_DIGITAL_OBJECT', TRUE);
  */
 function delvingapi_menu() {
   $items[variable_get('delving_settings_menu_path', DELVING_SETTINGS_MENU_PATH)] = array(
-    'title' => t('Delving Remote-Search Settings'),
-    'description' => t('Configure Search URL, etc. for Delving Remote-Search API'),
+    'title' => 'Delving Remote-Search Settings',
+    'description' => 'Configure Search URL, etc. for Delving Remote-Search API',
     'access callback' => 'user_access',
     'access arguments' => array('administer site configuration'),
     'page callback' => 'drupal_get_form',
@@ -48,17 +48,15 @@ function delvingapi_remote_search($query = NULL, $qps) {
   $has_digital_object = variable_get('delving_search_digital_object', DELVING_SEARCH_DIGITAL_OBJECT);
 
   // remove the [] from the qf[] key before being sent to search api
-  $query_facets = str_replace('qf[]=','qf=', $qps['qf']);
+  $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
   // clean up the search terms before sending
   $search_terms = urlencode(str_replace(' ', '+', $query));
 
   $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
 
   if ($has_digital_object == TRUE) {
-    $url .= '&qf=HASDIGITALOBJECT:true';
+    $url .= '&hqf=HASDIGITALOBJECT:true';
   }
-
-  drupal_set_message($url);
 
   try {
 
@@ -96,7 +94,7 @@ function delvingapi_remote_search($query = NULL, $qps) {
     }
   }
   catch (Exception $e) {
-    drupal_set_message('Error: ' . $e->getMessage(), 'status');
+    drupal_set_message(t('Error: ' . $e->getMessage(), 'status'));
   }
 }
 
