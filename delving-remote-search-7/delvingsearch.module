@@ -198,7 +198,7 @@ function delvingsearch_facet_get($facet_name) {
   $facets_ar = delvingsearch_facets();
   $qps = delvingapi_get_query_params();
   $terms = $qps['query'];
-  $content = '';
+  $items = array();
   foreach ($facets_ar['facets'] as $facet) {
     if ($facet->link && $facet['name'] == $facet_name) {
       foreach ($facet->link as $link) {
@@ -206,16 +206,22 @@ function delvingsearch_facet_get($facet_name) {
         $furl = url(variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)) . '?query=' . $terms . $facet_link;
         if (!empty($facet_link)) {
           if ($link['isSelected'] != 'true') {
-//            $content .= '<a href="' . $furl . '">' . trim($link) . '</a><br/>';
-            $content .= l(trim($link), $furl) . '<br/>';
+            $items[] = l(trim($link), $furl);
           }
           else {
-            $content .= '<strong><a href="' . $furl . '">' . trim($link) . '</a></strong><br/>';
+              $items[] = array(
+                  'data' => l(trim($link), $furl),
+                  'class' => 'selected'
+              );
           }
         }
       }
     }
   }
+  $content = array(
+      '#theme' => 'item_list',
+      '#items' => $items
+  );
   return $content;
 }
 
