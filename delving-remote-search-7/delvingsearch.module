@@ -10,7 +10,7 @@
 /**
  * Implements hook_menu()
  */
-function delving_menu() {
+function delvingsearch_menu() {
   $items[variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)] = array(
     'title' => 'DELVING Search',
     'description' => 'Page for searching remote Delving Framework API without dependency on the Search module.',

@@ -22,7 +22,7 @@ function delving_admin_settings() {
     '#description' => t('URL to send search request to. For example: <a href="@api_url">@api_url</a>', array(
       '@api_url' => url(DELVING_SEARCH_REMOTE_URL),
     )),
-    '#default_value' => variable_get('drs_search_url', DELVING_SEARCH_REMOTE_URL),
+    '#default_value' => variable_get('delving_search_remote_url', DELVING_SEARCH_REMOTE_URL),
     '#required' => TRUE,
   );
   $form['api-settings']['delving_search_results_rows'] = array(
