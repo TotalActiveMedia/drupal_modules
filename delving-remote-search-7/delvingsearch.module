@@ -116,12 +116,22 @@ function delvingsearch_show_results($xml, $query, $layout) {
         $output .= theme('pager', $variables);
         $output .= "<table class='search-results'>";
         foreach ($data->xpath("/results/items/item") as $item) {
+            $thumbnail = implode('',$item->xpath($layout[""]));
             $output .= '<tr><td>';
+            if ($thumbnail) {
+                $output .= '<img width="100px" class="overlay" src="' . $thumbnail . '"/>';
+            }
+            else {
+                $output .= '<p>no thumbnail</p>';
+            }
+            $output .= '</td><td>';
             foreach ($layout as $key => $value) {
-                $value_array = $item->xpath($value);
-                if ($value_array) {
-                    $value = implode(', ', $value_array);
-                    $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+                if ($key) {
+                    $value_array = $item->xpath($value);
+                    if ($value_array) {
+                        $value = implode(', ', $value_array);
+                        $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+                    }
                 }
             }
             $output .= '</td></tr>';

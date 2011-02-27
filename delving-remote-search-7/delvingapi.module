@@ -75,6 +75,7 @@ function delvingapi_remote_search($query = NULL, $qps) {
       // output results as html for now
       // todo: make this layout configurable
       $layout = array(
+          "" => "europeana:object",
           "Title" => "dc:title",
           "Creator" => "dc:creator",
           "Description" => "dc:description",
