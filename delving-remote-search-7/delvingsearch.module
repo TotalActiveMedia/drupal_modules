@@ -93,161 +93,49 @@ function delvingsearch_form_submit($form, &$form_state) {
  * @param  $query
  * @return void
  */
-function delvingsearch_show_results($xml, $query) {
+function delvingsearch_show_results($xml, $query, $layout) {
 
-  $data = simplexml_load_string($xml);
-  $total_records = $data->query['numFound'];
-  $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
+    $data = simplexml_load_string($xml);
+    $total_records = $data->query['numFound'];
+    $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
 
-  // initialize the pager.
-  pager_default_initialize($data->query['numFound'], $num_per_page);
-  // set up the variables to pass along to the pager
-  $variables = array(
-    'parameters' => array(
-      'query' => $query,
-      'rows' => $num_per_page,
-//      'quantity' => 6,
-    ),
-  );
+    pager_default_initialize($total_records, $num_per_page);
 
-  $output = '<div id="delving">';
-  $output .= '<h4>Number of records found: ' . $total_records . '</h4>';
-  $output .= delvingsearch_breadcrumbs();
-  if ($data->query['numFound'] > 0) {
+    $output = '<div id="delving">';
+    $output .= '<h4>Number of records found: ' . $total_records . '</h4>';
 
-    // The pager
-    $output .= theme('pager', $variables);
-    // The results table
-    $output .= "<table class='search-results'>";
-    $counter = 0;
-
-    foreach ($data->items->item as $item) {
-
-      // set for namespaces
-      $ns_dc = $item->children('http://purl.org/dc/elements/1.1/');
-      $ns_dcterms = $item->children('http://purl.org/dc/terms/');
-      $ns_abm = $item->children('http://to_be_decided/abm/');
-      $ns_eu = $item->children('http://www.europeana.eu/schemas/ese/');
-
-      // dc
-      $dc_title = $ns_dc->title;
-      $dc_creator = $ns_dc->creator;
-      $dc_description = $ns_dc->description;
-      $dc_subject = $ns_dc->subject;
-
-      // dcterms
-      $dcterms_created = $ns_dcterms->created;
-      $dcterms_temporal = $ns_dcterms->termporal;
-      $dcterms_rights_holder = $ns_dcterms->rightsHolder;
-
-      // abm
-      $abm_county = $ns_abm->county;
-      $abm_municipality = $ns_abm->municipality;
-      $abm_named_place = $ns_abm->namedPlace;
-      $abm_about_person = $ns_abm->aboutPerson;
-
-      // europeana
-      $eu_country = $ns_eu->country;
-      $eu_object = $ns_eu->object;
-      $eu_data_provider = $ns_eu->dataProvider;
-      $eu_is_shown_by = $ns_eu->isShownBy;
-
-      $fields_arr = array(
-        "Title" => $dc_title,
-        "Creator" => $dc_creator,
-        "Description" => $dc_description,
-        "Subject(s)" => $dc_subject,
-        "County" => $abm_county,
-        "Municipality" => $abm_municipality,
-        "Place" => $abm_named_place,
-        "Person(s)" => $abm_about_person
-      );
-
-      $output .= '<tr><td width="60px">';
-
-      if (!empty($eu_object)) {
-        $output .= '<img width="100px" class="overlay" src="' . $eu_object . '"/>';
-      }
-
-      $output .= '</td><td>';
-      $output .= delvingsearch_show_fields($fields_arr);
-      $output .= '</td></tr>';
-
-      $counter++;
-    }
-
-    $output .= '</table>';
-    $output .= theme('pager', $variables);
-
-
-  }
-  else {
-    $output .= "No results found. Please try another search";
-  }
-
-  $output .= '</div>';
-
-  return $output;
-}
-
-
-/**
- * Takes an array and outputs rows of 'key: value' data.
- * If multiple values, then outputs as comma separated.
- *
- * @param  $arr_fields
- * @return string
- */
-
-function delvingsearch_show_fields($arr_fields) {
-  $out = "";
-  foreach ($arr_fields as $key => $value) {
-    // Only one value to show
-    if (count($value) == 1) {
-      $out .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
-    }
-      // Multiple values to show
-    elseif (count($value) > 1) {
-      $counter = 1;
-      $size = count($value);
-      $out .= '<strong>' . $key . ': </strong>';
-      foreach ($value as $key => $val) {
-        $out .= $val;
-        if ($counter != $size) {
-          $out .= ', ';
+    if ($total_records > 0) {
+        // set up the variables to pass along to the pager
+        $variables = array(
+            'parameters' => array(
+                'query' => $query,
+                'rows' => $num_per_page,
+            ),
+        );
+        $output .= delvingsearch_breadcrumbs();
+        $output .= theme('pager', $variables);
+        $output .= "<table class='search-results'>";
+        foreach ($data->xpath("/results/items/item") as $item) {
+            $output .= '<tr><td>';
+            foreach ($layout as $key => $value) {
+                $value_array = $item->xpath($value);
+                if ($value_array) {
+                    $value = implode(', ', $value_array);
+                    $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+                }
+            }
+            $output .= '</td></tr>';
         }
-        $counter++;
-      }
-      $out .= '<br/>';
+        $output .= '</table>';
+        $output .= theme('pager', $variables);
     }
-  }
-  return $out;
+    else {
+        $output .= "No results found. Please try another search";
+    }
+
+    $output .= '</div>';
+    return $output;
 }
-
-/**
- * Parses data to return an array of values to be displayed using theme() functions
- *
- * @param  $data
- * @param  $query
- * @return $results
- */
-function delvingsearch_set_results($data) {
-
-  $xml = $data;
-
-  if (!is_object($data)) {
-    $xml = new SimpleXMLElement($data);
-  }
-
-  $results = array();
-  $results['total'] = $xml->query['numFound'];
-  $results['query'] = $xml->query->terms;
-  $results['breadcrumbs'] = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
-  $results['facets'] = $xml->xpath('/results/facets');
-
-  return $results;
-}
-
 
 /**
  * Implements hook_block_info()

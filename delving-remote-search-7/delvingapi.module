@@ -73,11 +73,19 @@ function delvingapi_remote_search($query = NULL, $qps) {
       delving_has_searched(TRUE);
 
       // output results as html for now
-      // TODO: put this into a themeable block
-      $results = delvingsearch_show_results($data, $query);
+      // todo: make this layout configurable
+      $layout = array(
+          "Title" => "dc:title",
+          "Creator" => "dc:creator",
+          "Description" => "dc:description",
+          "Subject(s)" => "dc:subject",
+          "County" => "abm:county",
+          "Municipality" => "abm:municipality",
+          "Place" => "abm:namedPlace",
+          "Person(s)" => "abm:aboutPerson"
+      );
+      $results = delvingsearch_show_results($data, $query, $layout);
       return $results;
-
-
     }
     else {
       // Deal with HTTP errors
