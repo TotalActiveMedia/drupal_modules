@@ -7,12 +7,15 @@
  *
  */
 
+define('DELVING_SEARCH_PAGE_PATH', 'drs/search');
+define('DELVING_SEARCH_PAGE_NAME', 'Delving Search');
+
 /**
  * Implements hook_menu()
  */
 function delvingsearch_menu() {
   $items[variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)] = array(
-    'title' => 'DELVING Search',
+    'title' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),
     'description' => 'Page for searching remote Delving Framework API without dependency on the Search module.',
     'page callback' => 'delvingsearch_load_page',
     'access callback' => TRUE,
@@ -22,223 +25,21 @@ function delvingsearch_menu() {
   return $items;
 }
 
-/**
- * Implements hook_block_info()
- */
-function delvingsearch_block_info() {
-  $blocks = array();
-  $blocks['county'] = array(
-    'info' => t('Delving Facets: County'),
-    'status' => 0,
-    'visibility' => 1,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
-  );
-  $blocks['municipality'] = array(
-    'info' => t('Delving Facets: Municipality'),
-    'status' => 0,
-    'visibility' => 1,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
-  );
-  $blocks['namedplace'] = array(
-    'info' => t('Delving Facets: Named Place'),
-    'status' => 0,
-    'visibility' => 1,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
-  );
-  $blocks['aboutperson'] = array(
-    'info' => t('Delving Facets: About Person'),
-    'status' => 0,
-    'visibility' => 1,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
-  );
-  $blocks['provider'] = array(
-    'info' => t('Delving Facets: Provider'),
-    'status' => 0,
-    'visibility' => 1,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
-  );
-  $blocks['dataprovider'] = array(
-    'info' => t('Delving Facets: Dataprovider'),
-    'status' => 0,
-    'visibility' => 1,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
-  );
-  $blocks['type'] = array(
-    'info' => t('Delving Facets: Type'),
-    'status' => 0,
-    'visibility' => 1,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
-  );
 
-  return $blocks;
+function delvingsearch_node_view($node, $view_mode, $langcode){
+    $node = variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH);
 }
-
-/**
- * Implement hook_block_view()
- *
- * @param $delta
- *  The name of the requested block
- */
-function delvingsearch_block_view_hold($delta = '') {
-  $block = array(
-    'subject' => '',
-    'content' => '',
-  );
-  $path = variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH);
-  $facets_ar = delvingsearch_facets();
-  if (delving_has_searched() == TRUE && count($facets_ar) > 0) {
-    if ($delta == 'facets') {
-      $block['subject'] = t('Refine your search');
-      if (user_access('access content')) {
-        $qps = delvingapi_get_query_params();
-        $terms = $qps['query'];
-        $facet_items = array();
-        foreach ($facets_ar['facets'] as $facet) {
-          if ($facet->link) {
-            $name = trim($facet['name']);
-            $children = array();
-            foreach ($facet->link as $link) {
-              $facet_link = $link['url'];
-              $furl = url($path) . '?query=' . $terms . $facet_link;
-              if (!empty($facet_link)) {
-                //                                if ($link['isSelected'] != 'true') {
-                //                                    $children[] = array('data'=>array(
-                //                                        '#type' => 'link',
-                //                                        '#title' => trim($link),
-                //                                        '#href' => $furl
-                //                                    ));
-                //                                }
-                //                                else {
-                //                                    $children[]['data'] = trim($link);
-                //                                    $children[]['data']['#href'] = $furl;
-                $children[trim($link)] = array(
-                  'data' => array(
-                    '#type' => 'link',
-                    '#title' => trim($link),
-                    '#href' => $furl
-                  )
-                );
-                //                                }
-              }
-            }
-            $facet_items[] = array(
-              '#theme' => 'item_list',
-              '#title' => $name,
-              '#items' => $children
-            );
-          }
-        }
-        //                $element = array(
-        //                    '#theme' => 'item_list',
-        //                    '#title' => t('Refine'),
-        //                    '#items' => $facet_items
-        //                );
-        //                debug($element);
-
-        $block['content'] = $facet_items;
-      }
-    }
-  }
-  return $block;
-}
-
-
-function delvingsearch_block_view($delta = '') {
-
-  $facets_ar = delvingsearch_facets();
-
-  //  Create an empty block
-  $block = array(
-    'subject' => '',
-    'content' => '',
-  );
-
-  switch ($delta) {
-    case 'county':
-      $block['subject'] = t('County');
-      $block['content'] = delvingsearch_facet_get('COUNTY');
-      return $block;
-      break;
-    case 'municipality':
-      $block['subject'] = t('Municipality');
-      $block['content'] = delvingsearch_facet_get('MUNICIPALITY');
-      return $block;
-      break;
-    case 'namedplace':
-      $block['subject'] = t('Named Place');
-      $block['content'] = delvingsearch_facet_get('NAMEDPLACE');
-      return $block;
-      break;
-    case 'aboutperson':
-      $block['subject'] = t('About Person');
-      $block['content'] = delvingsearch_facet_get('ABOUTPERSON');
-      return $block;
-      break;
-    case 'provider':
-      $block['subject'] = t('Provider');
-      $block['content'] = delvingsearch_facet_get('PROVIDER');
-      return $block;
-      break;
-    case 'dataprovider':
-      $block['subject'] = t('Dataprovider');
-      $block['content'] = delvingsearch_facet_get('DATAPROVIDER');
-      return $block;
-      break;
-    case 'type':
-      $block['subject'] = t('Type');
-      $block['content'] = delvingsearch_facet_get('TYPE');
-      return $block;
-      break;
-  }
-
-
-}
-
-function delvingsearch_facet_get($facet_name) {
-  $facets_ar = delvingsearch_facets();
-  $qps = delvingapi_get_query_params();
-  $terms = $qps['query'];
-  $items = array();
-  foreach ($facets_ar['facets'] as $facet) {
-    if ($facet->link && $facet['name'] == $facet_name) {
-      foreach ($facet->link as $link) {
-        $facet_link = $link['url'];
-        $furl = url(variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)) . '?query=' . $terms . $facet_link;
-        if (!empty($facet_link)) {
-          if ($link['isSelected'] != 'true') {
-            $items[] = l(trim($link), $furl);
-          }
-          else {
-              $items[] = array(
-                  'data' => l(trim($link), $furl),
-                  'class' => 'selected'
-              );
-          }
-        }
-      }
-    }
-  }
-  $content = array(
-      '#theme' => 'item_list',
-      '#items' => $items
-  );
-  return $content;
-}
-
 /**
  * The hook_menu() page callback
  *
  * Displays the page and calls necessary functions needed to run the page functionality
  */
 function delvingsearch_load_page() {
-
-  //
   //  global $theme;
   //  // Populate all block regions.
   //  $regions = system_region_list($theme);
   //  debug($regions);
-
-  drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delving.css');
+  drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
   return drupal_get_form('delvingsearch_form');
 }
 
@@ -251,6 +52,7 @@ function delvingsearch_form($form, &$form_state) {
   $html = '';
   // there is a query in the URL, do a search and fill up $html
   if (!empty($qps['query'])) {
+
 
     $results = delvingapi_remote_search($qps['query'], $qps);
     //$results_ar = array();
@@ -298,7 +100,7 @@ function delvingsearch_show_results($xml, $query) {
 
   $data = simplexml_load_string($xml);
   $total_records = $data->query['numFound'];
-  $num_per_page = variable_get('delving_search_results_rows', DELVING_SEARCH_RESULTS_ROWS);
+  $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
 
   // initialize the pager.
   pager_default_initialize($data->query['numFound'], $num_per_page);
@@ -312,8 +114,7 @@ function delvingsearch_show_results($xml, $query) {
   );
 
   $output = '<div id="delving">';
-  $output .= '<h2>You searched for: ' . $query . '</h2>';
-  $output .= '<h3>Number of records found: ' . $total_records . '</h3>';
+  $output .= '<h4>Number of records found: ' . $total_records . '</h4>';
   $output .= delvingsearch_breadcrumbs();
   if ($data->query['numFound'] > 0) {
 
@@ -450,6 +251,116 @@ function delvingsearch_set_results($data) {
   return $results;
 }
 
+
+/**
+ * Implements hook_block_info()
+ */
+function delvingsearch_block_info() {
+  $blocks = array();
+  $blocks['county'] = array(
+    'info' => t('Delving Facets: County'),
+    'status' => 0,
+    'visibility' => 1,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  $blocks['municipality'] = array(
+    'info' => t('Delving Facets: Municipality'),
+    'status' => 0,
+    'visibility' => 1,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  $blocks['namedplace'] = array(
+    'info' => t('Delving Facets: Named Place'),
+    'status' => 0,
+    'visibility' => 1,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  $blocks['aboutperson'] = array(
+    'info' => t('Delving Facets: About Person'),
+    'status' => 0,
+    'visibility' => 1,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  $blocks['provider'] = array(
+    'info' => t('Delving Facets: Provider'),
+    'status' => 0,
+    'visibility' => 1,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  $blocks['dataprovider'] = array(
+    'info' => t('Delving Facets: Dataprovider'),
+    'status' => 0,
+    'visibility' => 1,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  $blocks['type'] = array(
+    'info' => t('Delving Facets: Type'),
+    'status' => 0,
+    'visibility' => 1,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implement hook_block_view()
+ *
+ * @param $delta
+ *  The name of the requested block
+ */
+function delvingsearch_block_view($delta = '') {
+
+  //  Create an empty block
+  $block = array(
+    'subject' => '',
+    'content' => '',
+  );
+
+  switch ($delta) {
+    case 'county':
+      $block['subject'] = t('County');
+      $block['content'] = delvingsearch_facet_get('COUNTY');
+      break;
+    case 'municipality':
+      $block['subject'] = t('Municipality');
+      $block['content'] = delvingsearch_facet_get('MUNICIPALITY');
+      break;
+    case 'namedplace':
+      $block['subject'] = t('Named Place');
+      $block['content'] = delvingsearch_facet_get('NAMEDPLACE');
+      break;
+    case 'aboutperson':
+      $block['subject'] = t('About Person');
+      $block['content'] = delvingsearch_facet_get('ABOUTPERSON');
+      break;
+    case 'provider':
+      $block['subject'] = t('Provider');
+      $block['content'] = delvingsearch_facet_get('PROVIDER');
+      break;
+    case 'dataprovider':
+      $block['subject'] = t('Dataprovider');
+      $block['content'] = delvingsearch_facet_get('DATAPROVIDER');
+      break;
+    case 'type':
+      $block['subject'] = t('Type');
+      $block['content'] = delvingsearch_facet_get('TYPE');
+      break;
+  }
+  // Only display the block if it actually has any content
+  if (count($block['content']['#items']) > 0) {
+    return $block;
+  }
+
+}
+
 function delvingsearch_facets() {
 
   if (delving_has_searched() == TRUE) {
@@ -462,6 +373,7 @@ function delvingsearch_facets() {
     }
     // Are there any results?
     if ($xml->query['numFound'] > 0) {
+      delving_has_facets(TRUE);
       // Use xpath to create facets as array
       $facets['facets'] = $xml->xpath('/results/facets/facet');
       $facets['query'] = $xml->xpath('/results/query/terms');
@@ -474,14 +386,40 @@ function delvingsearch_facets() {
 
 }
 
-
-function delving_remove_element($arr, $val) {
-  foreach ($arr as $key => $value) {
-    if ($arr[$key] == $val) {
-      unset($arr[$key]);
+function delvingsearch_facet_get($facet_name) {
+  $facets_ar = delvingsearch_facets();
+  $qps = delvingapi_get_query_params();
+  $terms = $qps['query'];
+  $items = array();
+  $content = '';
+  global $base_url;
+  if (!empty($terms) && (delving_has_facets() == TRUE)) {
+    foreach ($facets_ar['facets'] as $facet) {
+      if ($facet->link && $facet['name'] == $facet_name) {
+        foreach ($facet->link as $link) {
+          $facet_link = $link['url'];
+          // absolute path!!! relative paths trigger url encoding of the complete url, which we do not want.
+          $furl = url($base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)) . '?query=' . $terms . $facet_link;
+          $options = array();
+          $options['attributes']['class'] = 'selected';
+          if (!empty($facet_link)) {
+            if ($link['isSelected'] != 'true') {
+              $items[] = l(trim($link), $furl);
+            }
+            else {
+              $items[] = l(trim($link), $furl, $options);
+            }
+          }
+        }
+      }
     }
   }
-  return $arr = array_values($arr);
+  $content = array(
+    '#theme' => 'item_list',
+    '#items' => $items
+  );
+
+  return $content;
 }
 
 function delvingsearch_breadcrumbs() {
@@ -497,7 +435,7 @@ function delvingsearch_breadcrumbs() {
       //           drupal_set_message(print_r($breadcrumbs));
     }
     $out = '<div class="delving-breadcrumbs">';
-    $out .= 'Your searched for: ';
+    $out .= t('Your searched for:');
 
     // Temporary measure until HASDIGITALOBJECT is a hidden query filter
     //$crumbs = delving_remove_element($breadcrumbs, 'HASDIGITALOBJECT:true');
@@ -510,7 +448,7 @@ function delvingsearch_breadcrumbs() {
       $href = url(variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)) . '?query=' . str_replace('query=', '', $crumb['href']);
 
       if ($i != $numItems) {
-        $out .= '<a class="crumb" href="' . $href . '">' . $crumb . '</a>&#160;>&#160;';
+        $out .= '<div class="breadcrumb"><a class="crumb" href="' . $href . '">' . $crumb . '</a></div>';
       }
       else {
         $out .= $crumb;

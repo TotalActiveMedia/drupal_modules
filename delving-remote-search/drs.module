@@ -1,467 +1,467 @@
 <?php
-//define('DRS_SETTINGS_PATH', 'admin/settings/delving-api');
-//define('DRS_SETTINGS_MENU_PATH', 'Administer > Site configuration > Delving Remote-Search API Settings');
-//define('DRS_SEARCH_PAGE', 'search/drs');
-//define('DRS_SEARCH_NAME', 'Delving Remote Search');
-//define('DRS_SEARCH_URL', 'http://localhost:8983/services/api/search');
-//define('DRS_SEARCH_DIGITAL_OBJECTS', 1);
-////define('DRS_SEARCH_SHOW_FACETS', 1);
-//define('DRS_SEARCH_ROWS', 10);
-//
-///**
-// * Create Delving Remote-Search menu item for API configuration.
-// *
-// * Implements hook_menu();
-// *
-// */
-//
-//function drs_menu() {
-//    $items = array();
-//    $items[DRS_SETTINGS_PATH] = array(
-//        'title' => t('Delving Remote-Search Settings'),
-//        'description' => t('Configure Search URL, etc. for Delving Remote-Search API'),
-//        'access callback' => 'user_access',
-//        'access arguments' => array('administer site configuration'),
-//        'page callback' => 'drupal_get_form',
-//        'page arguments' => array('drs_admin_settings'),
-//        'type' => MENU_NORMAL_ITEM,
-//        'file' => 'drs_admin.inc'
-//    );
-//    return $items;
-//}
-//
-///**
-// * Show Delving Search as search option and use the Delving Search API to return results from a Delving Framework.
-// *
-// * Implementation of hook_search().
-// */
-//function drs_search($op = 'search', $keys = NULL) {
-//    switch ($op) {
-//        case 'name':
-//            return variable_get('drs_search_name', DRS_SEARCH_NAME);
-//        case 'search':
-//
-//            // Before we do anything lets get some css loaded
-//            drupal_add_css(drupal_get_path('module', 'drs') . '/drs.css');
-//
-//            // Lets gather some conditions for pageing
-//            $page = isset($_GET['page']) ? $_GET['page'] : 0;
-//
-//            $rows = variable_get('drs_search_rows', DRS_SEARCH_ROWS);
-//            $start = $page * $rows;
-//
-//            // Lets do a search
-//            $xml = drs_do_search($keys, $start, $rows);
-//
-//            // set to SimpleXMLElement so that the pager can read the numFound
-//            $xml = new SimpleXMLElement($xml);
-//
-//            // Load pager.
-//            pager_query("SELECT %d", $rows, 0, NULL, $xml->query['numFound']);
-//
-//            // Now its time to pick apart the returned xml and fill up the $results variable
-//            $results = drs_results($xml);
-//
-//            return $results;
+define('DRS_SETTINGS_PATH', 'admin/settings/delving-api');
+define('DRS_SETTINGS_MENU_PATH', 'Administer > Site configuration > Delving Remote-Search API Settings');
+define('DRS_SEARCH_PAGE', 'search/drs');
+define('DRS_SEARCH_NAME', 'Delving Remote Search');
+define('DRS_SEARCH_URL', 'http://localhost:8983/services/api/search');
+define('DRS_SEARCH_DIGITAL_OBJECTS', 1);
+//define('DRS_SEARCH_SHOW_FACETS', 1);
+define('DRS_SEARCH_ROWS', 10);
+
+/**
+ * Create Delving Remote-Search menu item for API configuration.
+ *
+ * Implements hook_menu();
+ *
+ */
+
+function drs_menu() {
+    $items = array();
+    $items[DRS_SETTINGS_PATH] = array(
+        'title' => t('Delving Remote-Search Settings'),
+        'description' => t('Configure Search URL, etc. for Delving Remote-Search API'),
+        'access callback' => 'user_access',
+        'access arguments' => array('administer site configuration'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('drs_admin_settings'),
+        'type' => MENU_NORMAL_ITEM,
+        'file' => 'drs_admin.inc'
+    );
+    return $items;
+}
+
+/**
+ * Show Delving Search as search option and use the Delving Search API to return results from a Delving Framework.
+ *
+ * Implementation of hook_search().
+ */
+function drs_search($op = 'search', $keys = NULL) {
+    switch ($op) {
+        case 'name':
+            return variable_get('drs_search_name', DRS_SEARCH_NAME);
+        case 'search':
+
+            // Before we do anything lets get some css loaded
+            drupal_add_css(drupal_get_path('module', 'drs') . '/drs.css');
+
+            // Lets gather some conditions for pageing
+            $page = isset($_GET['page']) ? $_GET['page'] : 0;
+
+            $rows = variable_get('drs_search_rows', DRS_SEARCH_ROWS);
+            $start = $page * $rows;
+
+            // Lets do a search
+            $xml = drs_do_search($keys, $start, $rows);
+
+            // set to SimpleXMLElement so that the pager can read the numFound
+            $xml = new SimpleXMLElement($xml);
+
+            // Load pager.
+            pager_query("SELECT %d", $rows, 0, NULL, $xml->query['numFound']);
+
+            // Now its time to pick apart the returned xml and fill up the $results variable
+            $results = drs_results($xml);
+
+            return $results;
+    }
+}
+
+/**
+ * Submit a query to a Delving Framework Search API
+ * @Todo: move this to a separate 'API' module file
+ */
+function drs_do_search($search_text, $start = 0, $rows = 10, $sort = NULL, $response_format = 'xml') {
+
+    $target = variable_get('drs_search_url', DRS_SEARCH_URL);
+    $show_objects = variable_get('drs_search_digital_objects', DRS_SEARCH_DIGITAL_OBJECTS);
+
+    // Build the URL to send
+    $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+', $search_text));
+
+//    if (!$show_objects==0) {
+//        $url .= '&qf=HASDIGITALOBJECT:true';
 //    }
-//}
-//
-///**
-// * Submit a query to a Delving Framework Search API
-// * @Todo: move this to a separate 'API' module file
-// */
-//function drs_do_search($search_text, $start = 0, $rows = 10, $sort = NULL, $response_format = 'xml') {
-//
-//    $target = variable_get('drs_search_url', DRS_SEARCH_URL);
-//    $show_objects = variable_get('drs_search_digital_objects', DRS_SEARCH_DIGITAL_OBJECTS);
-//
-//    // Build the URL to send
-//    $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . urlencode(str_replace(' ', '+', $search_text));
-//
-////    if (!$show_objects==0) {
-////        $url .= '&qf=HASDIGITALOBJECT:true';
-////    }
-//
-//    //Todo: Find better way to retrieve QF's.
-//    //Using array_unique cleans up the querystring array for sending, but the display is still polluted in the adres bar
-//    if (isset($_GET['qf'])) {
-//        $qfs = array_unique($_GET['qf']);
-//        $qf_string = '';
-//        foreach ($qfs as $qf) {
-//            $qf_string .= '&qf=' . $qf;
-//        }
-//        $url .= '&qf=' . str_replace(" ", "+", $qf_string); // Without this replacement any query facet containing a space or %20 will break the query
-//    }
-//
-//    // Send out the request
-//    $response = drupal_http_request($url);
-//
-//    // We have a response code 200: success!
-//    if ($response->code == 200) {
-//
-//        // Set the root of the response data
-//        $data = $response->data;
-//
-//        // Cache response and set semaphore for use by blocks.
-//        drs_static_response_cache($data);
-//        drs_has_searched(TRUE);
-//
-//        // Give back
-//        return $data;
-//    }
-//    else {
-//        // Deal with HTTP errors
-//        switch ($response->code) {
-//            case 401:
-//                drupal_set_message(t('Yikes! A 401. Do we have the correct target url?'));
-//                break;
-//            default:
-//                drupal_set_message(t('Something went wrong @error', array(
-//                    '@error' => 'HTTP ' . $response->code . ': ' . strip_tags($response->data),
-//                )), 'error');
-//                break;
-//        }
-//    }
-//}
-//
-///**
-// * Pass in XML search results, returns results array.
-// * @Todo: move to separate 'API' module
-// */
-//function drs_results($xml) {
-//
-//    // TODO: use dif variable name
-//    // Check to make sure we have an XML object to work with
-//    if (!is_object($xml)) {
-//        $xml = new SimpleXMLElement($xml);
-//    }
-//
-//    // Are there any results?
-//    if ($xml->query['numFound'] > 0) {
-//
-//        // Great! We have results, lets go through the xml and pull out what we want to display
-//
-//        drs_has_facets(TRUE);
-//
-//        foreach ($xml->items->item as $result) {
-//            // First we need to deal with the namespaces
-//            $ns_dc = $result->children('http://purl.org/dc/elements/1.1/');
-//            $ns_dcterms = $result->children('http://purl.org/dc/terms/');
-//            $ns_abm = $result->children('http://to_be_decided/abm/');
-//            $ns_eu = $result->children('http://www.europeana.eu/schemas/ese/');
-//
-//            // Is there an image to use as a thumbnail?
-//            if (!empty($ns_eu->isShownBy)) {
-//                $thumbnail = '<img src="'
-//                        . check_url($ns_eu->isShownBy)
-//                        . '" width="100" height="100" alt="'
-//                        . check_plain($ns_dc->title) . '"/>';
-//            }
-//            else {
-//                $thumbnail = '';
-//            }
-//
-//            // Check and see if the elements we want to display are not empty. If not, then add them to the $extra array
-//
-//            $extra = array();
-//
-//            if (!empty($ns_eu->dataProvider)) {
-//                $extra['provider'] = '<label>Provider: </label>' . check_plain($ns_eu->dataProvider);
-//            }
-//            if (!empty($ns_dcterms->created)) {
-//                $extra['date'] = '<label>Date: </label>' . check_plain($ns_dcterms->created);
-//            }
-//            if (!empty($ns_dc->subject)) {
-//                $extra['subject'] = '<label>Subject: </label>' . check_plain($ns_dc->subject);
-//            }
-//            if (!empty($ns_abm->county)) {
-//                $extra['county'] = '<label>County: </label>' . check_plain($ns_abm->county);
-//            }
-//            if (!empty($ns_abm->municipality)) {
-//                $extra['municipality'] = '<label>Municipality: </label>' . check_plain($ns_abm->municipality);
-//            }
-//            if (!empty($ns_abm->aboutPlace)) {
-//                $extra['place'] = '<label>Place: </label>' . check_plain($ns_abm->aboutPlace);
-//            }
-//            if (!empty($ns_abm->aboutPerson)) {
-//                $extra['person'] = '<label>Person(s): </label>' . check_plain($ns_abm->aboutPerson);
-//            }
-//
-//
-//            $results[] = array(
-//                // Link to remote page
-//                'link' => check_url($ns_eu->isShownAt),
-//                // Title of the object
-//                'title' => check_plain($ns_dc->title),
-//                // Node not used in our case
-//                //'node' => (array) $result, // Cast to array instead of SimpleXML.
-//                // the description field passed in 'snippet'
-//                'snippet' => check_markup($ns_dc->description),
-//                // And all the other fields we want to display
-//                'extra' => $extra,
-//                // And last but not least, the image
-//                'image' => $thumbnail,
-//            );
-//        }
-//
-//    }
-//
-//    return $results;
-//}
-//
-//
-///** RESULTS PAGE ******************************************************************************************************/
-//
-///**
-// * Override search_results to add Powered by Delving at the bottom of the page
-// * and add pageing above and below the results
-// *
-// * Implementation of hook_search_page().
-// */
-//function drs_search_page($results) {
-//    $output = '';
-//    // Display query breadcrumbs
-//    $output .= '<h5>' . drs_breadcrumbs() . '</h5>';
-//    // Display top pager
-//    $output .= theme('pager', NULL, variable_get('rows', 10), 0);
-//    // Display results table
-//    $output .= '<table class="search-results delving">';
-//    // Display restult items table rows
-//    $output .= drs_search_page_item($results);
-//    $output .= '</table>';
-//    // Display bottom pager
-//    $output .= theme('pager', NULL, variable_get('rows', 10), 0);
-//    // Display powered by
-//    $output .= '<div class="powererd-by-delving"><a href="http://delving.org/" target="_blank">Search Results Powered by Delving</a></div>';
-//
-//    return $output;
-//}
-//
-//function drs_search_page_item($results) {
-//    $output = '';
-//    foreach ($results as $result) {
-//        $output .= '<tr>';
-//        $output .= '<td valign="top" width="120">' . $result['image'] . '</td>';
-//        $output .= '<td valign="top">';
-//        $output .= '<h4><a href="' . $result['link'] . '" target="_blank">' . check_plain($result['title']) . '</a></h4>';
-//        $output .= check_markup($result['snippet']);
-//        foreach ($result['extra'] as $extra) {
-//            $output .= $extra . '<br/>';
-//        }
-//        $output .= '</td></tr>';
-//
-//    }
-//    return $output;
-//}
-//
-//
-///** FACETS BLOCK ******************************************************************************************************/
-//
-///**
-// * Implementation of hook_block
-// */
-//
-//function drs_block($op = 'list', $delta = 0, $edit = array()) {
-//
-////    if ($facets != 0) {
-//    if (drs_has_facets(TRUE)) {
-//        $block = array();
-//        switch ($op) {
-//            case 'list':
-//                $block[0] = array(
-//                    'info' => 'Delving Remote-Search Facets',
-//                    'status' => 1,
-//                    'visibility' => 1,
-//                    'region' => 'Right sidebar',
-//                    'pages' => 'search/drs/*',
-//                );
-//                return $block;
-//                break;
-//            case 'view':
-//                switch ($delta) {
-//                    case 0:
-//                        // Get the facets array
-//                        $facets_ar = drs_facets();
-//
-//                        // Get the query terms from the $facets_ar['query'] array
-//                        $terms = '';
-//
-//                        foreach ($facets_ar['query'] as $term) {
-//                            $terms .= $term;
-//                        }
-//
-//                        $content = '';
-//
-//                        // Get the facets from the $facets_ar['facets'] array
-//                        foreach ($facets_ar['facets'] as $facet) {
-//                            // Only display if the facet has any links
-//                            if ($facet->link) {
-//                                $content .= '<div class="delving-facets-container">';
-//                                $content .= '<h4>' . $facet['name'] . '</h4>';
-//                                $content .= '<div class="delving-facets">';
-//                                foreach ($facet->link as $link) {
-//
-//                                    $facet_link = $link['url'];
-//
-//                                    $qstring = $keywords;
-//
-//                                    $furl = url(variable_get('drs_search_page', DRS_SEARCH_PAGE)) . '/' . $terms . $facet_link;
-//
-//                                    if (!empty($facet_link)) {
-//                                        if ($link['isSelected'] != 'true') {
-//                                            $content .= '<a href="' . $furl . '">' . trim($link) . '</a><br/>';
-//                                        }
-//                                        else {
-//                                            $content .= '<strong><a href="' . $furl . '">' . trim($link) . '</a></strong><br/>';
-//                                        }
-//                                    }
-//                                    // Checkboxes for later
-//                                    // Todo onclick functionality for checkbox to launch search (js)
-//                                    /*
-//                                    if (!empty($facet_link)) {
-//                                        if($link['isSelected']!='true'){
-//                                            $content .= '<input type="checkbox" class="delving-facets-checkbox" value="' . $furl . '"/>';
-//                                        }
-//                                        else {
-//                                           $content .= '<input type="checkbox" class="delving-facets-checkbox" checked="checked" value="' . $furl . '"/>';
-//                                        }
-//                                        $content .= '<a href="?' . $furl . '">' . trim($link) .'</a><br/>';
-//                                    }
-//                                    */
-//
-//                                }
-//                                $content .= '</div></div>';
-//                            }
-//                        }
-//                        $block['subject'] = t('Refine your search');
-//                        $block['content'] = $content;
-//                        break;
-//                }
-//                return $block;
-//                break;
-//
-//        }
-//    }
-//}
-//
-//
-//function drs_facets() {
-//
-//    if (drs_has_searched() == TRUE) {
-//        $facets = array();
-//        // Use the response cache to grab the facets
-//        $xml = drs_static_response_cache();
-//
-//        // Check to make sure we have an XML object to work with
-//        if (!is_object($xml)) {
-//            $xml = new SimpleXMLElement($xml);
-//        }
-//        // Are there any results?
-//        if ($xml->query['numFound'] > 0) {
-//            // Use xpath to create facets as array
-//            $facets['facets'] = $xml->xpath('/results/facets/facet');
-//            $facets['query'] = $xml->xpath('/results/query/terms');
-//        }
-//    }
-//    else {
-//        $facets = 0;
-//    }
-//    return $facets;
-//
-//}
-//
-///** BREADCRUMBS ********************************************************************************************************/
-//
-///*
-// * Todo: feed the breadcrumbs and display as links above search results
-// */
-//function drs_breadcrumbs() {
-//    if (drs_has_searched() == TRUE) {
-//        $xml = drs_static_response_cache();
-//        $breadcrumbs = array();
-//        // Check to make sure we have an XML object to work with
-//        if (!is_object($xml)) {
-//            $xml = new SimpleXMLElement($xml);
-//        }
-//        if ($xml->query['numFound'] > 0) {
-//            $breadcrumbs = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
-//            //           drupal_set_message(print_r($breadcrumbs));
-//        }
-//        $out .= '<div class="delving-breadcrumbs">';
-//        $out .= 'Your searched for: ';
-//        $numItems = count($breadcrumbs);
-//        $i = 1;
-//        foreach ($breadcrumbs as $crumb) {
-//            $text = $crumb;
-//            $href = url(variable_get('drs_search_page', DRS_SEARCH_PAGE)) . '/' . str_replace('query=', '', $crumb['href']);
-//
-//            if ($i != $numItems) {
-//                $out .= '<a class="crumb" href="' . $href . '">' . $crumb . '</a>&#160;>&#160;';
-//            }
-//            else {
-//                $out .= $crumb;
-//            }
-//
-//            $i++;
-//
-//        }
-//        $out .= '</div>';
-//        return $out;
-//    }
-//}
-//
-///** HELPER FUNCTIONS ***************************************************************************************************/
-//
-///**
-// * Semaphore that indicates whether a search has been done. Blocks use this
-// * later to decide whether they should load or not.
-// *
-// * @param $searched
-// *   A boolean indicating whether a search has been executed.
-// *
-// * @return
-// *   TRUE if a search has been executed.
-// *   FALSE otherwise.
-// */
-//function drs_has_searched($searched = NULL) {
-//    static $_searched = FALSE;
-//    if (is_bool($searched)) {
-//        $_searched = $searched;
-//    }
-//    return $_searched;
-//}
-//
-//function drs_has_facets($has_facets = NULL) {
-//    static $_has_facets = FALSE;
-//    if (is_bool($has_facets)) {
-//        $_has_facets = $has_facets;
-//    }
-//    return $_has_facets;
-//}
-//
-///**
-// * It is important to hold on to the search response object for the duration of the
-// * page request so that we can use it for things like building facet blocks.
-// */
-//function drs_static_response_cache($response = NULL) {
-//    static $_response;
-//
-//    if (!empty($response)) {
-//        $_response = $response;
-//    }
-//    return $_response;
-//}
-//
-//function drs_help($path, $arg) {
-//    switch ($path) {
-//        // Main module help for the block module
-//        case 'admin/settings/delving-api':
-//            return '<p>' . t('Here you can configure the settings for the Delving Remote-Search API and display options.<br/>
-//                        To configure the display of the Facets block please see the <strong class="drupal_link_admin_settings">
-//                        <a href="@blocks">Blocks Configuration Page</a></strong>.', array('@blocks' => url('admin/build/block')))
-//                    . '</p>';
-//    }
-//}
-//
-//
-//
+
+    //Todo: Find better way to retrieve QF's.
+    //Using array_unique cleans up the querystring array for sending, but the display is still polluted in the adres bar
+    if (isset($_GET['qf'])) {
+        $qfs = array_unique($_GET['qf']);
+        $qf_string = '';
+        foreach ($qfs as $qf) {
+            $qf_string .= '&qf=' . $qf;
+        }
+        $url .= '&qf=' . str_replace(" ", "+", $qf_string); // Without this replacement any query facet containing a space or %20 will break the query
+    }
+
+    // Send out the request
+    $response = drupal_http_request($url);
+
+    // We have a response code 200: success!
+    if ($response->code == 200) {
+
+        // Set the root of the response data
+        $data = $response->data;
+
+        // Cache response and set semaphore for use by blocks.
+        drs_static_response_cache($data);
+        drs_has_searched(TRUE);
+
+        // Give back
+        return $data;
+    }
+    else {
+        // Deal with HTTP errors
+        switch ($response->code) {
+            case 401:
+                drupal_set_message(t('Yikes! A 401. Do we have the correct target url?'));
+                break;
+            default:
+                drupal_set_message(t('Something went wrong @error', array(
+                    '@error' => 'HTTP ' . $response->code . ': ' . strip_tags($response->data),
+                )), 'error');
+                break;
+        }
+    }
+}
+
+/**
+ * Pass in XML search results, returns results array.
+ * @Todo: move to separate 'API' module
+ */
+function drs_results($xml) {
+
+    // TODO: use dif variable name
+    // Check to make sure we have an XML object to work with
+    if (!is_object($xml)) {
+        $xml = new SimpleXMLElement($xml);
+    }
+
+    // Are there any results?
+    if ($xml->query['numFound'] > 0) {
+
+        // Great! We have results, lets go through the xml and pull out what we want to display
+
+        drs_has_facets(TRUE);
+
+        foreach ($xml->items->item as $result) {
+            // First we need to deal with the namespaces
+            $ns_dc = $result->children('http://purl.org/dc/elements/1.1/');
+            $ns_dcterms = $result->children('http://purl.org/dc/terms/');
+            $ns_abm = $result->children('http://to_be_decided/abm/');
+            $ns_eu = $result->children('http://www.europeana.eu/schemas/ese/');
+
+            // Is there an image to use as a thumbnail?
+            if (!empty($ns_eu->isShownBy)) {
+                $thumbnail = '<img src="'
+                        . check_url($ns_eu->isShownBy)
+                        . '" width="100" height="100" alt="'
+                        . check_plain($ns_dc->title) . '"/>';
+            }
+            else {
+                $thumbnail = '';
+            }
+
+            // Check and see if the elements we want to display are not empty. If not, then add them to the $extra array
+
+            $extra = array();
+
+            if (!empty($ns_eu->dataProvider)) {
+                $extra['provider'] = '<label>Provider: </label>' . check_plain($ns_eu->dataProvider);
+            }
+            if (!empty($ns_dcterms->created)) {
+                $extra['date'] = '<label>Date: </label>' . check_plain($ns_dcterms->created);
+            }
+            if (!empty($ns_dc->subject)) {
+                $extra['subject'] = '<label>Subject: </label>' . check_plain($ns_dc->subject);
+            }
+            if (!empty($ns_abm->county)) {
+                $extra['county'] = '<label>County: </label>' . check_plain($ns_abm->county);
+            }
+            if (!empty($ns_abm->municipality)) {
+                $extra['municipality'] = '<label>Municipality: </label>' . check_plain($ns_abm->municipality);
+            }
+            if (!empty($ns_abm->aboutPlace)) {
+                $extra['place'] = '<label>Place: </label>' . check_plain($ns_abm->aboutPlace);
+            }
+            if (!empty($ns_abm->aboutPerson)) {
+                $extra['person'] = '<label>Person(s): </label>' . check_plain($ns_abm->aboutPerson);
+            }
+
+
+            $results[] = array(
+                // Link to remote page
+                'link' => check_url($ns_eu->isShownAt),
+                // Title of the object
+                'title' => check_plain($ns_dc->title),
+                // Node not used in our case
+                //'node' => (array) $result, // Cast to array instead of SimpleXML.
+                // the description field passed in 'snippet'
+                'snippet' => check_markup($ns_dc->description),
+                // And all the other fields we want to display
+                'extra' => $extra,
+                // And last but not least, the image
+                'image' => $thumbnail,
+            );
+        }
+
+    }
+
+    return $results;
+}
+
+
+/** RESULTS PAGE ******************************************************************************************************/
+
+/**
+ * Override search_results to add Powered by Delving at the bottom of the page
+ * and add pageing above and below the results
+ *
+ * Implementation of hook_search_page().
+ */
+function drs_search_page($results) {
+    $output = '';
+    // Display query breadcrumbs
+    $output .= '<h5>' . drs_breadcrumbs() . '</h5>';
+    // Display top pager
+    $output .= theme('pager', NULL, variable_get('rows', 10), 0);
+    // Display results table
+    $output .= '<table class="search-results delving">';
+    // Display restult items table rows
+    $output .= drs_search_page_item($results);
+    $output .= '</table>';
+    // Display bottom pager
+    $output .= theme('pager', NULL, variable_get('rows', 10), 0);
+    // Display powered by
+    $output .= '<div class="powererd-by-delving"><a href="http://delving.org/" target="_blank">Search Results Powered by Delving</a></div>';
+
+    return $output;
+}
+
+function drs_search_page_item($results) {
+    $output = '';
+    foreach ($results as $result) {
+        $output .= '<tr>';
+        $output .= '<td valign="top" width="120">' . $result['image'] . '</td>';
+        $output .= '<td valign="top">';
+        $output .= '<h4><a href="' . $result['link'] . '" target="_blank">' . check_plain($result['title']) . '</a></h4>';
+        $output .= check_markup($result['snippet']);
+        foreach ($result['extra'] as $extra) {
+            $output .= $extra . '<br/>';
+        }
+        $output .= '</td></tr>';
+
+    }
+    return $output;
+}
+
+
+/** FACETS BLOCK ******************************************************************************************************/
+
+/**
+ * Implementation of hook_block
+ */
+
+function drs_block($op = 'list', $delta = 0, $edit = array()) {
+
+//    if ($facets != 0) {
+    if (drs_has_facets(TRUE)) {
+        $block = array();
+        switch ($op) {
+            case 'list':
+                $block[0] = array(
+                    'info' => 'Delving Remote-Search Facets',
+                    'status' => 1,
+                    'visibility' => 1,
+                    'region' => 'Right sidebar',
+                    'pages' => 'search/drs/*',
+                );
+                return $block;
+                break;
+            case 'view':
+                switch ($delta) {
+                    case 0:
+                        // Get the facets array
+                        $facets_ar = drs_facets();
+
+                        // Get the query terms from the $facets_ar['query'] array
+                        $terms = '';
+
+                        foreach ($facets_ar['query'] as $term) {
+                            $terms .= $term;
+                        }
+
+                        $content = '';
+
+                        // Get the facets from the $facets_ar['facets'] array
+                        foreach ($facets_ar['facets'] as $facet) {
+                            // Only display if the facet has any links
+                            if ($facet->link) {
+                                $content .= '<div class="delving-facets-container">';
+                                $content .= '<h4>' . $facet['name'] . '</h4>';
+                                $content .= '<div class="delving-facets">';
+                                foreach ($facet->link as $link) {
+
+                                    $facet_link = $link['url'];
+
+                                    $qstring = $keywords;
+
+                                    $furl = url(variable_get('drs_search_page', DRS_SEARCH_PAGE)) . '/' . $terms . $facet_link;
+
+                                    if (!empty($facet_link)) {
+                                        if ($link['isSelected'] != 'true') {
+                                            $content .= '<a href="' . $furl . '">' . trim($link) . '</a><br/>';
+                                        }
+                                        else {
+                                            $content .= '<strong><a href="' . $furl . '">' . trim($link) . '</a></strong><br/>';
+                                        }
+                                    }
+                                    // Checkboxes for later
+                                    // Todo onclick functionality for checkbox to launch search (js)
+                                    /*
+                                    if (!empty($facet_link)) {
+                                        if($link['isSelected']!='true'){
+                                            $content .= '<input type="checkbox" class="delving-facets-checkbox" value="' . $furl . '"/>';
+                                        }
+                                        else {
+                                           $content .= '<input type="checkbox" class="delving-facets-checkbox" checked="checked" value="' . $furl . '"/>';
+                                        }
+                                        $content .= '<a href="?' . $furl . '">' . trim($link) .'</a><br/>';
+                                    }
+                                    */
+
+                                }
+                                $content .= '</div></div>';
+                            }
+                        }
+                        $block['subject'] = t('Refine your search');
+                        $block['content'] = $content;
+                        break;
+                }
+                return $block;
+                break;
+
+        }
+    }
+}
+
+
+function drs_facets() {
+
+    if (drs_has_searched() == TRUE) {
+        $facets = array();
+        // Use the response cache to grab the facets
+        $xml = drs_static_response_cache();
+
+        // Check to make sure we have an XML object to work with
+        if (!is_object($xml)) {
+            $xml = new SimpleXMLElement($xml);
+        }
+        // Are there any results?
+        if ($xml->query['numFound'] > 0) {
+            // Use xpath to create facets as array
+            $facets['facets'] = $xml->xpath('/results/facets/facet');
+            $facets['query'] = $xml->xpath('/results/query/terms');
+        }
+    }
+    else {
+        $facets = 0;
+    }
+    return $facets;
+
+}
+
+/** BREADCRUMBS ********************************************************************************************************/
+
+/*
+ * Todo: feed the breadcrumbs and display as links above search results
+ */
+function drs_breadcrumbs() {
+    if (drs_has_searched() == TRUE) {
+        $xml = drs_static_response_cache();
+        $breadcrumbs = array();
+        // Check to make sure we have an XML object to work with
+        if (!is_object($xml)) {
+            $xml = new SimpleXMLElement($xml);
+        }
+        if ($xml->query['numFound'] > 0) {
+            $breadcrumbs = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
+            //           drupal_set_message(print_r($breadcrumbs));
+        }
+        $out .= '<div class="delving-breadcrumbs">';
+        $out .= 'Your searched for: ';
+        $numItems = count($breadcrumbs);
+        $i = 1;
+        foreach ($breadcrumbs as $crumb) {
+            $text = $crumb;
+            $href = url(variable_get('drs_search_page', DRS_SEARCH_PAGE)) . '/' . str_replace('query=', '', $crumb['href']);
+
+            if ($i != $numItems) {
+                $out .= '<a class="crumb" href="' . $href . '">' . $crumb . '</a>&#160;>&#160;';
+            }
+            else {
+                $out .= $crumb;
+            }
+
+            $i++;
+
+        }
+        $out .= '</div>';
+        return $out;
+    }
+}
+
+/** HELPER FUNCTIONS ***************************************************************************************************/
+
+/**
+ * Semaphore that indicates whether a search has been done. Blocks use this
+ * later to decide whether they should load or not.
+ *
+ * @param $searched
+ *   A boolean indicating whether a search has been executed.
+ *
+ * @return
+ *   TRUE if a search has been executed.
+ *   FALSE otherwise.
+ */
+function drs_has_searched($searched = NULL) {
+    static $_searched = FALSE;
+    if (is_bool($searched)) {
+        $_searched = $searched;
+    }
+    return $_searched;
+}
+
+function drs_has_facets($has_facets = NULL) {
+    static $_has_facets = FALSE;
+    if (is_bool($has_facets)) {
+        $_has_facets = $has_facets;
+    }
+    return $_has_facets;
+}
+
+/**
+ * It is important to hold on to the search response object for the duration of the
+ * page request so that we can use it for things like building facet blocks.
+ */
+function drs_static_response_cache($response = NULL) {
+    static $_response;
+
+    if (!empty($response)) {
+        $_response = $response;
+    }
+    return $_response;
+}
+
+function drs_help($path, $arg) {
+    switch ($path) {
+        // Main module help for the block module
+        case 'admin/settings/delving-api':
+            return '<p>' . t('Here you can configure the settings for the Delving Remote-Search API and display options.<br/>
+                        To configure the display of the Facets block please see the <strong class="drupal_link_admin_settings">
+                        <a href="@blocks">Blocks Configuration Page</a></strong>.', array('@blocks' => url('admin/build/block')))
+                    . '</p>';
+    }
+}
+
+
+
