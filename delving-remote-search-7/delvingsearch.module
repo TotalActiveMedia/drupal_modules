@@ -3,7 +3,7 @@
 
 /** * @file
  *
- *  A module for making query to and getting results from a remote Delving Platform Search API.
+ * A module for making query to and getting results from a remote Delving Platform Search API.
  *
  */
 
@@ -32,10 +32,10 @@ function delvingsearch_menu() {
  * Displays the page and calls necessary functions needed to run the page functionality
  */
 function delvingsearch_load_page() {
-  //  global $theme;
-  //  // Populate all block regions.
-  //  $regions = system_region_list($theme);
-  //  debug($regions);
+  // global $theme;
+  // // Populate all block regions.
+  // $regions = system_region_list($theme);
+  // debug($regions);
   drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
   return drupal_get_form('delvingsearch_form');
 }
@@ -53,7 +53,7 @@ function delvingsearch_form($form, &$form_state) {
 
     $results = delvingapi_remote_search($qps['query'], $qps);
     //$results_ar = array();
-    //$results_ar =  delving_set_results($results);
+    //$results_ar = delving_set_results($results);
     // Cache response and set semaphore for use by blocks.
     //delving_static_response_cache($results);
     //delving_has_searched(TRUE);
@@ -89,8 +89,8 @@ function delvingsearch_form_submit($form, &$form_state) {
 /**
  * Outputs html to display the returned results
  *
- * @param  $xml
- * @param  $query
+ * @param $xml
+ * @param $query
  * @return void
  */
 function delvingsearch_show_results($xml, $query, $layout) {
@@ -209,11 +209,11 @@ function delvingsearch_block_info() {
  * Implement hook_block_view()
  *
  * @param $delta
- *  The name of the requested block
+ * The name of the requested block
  */
 function delvingsearch_block_view($delta = '') {
 
-  //  Create an empty block
+  // Create an empty block
   $block = array(
     'subject' => '',
     'content' => '',
@@ -327,7 +327,7 @@ function delvingsearch_breadcrumbs() {
     }
     if ($xml->query['numFound'] > 0) {
       $breadcrumbs = $xml->xpath('/results/query/breadCrumbs/breadcrumb');
-      //           drupal_set_message(print_r($breadcrumbs));
+      // drupal_set_message(print_r($breadcrumbs));
     }
     $out = '<div class="delving-breadcrumbs">';
     $out .= t('Your searched for:');
@@ -357,6 +357,4 @@ function delvingsearch_breadcrumbs() {
     return $out;
   }
 }
-
-
 

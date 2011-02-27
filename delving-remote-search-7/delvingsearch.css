@@ -1,3 +1,6 @@
+
+/** INPUT FORM *************************************************/
+
 #delvingsearch-form input#edit-query {
     width: 100%;
 }
@@ -18,7 +21,8 @@
     padding: 0;
 }
 
-/** BLOCKS  *************************************************/
+/** BLOCKS ***************************************************/
+
 .block {
     background: none !important;
 }
@@ -51,11 +55,7 @@
     color: #666;
 }
 
-/*.block.block-delvingsearch .content .item-list ul li {*/
-    /*list-style-type: none !important;*/
-/*}*/
 /** RESULTS *************************************************/
-
 
 #delving table.search-results tr:nth-child(odd) td {
     background: #F6F6F2;
@@ -91,8 +91,11 @@ div.delving-facets-container h4 {
     padding-right: 1em;
 }
 
-div.powererd-by-delving {
+/* PBD **********************************************************/
+
+div#pb-delving {
     text-align: center;
     width: 100%;
-    margin: 1em 0 0 0;
+    margin: 2em 0 0 0;
+    font-size: .85em;
 }
