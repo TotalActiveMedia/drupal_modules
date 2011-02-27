@@ -26,9 +26,6 @@ function delvingsearch_menu() {
 }
 
 
-function delvingsearch_node_view($node, $view_mode, $langcode){
-    $node = variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH);
-}
 /**
  * The hook_menu() page callback
  *
