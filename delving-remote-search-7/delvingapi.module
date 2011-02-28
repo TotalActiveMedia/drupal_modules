@@ -65,22 +65,8 @@ function delvingapi_remote_search($query = NULL, $qps = NULL, $obj_id = NULL, $t
       if ($has_digital_object == TRUE) {
         $url .= '&hqf=HASDIGITALOBJECT:true&hqf=COUNTY:Oslo';
       }
-  $data = delvingapi_do_search($url);
-  // TODO: make this configurable
-  $layout = array(
-      "#thumbnail" => "europeana:object",
-      "#title" => "dc:title",
-      "#uri" => "europeana:uri",
-      "Creator" => "dc:creator",
-      "Description" => "dc:description",
-      "Subject(s)" => "dc:subject",
-      "County" => "abm:county",
-      "Municipality" => "abm:municipality",
-      "Place" => "abm:namedPlace",
-      "Person(s)" => "abm:aboutPerson"
-  );
-
-      $results = delvingsearch_show_results($data, $query, $layout);
+      $data = delvingapi_do_search($url);
+      $results = delvingsearch_show_results($data, $query);
       break;
     case 'result-item':
        $url = $target . '?id=' . $obj_id;

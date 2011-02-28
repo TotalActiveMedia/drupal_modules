@@ -116,18 +116,23 @@ function delvingsearch_form_submit($form, &$form_state) {
  * @param $query
  * @return void
  */
-function delvingsearch_show_results($xml, $query, $layout) {
+function delvingsearch_show_results($xml, $query) {
 
     $data = simplexml_load_string($xml);
     $total_records = $data->query['numFound'];
     $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
+
+    $layout = array();
+    foreach ($data->xpath("/results/layout/drupal/field") as $field) {
+        $layout[(string)$field->key] = (string)$field->value;
+    }
 
     pager_default_initialize($total_records, $num_per_page);
 
     $output = '<div id="delving">';
     $output .= '<h4>Number of records found: ' . $total_records . '</h4>';
 
-    if ($total_records > 0) {
+    if ($total_records > 0 && $layout) {
         // set up the variables to pass along to the pager
         $variables = array(
             'parameters' => array(
@@ -142,8 +147,6 @@ function delvingsearch_show_results($xml, $query, $layout) {
 
             $thumbnail = implode('',$item->xpath($layout["#thumbnail"]));
             $title = implode('',$item->xpath($layout["#title"]));
-
-
 
             $prefix = str_replace('%/%','',variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
 
