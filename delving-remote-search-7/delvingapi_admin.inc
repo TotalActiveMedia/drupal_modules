@@ -62,6 +62,17 @@ function delving_admin_settings($form, &$form_state) {
     '#required' => TRUE,
     '#description' => t('The name for the Delving-Remote-Search page. This is the name that will show in the menu and the top of the search page')
   );
+  $form['search-display-settings']['delving_item_external_path'] = array(
+    '#type' => 'select',
+    '#title'=> t('Choose where you would like to view the item'),
+    '#description' => t('All links on the titles of the returned results will point to this setting'),
+    '#default_value' => variable_get('delving_item_external_path', DELVING_SEARCH_ITEM_EXTERNAL_PATH),
+    '#options' => array(
+      'drupal' => t('Within drupal'),
+      'isShownAt' => t('In original context from the Dataprovider'),
+      'norvegiana' => t('The Norvegiana website'),
+    ),
+  );
   $form['search-display-settings']['delving_search_page_return'] = array(
     '#type' => 'textfield',
     '#title' => 'Item page link text',

@@ -21,7 +21,10 @@ function delvingsearch_show_item($xml) {
     "Dataprovider" => "europeana:dataProvider",
     "Provider" => "europeana:provider",
   );
-
+//    $layout = array();
+//    foreach ($data->xpath("/results/layout/drupal/field") as $field) {
+//        $layout[(string)$field->key] = (string)$field->value;
+//    }
   $ref = getenv("HTTP_REFERER");
   $back_text = variable_get('delving_search_page_return', DELVING_SEARCH_PAGE_RETURN);
 
