@@ -30,6 +30,7 @@ function delvingsearch_show_list($xml, $query) {
                 'rows' => $num_per_page,
             ),
         );
+
         $output .= delvingsearch_breadcrumbs();
         $output .= theme('pager', $variables);
         $output .= "<table class='search-results'>";
@@ -40,18 +41,18 @@ function delvingsearch_show_list($xml, $query) {
 
             $link_attributes = array();
 
-            switch ((string)variable_get('delving_item_external_path', DELVING_SEARCH_ITEM_EXTERNAL_PATH)) {
+            switch ((string)variable_get('delving_search_item_view_path', DELVING_SEARCH_ITEM_VIEW_PATH)) {
                 case 'isShownAt':
                     $uri = trim(implode('',$item->xpath($layout['#isShownAt'])));
                     $link_attributes['target'] = "_blank";
                     break;
-                case 'norvegiana':
-                    $prefix = variable_get('delving_item_norvegiana_path', DELVING_SEARCH_ITEM_NORVEGIANA_PATH);
+              case 'delvingPlatform':
+                    $prefix = variable_get('delving_search_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL);
                     $uri = $prefix . implode('',$item->xpath($layout['#uri'])) . '.html';
                     $link_attributes['target'] = "_blank";
                     break;
                 default:
-                    $prefix = str_replace('%/%','',variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
+                    $prefix = str_replace('%/%','',variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
                     $uri = $prefix . implode('',$item->xpath($layout["#uri"]));
                     break;
             }

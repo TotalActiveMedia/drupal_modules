@@ -11,8 +11,7 @@ define('DELVING_SEARCH_PAGE_NAME', 'Delving Search');
 define('DELVING_SEARCH_PAGE_RETURN', 'Return to results');
 define('DELVING_SEARCH_RESULTS_PAGE_PATH', 'drs/search');
 define('DELVING_SEARCH_ITEM_PAGE_PATH', 'drs/item/%/%');
-define('DELVING_SEARCH_ITEM_EXTERNAL_PATH', 'drupal');
-define('DELVING_SEARCH_ITEM_NORVEGIANA_PATH', 'http://norvegiana2.delving.org/portal/object/');
+define('DELVING_SEARCH_ITEM_VIEW_PATH', 'drupal');
 define('DELVING_SEARCH_ITEM_EXTERNAL_URL', 'http://norvegiana2.delving.org/portal/object/');
 /**
  * Implements hook_menu()
@@ -23,11 +22,11 @@ function delvingsearch_menu() {
   // to find the position of the last two elements (our obj id) in the path.
   // Give these positions to the 'page arguments' for this menu item so that
   // it can extract the object id from the URL and use it to send the query
-  $path_ar = explode('/', variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
+  $path_ar = explode('/', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
   $first_arg = count($path_ar) - 2;
   $second_arg = count($path_ar) - 1;
 
-  $items[variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)] = array(
+  $items[variable_get('delving_search_results_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)] = array(
     'title' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),
     'description' => 'Page for searching remote Delving Framework API without dependency on the Search module.',
     'page callback' => 'delvingsearch_load_search',

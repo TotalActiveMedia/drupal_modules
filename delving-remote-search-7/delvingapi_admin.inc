@@ -54,7 +54,7 @@ function delving_admin_settings($form, &$form_state) {
   );
   $form['search-display-settings'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Display Settings',
+    '#title' => 'Page Display Settings',
   );
   $form['search-display-settings']['delving_search_page_name'] = array(
     '#type' => 'textfield',
@@ -63,22 +63,6 @@ function delving_admin_settings($form, &$form_state) {
     '#required' => TRUE,
     '#description' => t('The name for the Delving-Remote-Search page. This is the name that will show in the menu and the top of the search page')
   );
-   $form['search-display-settings']['delving_item_external_path'] = array(
-    '#type' => 'select',
-    '#title'=> t('Choose where you would like to view the item'),
-    '#description' => t('All links on the titles of the returned results will point to this setting'),
-    '#default_value' => variable_get('delving_item_external_path', DELVING_SEARCH_ITEM_EXTERNAL_PATH),
-    '#options' => array(
-      'drupal' => t('Within drupal'),
-      'isShownAt' => t('In original context from the Dataprovider'),
-      'delving' => t('A Delving Platform compliant portal'),
-    ),
-  );
-  $form['search-display-settings']['delving_item_external_url'] = array(
-    '#type' => 'textfield',
-    '#description' => t('URL for an external Delving Platform portal instance'),
-    '#default_value' => variable_get('delving_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL)
-  );
   $form['search-display-settings']['delving_search_page_return'] = array(
     '#type' => 'textfield',
     '#title' => 'Item page link text',
@@ -86,7 +70,27 @@ function delving_admin_settings($form, &$form_state) {
     '#required' => TRUE,
     '#description' => t('The text which appears in the link back to results page')
   );
-
+   $form['search-item-view-settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Object Display Settings',
+  );
+   $form['search-item-view-settings']['delving_search_item_view_path'] = array(
+    '#type' => 'select',
+    '#title'=> t('Choose where you would like to view the object'),
+    '#description' => t('All links on the titles of the returned results will point to this setting.'),
+    '#default_value' => variable_get('delving_search_item_view_path', DELVING_SEARCH_ITEM_VIEW_PATH),
+    '#options' => array(
+      'drupal' => t('Within drupal'),
+      'isShownAt' => t('In original context from the Dataprovider'),
+      'delvingPlatform' => t('A Delving Platform compliant portal'),
+    ),
+  );
+  $form['search-item-view-settings']['delving_search_item_external_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('External URL'),
+    '#description' => t('URL for an external Delving Platform portal instance. For example "http://norvegiana2.delving.org/portal/object/"'),
+    '#default_value' => variable_get('delving_search_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL)
+  );
   $form['search-display-settings']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
 
 
