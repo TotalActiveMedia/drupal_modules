@@ -295,7 +295,7 @@ function delvingsearch_breadcrumbs() {
       // drupal_set_message(print_r($breadcrumbs));
     }
     $out = '<div class="delving-breadcrumbs">';
-    $out .= t('Your searched for:');
+    $out .= t('Your searched for:') . '&#160;';
 
     // Temporary measure until HASDIGITALOBJECT is a hidden query filter
     //$crumbs = delving_remove_element($breadcrumbs, 'HASDIGITALOBJECT:true');
