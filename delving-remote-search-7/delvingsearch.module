@@ -56,6 +56,7 @@ function delvingsearch_load_search() {
 }
 
 function delvingsearch_load_item($obj_part1, $obj_part2) {
+    drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
   module_load_include('inc', 'delvingsearch', 'includes/delving.item');
   $obj_id = $obj_part1 . '/' . $obj_part2;
   $xml = delvingapi_get_item($obj_id);
