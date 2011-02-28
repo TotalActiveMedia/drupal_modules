@@ -12,6 +12,7 @@ define('DELVING_SEARCH_PAGE_RETURN', 'Return to results');
 define('DELVING_SEARCH_RESULTS_PAGE_PATH', 'drs/search');
 define('DELVING_SEARCH_ITEM_PAGE_PATH', 'drs/item/%/%');
 define('DELVING_SEARCH_ITEM_EXTERNAL_PATH', 'drupal');
+define('DELVING_SEARCH_ITEM_NORVEGIANA_PATH', 'http://norvegiana2.delving.org/portal/object/');
 
 /**
  * Implements hook_menu()

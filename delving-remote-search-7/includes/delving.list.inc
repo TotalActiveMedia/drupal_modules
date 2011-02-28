@@ -38,9 +38,19 @@ function delvingsearch_show_list($xml, $query) {
             $thumbnail = implode('',$item->xpath($layout["#thumbnail"]));
             $title = implode('',$item->xpath($layout["#title"]));
 
-            $prefix = str_replace('%/%','',variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
-
-            $uri = $prefix . implode('',$item->xpath($layout["#uri"]));
+            switch (variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH)) {
+                case 'isShownAt':
+                    $uri = implode('',$item->xpath($layout['#isShownAt']));
+                    break;
+                case 'norvegiana':
+                    $prefix = variable_get('delving_item_norvegiana_path', DELVING_SEARCH_ITEM_NORVEGIANA_PATH);
+                    $uri = $prefix . implode('',$item->xpath($layout['#uri'])) . '.html';
+                    break;
+                default:
+                    $prefix = str_replace('%/%','',variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
+                    $uri = $prefix . implode('',$item->xpath($layout["#uri"]));
+                    break;
+            }
 
             $output .= '<tr><td>';
             if ($thumbnail) {
