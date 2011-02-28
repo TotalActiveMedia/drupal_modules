@@ -8,6 +8,7 @@
  */
 
 define('DELVING_SEARCH_PAGE_NAME', 'Delving Search');
+define('DELVING_SEARCH_PAGE_RETURN', 'Return to results');
 define('DELVING_SEARCH_PAGE_PATH', 'drs/search');
 define('DELVING_ITEM_PAGE_PATH', 'drs/item/%/%');
 

@@ -23,7 +23,7 @@ function delvingsearch_show_item($xml) {
   );
 
   $ref = getenv("HTTP_REFERER");
-  $back_text = t('Return to results');
+  $back_text = variable_get('delving_search_page_return', DELVING_SEARCH_PAGE_RETURN);
 
   $output = l($back_text, $ref);
   $output .= "<table class='search-results-item'>";

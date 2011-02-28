@@ -62,6 +62,13 @@ function delving_admin_settings($form, &$form_state) {
     '#required' => TRUE,
     '#description' => t('The name for the Delving-Remote-Search page. This is the name that will show in the menu and the top of the search page')
   );
+  $form['search-display-settings']['delving_search_page_return'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Item page link text',
+    '#default_value' => variable_get('delving_search_page_return', DELVING_SEARCH_PAGE_RETURN),
+    '#required' => TRUE,
+    '#description' => t('The text which appears in the link back to results page')
+  );
   $form['search-display-settings']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
 
   $form['api-settings'] = array(
