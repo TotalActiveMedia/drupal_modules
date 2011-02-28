@@ -57,10 +57,8 @@ function delvingsearch_load_search() {
 function delvingsearch_load_item($obj_part1, $obj_part2) {
 
   module_load_include('inc', 'delvingsearch', 'includes/delving.item');
-
-  $type = 'result-item';
   $obj_id = $obj_part1 . '/' . $obj_part2;
-  $xml = delvingapi_remote_search(NULL, NULL, $obj_id, $type);
+  $xml = delvingapi_get_item($obj_id);
   $page = delvingsearch_show_item($xml);
 
   return $page;
@@ -74,14 +72,13 @@ function delvingsearch_form($form, &$form_state) {
 
   // grab query parameters if there are any
   $qps = delvingapi_get_query_params();
-  $html = '';
+  $results = '';
 
   // there is a query in the URL, do a search and fill up $html
   if (!empty($qps['query'])) {
-    $type = 'result-list';
-    $data = delvingapi_remote_search($qps['query'], $qps, $type);
-    $results = delvingsearch_show_results($data, $qps['query']);
-    $html .= $results;
+    $query = $qps['query'];
+    $data = delvingapi_get_list($query, $qps);
+    $results = delvingsearch_show_results($data, $query);
   }
 
   $form['query'] = array(
@@ -95,7 +92,7 @@ function delvingsearch_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Find'),
   );
-  $form['#suffix'] = $html;
+  $form['#suffix'] = $results;
 
   return $form;
 }

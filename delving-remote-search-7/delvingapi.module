@@ -32,65 +32,60 @@ function delvingapi_menu() {
   return $items;
 }
 
-
 /**
- * Builds a query to send to a Delving Platform instance Remote-Search API
+ * Takes a query term and builds a url to return a list of results
+ *
  * @param null $query
- *  The term being searched for
  * @param null $qps
- *  Query parameters from the querystring
- * @param null $obj_id
- *  Id of the object being retrieved
- * @param string $type
- *  The type of query being done
- *  'result-list' to retrieve a result list
- *  'result-item' for an individual object
- * @return void
+ * @return
  */
-function delvingapi_remote_search($query = NULL, $qps = NULL, $obj_id = NULL, $type = 'result-list') {
-
+function delvingapi_get_list($query = NULL, $qps = NULL) {
   $target = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
-  $results = '';
+  $rows = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
+  $start = $qps['start'];
+  $has_digital_object = variable_get('delving_api_digital_object', DELVING_API_DIGITAL_OBJECT);
+  $counties = variable_get('delving_api_counties', DELVING_API_COUNTIES);
+  // remove the [] from the qf[] key before being sent to search api
+  $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
 
-
-  switch ($type) {
-    case 'result-list':
-      $rows = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
-      $start = $qps['start'];
-      $has_digital_object = variable_get('delving_api_digital_object', DELVING_API_DIGITAL_OBJECT);
-      $counties =  variable_get('delving_api_counties', DELVING_API_COUNTIES);
-      // remove the [] from the qf[] key before being sent to search api
-      $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
-
-      // clean up the search terms before sending
-      $search_terms = urlencode(str_replace(' ', '+', $query));
-      // Build the basic url
-      $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
-      // Add query contstraints
-      if ($has_digital_object == TRUE) {
-        $url .= '&hqf=HASDIGITALOBJECT:true';
-      }
-      if (!empty($counties)) {
-        $counties_list = explode(",", $counties);
-        foreach ($counties_list as $county) {
-            $url .= '&hqf=COUNTY:' . str_replace(" ", "+", $county);
-        }
-
-      }
-      $results = delvingapi_do_search($url);
-      break;
-    case 'result-item':
-       $url = $target . '?id=' . $obj_id;
-       $data = delvingapi_do_search($url);
-       $results = $data;
-      break;
+  // clean up the search terms before sending
+  $search_terms = urlencode(str_replace(' ', '+', $query));
+  // Build the basic url
+  $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
+  // Add query contstraints
+  if ($has_digital_object == TRUE) {
+    $url .= '&hqf=HASDIGITALOBJECT:true';
   }
+  if (!empty($counties)) {
+    $counties_list = explode(",", $counties);
+    foreach ($counties_list as $county) {
+      $url .= '&hqf=COUNTY:' . str_replace(" ", "+", $county);
+    }
 
-
+  }
+  $results = delvingapi_do_search($url);
   return $results;
-
 }
 
+/**
+ * Takes an object id and builds a url to return the object data
+ *
+ * @param null $obj_id
+ * @return
+ */
+function delvingapi_get_item($obj_id = NULL) {
+  $target = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
+  $url = $target . '?id=' . $obj_id;
+  $results = delvingapi_do_search($url);
+  return $results;
+}
+
+/**
+ * Submits a query to a remote Delving Framework API
+ *
+ * @param  $url
+ * @return
+ */
 function delvingapi_do_search($url) {
   try {
     // Send out the request
