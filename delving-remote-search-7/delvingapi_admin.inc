@@ -14,6 +14,7 @@ function delving_admin_settings($form, &$form_state) {
 
   $options_do = array('1' => t('true'), '0' => t('false'));
   $options_df = array('1' => t('true'), '0' => t('false'));
+  $options_external_link = array('1' => t('Within Drupal'), '0' => t('To the original data provider'), '0' => t('A Delving Framework Portal instance'));
   $form['api-settings'] = array(
     '#type' => 'fieldset',
     '#title' => 'Delving Remote-Search API settings',
@@ -62,7 +63,7 @@ function delving_admin_settings($form, &$form_state) {
     '#required' => TRUE,
     '#description' => t('The name for the Delving-Remote-Search page. This is the name that will show in the menu and the top of the search page')
   );
-  $form['search-display-settings']['delving_item_external_path'] = array(
+   $form['search-display-settings']['delving_item_external_path'] = array(
     '#type' => 'select',
     '#title'=> t('Choose where you would like to view the item'),
     '#description' => t('All links on the titles of the returned results will point to this setting'),
@@ -70,13 +71,13 @@ function delving_admin_settings($form, &$form_state) {
     '#options' => array(
       'drupal' => t('Within drupal'),
       'isShownAt' => t('In original context from the Dataprovider'),
-      'norvegiana' => t('The Norvegiana website'),
-      'delvingFramework' => t('A Delving Framework compliant portal'),
+      'delving' => t('A Delving Platform compliant portal'),
     ),
-//    '#ajax' => array(
-//      'callback' => 'delving_admin_show_field',
-//      'wrapper' => 'replace_textfield_div',
-//     ),
+  );
+  $form['search-display-settings']['delving_item_external_url'] = array(
+    '#type' => 'textfield',
+    '#description' => t('URL for an external Delving Platform portal instance'),
+    '#default_value' => variable_get('delving_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL)
   );
   $form['search-display-settings']['delving_search_page_return'] = array(
     '#type' => 'textfield',
