@@ -12,4 +12,5 @@ function delvingapi_uninstall() {
   variable_del('delving_api_remote_url');
   variable_del('delving_api_results_rows');
   variable_del('delving_api_digital_object');
+  variable_del('delving_api_counties');
 }

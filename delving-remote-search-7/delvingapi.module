@@ -64,40 +64,23 @@ function delvingapi_remote_search($query = NULL, $qps = NULL, $obj_id = NULL, $t
 
       // clean up the search terms before sending
       $search_terms = urlencode(str_replace(' ', '+', $query));
-
+      // Build the basic url
       $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
-
+      // Add query contstraints
       if ($has_digital_object == TRUE) {
         $url .= '&hqf=HASDIGITALOBJECT:true';
       }
-
-      $counties_limit = '';
       if (!empty($counties)) {
-        foreach ($counties as $key => $value) {
-            if ($value) {
-                $counties_limit .= '&hqf=COUNTY:' . $value;
-            }
+        $counties_list = explode(",", $counties);
+        foreach ($counties_list as $county) {
+            $url .= '&hqf=COUNTY:' . str_replace(" ", "+", $county);
         }
-        $url .= $counties_limit;
+
       }
-      debug($url);
+      // do search
+      $data = delvingapi_do_search($url);
+      $results = delvingsearch_show_results($data, $query);
 
-  $data = delvingapi_do_search($url);
-  // TODO: make this configurable
-  $layout_brief = array(
-      "#thumbnail" => "europeana:object",
-      "#title" => "dc:title",
-      "#uri" => "europeana:uri",
-      "Creator" => "dc:creator",
-      "Description" => "dc:description",
-//      "Subject(s)" => "dc:subject",
-//      "County" => "abm:county",
-//      "Municipality" => "abm:municipality",
-//      "Place" => "abm:namedPlace",
-//      "Person(s)" => "abm:aboutPerson"
-  );
-
-      $results = delvingsearch_show_results($data, $query, $layout_brief);
       break;
     case 'result-item':
        $url = $target . '?id=' . $obj_id;

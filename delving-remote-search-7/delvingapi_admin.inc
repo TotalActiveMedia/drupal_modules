@@ -17,7 +17,7 @@ function delving_admin_settings($form, &$form_state) {
   $options_counties = array(
     '&#248;stfold' => '&#248;stfold',
     'akershus' => 'akershus',
-    'oslo' => 'oslo',
+    'Oslo' => 'Oslo',
     'hedmark' => 'hedmark',
     'oppland' => 'oppland',
     'buskerud' => 'buskerud',
@@ -86,8 +86,6 @@ function delving_admin_settings($form, &$form_state) {
   $form['search-constraints'] = array(
     '#type' => 'fieldset',
     '#title' => 'Search Constraints',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
 
   );
   $form['search-constraints']['delving_api_digital_object'] = array(
@@ -98,14 +96,20 @@ function delving_admin_settings($form, &$form_state) {
   );
   $form['search-constraints']['delving_api_counties'] = array(
     '#title' => t('Limit results to these counties only'),
-    '#description' => t('Leave ALL unchecked to return results from all counties'),
-    '#type' => 'checkboxes',
-    '#tree' => TRUE,
-    '#options' => $options_counties,
+    '#description' => t('Enter a comma separted list of county names to which you wish to limit the search'),
+    '#type' => 'textfield',
     '#default_value' => variable_get('delving_api_counties', DELVING_API_COUNTIES),
-    '#multicolumn' => array('width' => 3)
-
+    '#required' => FALSE,
   );
+//  $form['search-constraints']['delving_api_counties'] = array(
+//    '#title' => t('Limit results to these counties only'),
+//    '#description' => t('Leave ALL unchecked to return results from all counties'),
+//    '#type' => 'checkboxes',
+//    '#tree' => TRUE,
+//    '#options' => $options_counties,
+//    '#default_value' => variable_get('delving_api_counties', DELVING_API_COUNTIES),
+//
+//  );
 
 
   return system_settings_form($form);
