@@ -9,8 +9,8 @@
 
 define('DELVING_SEARCH_PAGE_NAME', 'Delving Search');
 define('DELVING_SEARCH_PAGE_RETURN', 'Return to results');
-define('DELVING_SEARCH_PAGE_PATH', 'drs/search');
-define('DELVING_ITEM_PAGE_PATH', 'drs/item/%/%');
+define('DELVING_SEARCH_RESULTS_PAGE_PATH', 'drs/search');
+define('DELVING_SEARCH_ITEM_PAGE_PATH', 'drs/item/%/%');
 
 /**
  * Implements hook_menu()
@@ -21,19 +21,19 @@ function delvingsearch_menu() {
   // to find the position of the last two elements (our obj id) in the path.
   // Give these positions to the 'page arguments' for this menu item so that
   // it can extract the object id from the URL and use it to send the query
-  $path_ar = explode('/', variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
+  $path_ar = explode('/', variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
   $first_arg = count($path_ar) - 2;
   $second_arg = count($path_ar) - 1;
 
-  $items[variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)] = array(
+  $items[variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)] = array(
     'title' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),
     'description' => 'Page for searching remote Delving Framework API without dependency on the Search module.',
     'page callback' => 'delvingsearch_load_search',
     'access callback' => TRUE,
     'type' => MENU_NORMAL_ITEM,
   );
-  $items[variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH)] = array(
-    'title' => variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH),
+  $items[variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH)] = array(
+    'title' => variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH),
     'description' => 'Page for showing an individual search result item',
     'page callback' => 'delvingsearch_load_item',
     'page arguments' => array($first_arg, $second_arg),
@@ -55,7 +55,6 @@ function delvingsearch_load_search() {
 }
 
 function delvingsearch_load_item($obj_part1, $obj_part2) {
-
   module_load_include('inc', 'delvingsearch', 'includes/delving.item');
   $obj_id = $obj_part1 . '/' . $obj_part2;
   $xml = delvingapi_get_item($obj_id);
@@ -66,10 +65,10 @@ function delvingsearch_load_item($obj_part1, $obj_part2) {
 
 
 /**
- * Implement hook_form()
+ * Implements hook_form()
  */
 function delvingsearch_form($form, &$form_state) {
-
+  module_load_include('inc', 'delvingsearch', 'includes/delving.list');
   // grab query parameters if there are any
   $qps = delvingapi_get_query_params();
   $results = '';
@@ -78,7 +77,7 @@ function delvingsearch_form($form, &$form_state) {
   if (!empty($qps['query'])) {
     $query = $qps['query'];
     $data = delvingapi_get_list($query, $qps);
-    $results = delvingsearch_show_results($data, $query);
+    $results = delvingsearch_show_list($data, $query);
   }
 
   $form['query'] = array(
@@ -97,89 +96,18 @@ function delvingsearch_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Implements hook_form_submit()
+ */
 function delvingsearch_form_submit($form, &$form_state) {
   // A simulated 'GET', a bit dirty but it does the job nicely
   // This way when a query is resubmitted using the pager or facet refinement, the same process is followed each time
   global $base_url;
-  $redirect_url = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH);
+  $redirect_url = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH);
   $redirect_url .= '?query=' . $form_state['values']['query'];
   $form_state['redirect'] = $redirect_url;
 }
 
-
-/**
- * Outputs html to display the returned results
- *
- * @param $xml
- * @param $query
- * @return void
- */
-function delvingsearch_show_results($xml, $query) {
-
-    $data = simplexml_load_string($xml);
-    $total_records = $data->query['numFound'];
-    $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
-
-    $layout = array();
-    foreach ($data->xpath("/results/layout/drupal/field") as $field) {
-        $layout[(string)$field->key] = (string)$field->value;
-    }
-
-    pager_default_initialize($total_records, $num_per_page);
-
-    $output = '<div id="delving">';
-    $output .= '<h4>Number of records found: ' . $total_records . '</h4>';
-
-    if ($total_records > 0 && $layout) {
-        // set up the variables to pass along to the pager
-        $variables = array(
-            'parameters' => array(
-                'query' => $query,
-                'rows' => $num_per_page,
-            ),
-        );
-        $output .= delvingsearch_breadcrumbs();
-        $output .= theme('pager', $variables);
-        $output .= "<table class='search-results'>";
-        foreach ($data->xpath("/results/items/item") as $item) {
-
-            $thumbnail = implode('',$item->xpath($layout["#thumbnail"]));
-            $title = implode('',$item->xpath($layout["#title"]));
-
-            $prefix = str_replace('%/%','',variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
-
-            $uri = $prefix . implode('',$item->xpath($layout["#uri"]));
-
-            $output .= '<tr><td>';
-            if ($thumbnail) {
-                $output .= '<img width="100px" class="overlay" src="' . $thumbnail . '"/>';
-            }
-            else {
-                $output .= '<p>no thumbnail</p>';
-            }
-            $output .= '</td><td>';
-            $output .= '<h3>' . l($title, $uri) . '</h3>';
-            foreach ($layout as $key => $value) {
-                if (substr($key,0,1) != '#') {
-                    $value_array = $item->xpath($value);
-                    if ($value_array) {
-                        $value = implode(', ', $value_array);
-                        $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
-                    }
-                }
-            }
-            $output .= '</td></tr>';
-        }
-        $output .= '</table>';
-        $output .= theme('pager', $variables);
-    }
-    else {
-        $output .= "No results found. Please try another search";
-    }
-
-    $output .= '</div>';
-    return $output;
-}
 
 /**
  * Implements hook_block_info()
@@ -191,49 +119,49 @@ function delvingsearch_block_info() {
     'info' => t('Delving Facets: County'),
     'status' => 0,
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
   $blocks['municipality'] = array(
     'info' => t('Delving Facets: Municipality'),
     'status' => 0,
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
   $blocks['namedplace'] = array(
     'info' => t('Delving Facets: Named Place'),
     'status' => 0,
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
   $blocks['aboutperson'] = array(
     'info' => t('Delving Facets: About Person'),
     'status' => 0,
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
   $blocks['provider'] = array(
     'info' => t('Delving Facets: Provider'),
     'status' => 0,
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
   $blocks['dataprovider'] = array(
     'info' => t('Delving Facets: Dataprovider'),
     'status' => 0,
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
   $blocks['type'] = array(
     'info' => t('Delving Facets: Type'),
     'status' => 0,
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH),
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
 
@@ -329,7 +257,7 @@ function delvingsearch_facet_get($facet_name) {
         foreach ($facet->link as $link) {
           $facet_link = $link['url'];
           // absolute path!!! relative paths trigger url encoding of the complete url, which we do not want.
-          $furl = url($base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)) . '?query=' . $terms . $facet_link;
+          $furl = url($base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)) . '?query=' . $terms . $facet_link;
           $options = array();
           $options['attributes']['class'] = 'selected';
           if (!empty($facet_link)) {
@@ -375,7 +303,7 @@ function delvingsearch_breadcrumbs() {
     foreach ($breadcrumbs as $crumb) {
 
       $text = $crumb;
-      $href = url(variable_get('delving_search_page_path', DELVING_SEARCH_PAGE_PATH)) . '?query=' . str_replace('query=', '', $crumb['href']);
+      $href = url(variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)) . '?query=' . str_replace('query=', '', $crumb['href']);
 
       if ($i != $numItems) {
         $out .= '<a class="crumb" href="' . $href . '">' . $crumb . '</a>> ';

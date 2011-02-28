@@ -31,7 +31,7 @@ function delvingsearch_show_item($xml) {
   foreach ($data->xpath("/result/item") as $item) {
       $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
       $title = implode('', $item->xpath($layout["#title"]));
-      $prefix = str_replace('%/%', '', variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
+      $prefix = str_replace('%/%', '', variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
       $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
 
       $output .= '<tr><td>';

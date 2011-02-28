@@ -9,6 +9,9 @@
  * Implementation of hook_uninstall().
  */
 function delvingsearch_uninstall() {
-  variable_del('delving_search_page_path');
+  variable_del('delving_search_results_page_path');
+  variable_del('delving_search_item_page_path');
   variable_del('delving_search_page_name');
+  variable_del('delving_search_page_name');
+  variable_del('delving_search_page_return');
 }
