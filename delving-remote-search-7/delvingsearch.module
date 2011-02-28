@@ -33,7 +33,7 @@ function delvingsearch_menu() {
   );
   $items[variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH)] = array(
     'title' => variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH),
-    'title callback' => 'delvingsearch_generate_title',
+    'description' => 'Page for showing an individual search result item',
     'page callback' => 'delvingsearch_load_item',
     'page arguments' => array($first_arg, $second_arg),
     'access callback' => TRUE,
@@ -66,9 +66,6 @@ function delvingsearch_load_item($obj_part1, $obj_part2) {
   return $page;
 }
 
-function delvingsearch_generate_title() {
-  return "adsasfasfasf";
-}
 
 /**
  * Implement hook_form()
@@ -142,7 +139,16 @@ function delvingsearch_show_results($xml, $query, $layout) {
         $output .= theme('pager', $variables);
         $output .= "<table class='search-results'>";
         foreach ($data->xpath("/results/items/item") as $item) {
-            $thumbnail = implode('',$item->xpath($layout[""]));
+
+            $thumbnail = implode('',$item->xpath($layout["#thumbnail"]));
+            $title = implode('',$item->xpath($layout["#title"]));
+
+
+
+            $prefix = str_replace('%/%','',variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
+
+            $uri =  $prefix . implode('',$item->xpath($layout["#uri"]));
+
             $output .= '<tr><td>';
             if ($thumbnail) {
                 $output .= '<img width="100px" class="overlay" src="' . $thumbnail . '"/>';
@@ -151,8 +157,9 @@ function delvingsearch_show_results($xml, $query, $layout) {
                 $output .= '<p>no thumbnail</p>';
             }
             $output .= '</td><td>';
+            $output .= l($title, $uri) . '<br/>';
             foreach ($layout as $key => $value) {
-                if ($key) {
+                if (substr($key,0,1) != '#') {
                     $value_array = $item->xpath($value);
                     if ($value_array) {
                         $value = implode(', ', $value_array);
