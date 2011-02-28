@@ -88,7 +88,7 @@ function delving_admin_settings($form, &$form_state) {
   $form['search-item-view-settings']['delving_search_item_external_url'] = array(
     '#type' => 'textfield',
     '#title' => t('External URL'),
-    '#description' => t('URL for an external Delving Platform portal instance. For example "http://norvegiana2.delving.org/portal/object/"'),
+    '#description' => t('If above you chose "A Delving Platform compliant portal", then enter the URL here. For example "http://norvegiana2.delving.org/portal/object/"'),
     '#default_value' => variable_get('delving_search_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL)
   );
   $form['search-display-settings']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
