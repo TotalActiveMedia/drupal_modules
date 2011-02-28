@@ -57,7 +57,7 @@ function delvingsearch_load_search() {
 
 function delvingsearch_load_item($obj_part1, $obj_part2) {
     drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
-  module_load_include('inc', 'delvingsearch', 'includes/delving.item');
+  module_load_include('inc', 'delvingsearch', 'includes/delvingsearch.item');
   $obj_id = $obj_part1 . '/' . $obj_part2;
   $xml = delvingapi_get_item($obj_id);
   $page = delvingsearch_show_item($xml);
@@ -70,7 +70,7 @@ function delvingsearch_load_item($obj_part1, $obj_part2) {
  * Implements hook_form()
  */
 function delvingsearch_form($form, &$form_state) {
-  module_load_include('inc', 'delvingsearch', 'includes/delving.list');
+  module_load_include('inc', 'delvingsearch', 'includes/delvingsearch.list');
   // grab query parameters if there are any
   $qps = delvingapi_get_query_params();
   $results = '';
