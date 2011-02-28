@@ -22,7 +22,11 @@ function delvingsearch_show_item($xml) {
     "Provider" => "europeana:provider",
   );
 
-  $output = "<table class='search-results-item'>";
+  $ref = getenv("HTTP_REFERER");
+  $back_text = t('Return to results');
+
+  $output = l($back_text, $ref);
+  $output .= "<table class='search-results-item'>";
 
   foreach ($data->xpath("/result/item") as $item) {
       $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
@@ -38,7 +42,7 @@ function delvingsearch_show_item($xml) {
         $output .= '<p>no thumbnail</p>';
       }
       $output .= '</td><td>';
-      $output .= '<h3>' . l($title, $uri) . '</h3>';
+//      $output .= '<h3>' . l($title, $uri) . '</h3>';
       foreach ($layout as $key => $value) {
         if (substr($key, 0, 1) != '#') {
           $value_array = $item->xpath($value);
