@@ -47,7 +47,8 @@ function delving_admin_settings($form, &$form_state) {
   );
   $form['search-constraints']['delving_api_hqfs'] = array(
     '#title' => t('Limit results by facets'),
-    '#description' => t('Enter a comma separted list of facets by which you wish to limit the search. For example "COUNTY:Oslo,MUNICIPALITY:Majorstuen"'),
+    '#description' => t('Enter a comma separted list of facets by which you wish to limit the search. For example "COUNTY:Oslo,MUNICIPALITY:Majorstuen".
+    When using values with multiple words please surround, e.g. PROVIDER:"Sunnfjord Museum"'),
     '#type' => 'textfield',
     '#default_value' => variable_get('delving_api_hqfs', DELVING_API_HQFS),
     '#required' => FALSE,
