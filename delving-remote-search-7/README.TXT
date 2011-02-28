@@ -31,9 +31,10 @@ API Configuration
 - Search Constraints
     -   Return only results with digital objects: If the API URL has this value indexed, and it is set to 'true', then
         only results with digital objects will be returned
-    -   Limit results to these counties only: Here you can enter a comma delimited list of county names on which to
-        constrain the results. For example: Oslo, Sogn og Fjordane, Nordland
-
+    -   Limit results by facets: Here you can enter a comma delimited list of facets on which to
+        constrain the results. For example: "COUNTY:Oslo,MUNICIPALITY:Majorstuen"
+        * It is recommended that if you wish to limit the queries to results from one specific COUNTY, that you do not
+        activate the COUNTY facet block as this might cause some confusion for the end-user.
 - Page Display Settings
     -   Search-page name value: The name of the search page as it will appear in the drupal menu system
     -   Item page link text: The text for the link back to the results from the drupal object view page.

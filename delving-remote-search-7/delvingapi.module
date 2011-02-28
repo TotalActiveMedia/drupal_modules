@@ -13,7 +13,7 @@ define('DELVING_SETTINGS_MENU_PATH', 'Administer/Site configuration/Delving Remo
 define('DELVING_API_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
 define('DELVING_API_RESULTS_ROWS', 12);
 define('DELVING_API_DIGITAL_OBJECT', TRUE);
-define('DELVING_API_COUNTIES', '');
+define('DELVING_API_HQFS', '');
 
 /**
  * Implement hook_menu()
@@ -44,7 +44,7 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
   $rows = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
   $start = $qps['start'];
   $has_digital_object = variable_get('delving_api_digital_object', DELVING_API_DIGITAL_OBJECT);
-  $counties = variable_get('delving_api_counties', DELVING_API_COUNTIES);
+  $hqfs = variable_get('delving_api_hqfs', DELVING_API_HQFS);
   // remove the [] from the qf[] key before being sent to search api
   $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
 
@@ -56,10 +56,10 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
   if ($has_digital_object == TRUE) {
     $url .= '&hqf=HASDIGITALOBJECT:true';
   }
-  if (!empty($counties)) {
-    $counties_list = explode(",", $counties);
-    foreach ($counties_list as $county) {
-      $url .= '&hqf=COUNTY:' . str_replace(" ", "+", $county);
+  if (!empty($hqfs)) {
+    $hqf_list = explode(",", $hqfs);
+    foreach ($hqf_list as $hqf) {
+      $url .= '&hqf=' . str_replace(" ", "+", $hqf);
     }
 
   }

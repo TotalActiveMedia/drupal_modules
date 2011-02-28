@@ -45,11 +45,11 @@ function delving_admin_settings($form, &$form_state) {
     '#default_value' => variable_get('delving_api_digital_object', DELVING_API_DIGITAL_OBJECT),
     '#options' => $options_do,
   );
-  $form['search-constraints']['delving_api_counties'] = array(
-    '#title' => t('Limit results to these counties only'),
-    '#description' => t('Enter a comma separted list of county names to which you wish to limit the search'),
+  $form['search-constraints']['delving_api_hqfs'] = array(
+    '#title' => t('Limit results by facets'),
+    '#description' => t('Enter a comma separted list of facets by which you wish to limit the search. For example "COUNTY:Oslo,MUNICIPALITY:Majorstuen"'),
     '#type' => 'textfield',
-    '#default_value' => variable_get('delving_api_counties', DELVING_API_COUNTIES),
+    '#default_value' => variable_get('delving_api_hqfs', DELVING_API_HQFS),
     '#required' => FALSE,
   );
   $form['search-display-settings'] = array(
