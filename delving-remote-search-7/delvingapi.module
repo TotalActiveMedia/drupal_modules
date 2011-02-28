@@ -77,10 +77,7 @@ function delvingapi_remote_search($query = NULL, $qps = NULL, $obj_id = NULL, $t
         }
 
       }
-      // do search
-      $data = delvingapi_do_search($url);
-      $results = delvingsearch_show_results($data, $query);
-
+      $results = delvingapi_do_search($url);
       break;
     case 'result-item':
        $url = $target . '?id=' . $obj_id;

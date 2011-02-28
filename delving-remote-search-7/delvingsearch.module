@@ -79,7 +79,8 @@ function delvingsearch_form($form, &$form_state) {
   // there is a query in the URL, do a search and fill up $html
   if (!empty($qps['query'])) {
     $type = 'result-list';
-    $results = delvingapi_remote_search($qps['query'], $qps, $type);
+    $data = delvingapi_remote_search($qps['query'], $qps, $type);
+    $results = delvingsearch_show_results($data, $qps['query']);
     $html .= $results;
   }
 
