@@ -38,13 +38,17 @@ function delvingsearch_show_list($xml, $query) {
             $thumbnail = implode('',$item->xpath($layout["#thumbnail"]));
             $title = implode('',$item->xpath($layout["#title"]));
 
+            $link_attributes = array();
+
             switch ((string)variable_get('delving_item_external_path', DELVING_SEARCH_ITEM_EXTERNAL_PATH)) {
                 case 'isShownAt':
                     $uri = trim(implode('',$item->xpath($layout['#isShownAt'])));
+                    $link_attributes['target'] = "_blank";
                     break;
                 case 'norvegiana':
                     $prefix = variable_get('delving_item_norvegiana_path', DELVING_SEARCH_ITEM_NORVEGIANA_PATH);
                     $uri = $prefix . implode('',$item->xpath($layout['#uri'])) . '.html';
+                    $link_attributes['target'] = "_blank";
                     break;
                 default:
                     $prefix = str_replace('%/%','',variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
@@ -60,7 +64,7 @@ function delvingsearch_show_list($xml, $query) {
                 $output .= '<p>no thumbnail</p>';
             }
             $output .= '</td><td>';
-            $output .= '<h3>' . l($title, $uri) . '</h3>';
+            $output .= '<h3>' . l($title, $uri, array('attributes' => $link_attributes)) . '</h3>';
             foreach ($layout as $key => $value) {
                 if (substr($key,0,1) != '#') {
                     $value_array = $item->xpath($value);
