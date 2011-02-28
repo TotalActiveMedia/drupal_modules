@@ -5,5 +5,6 @@ package = Delving
 core = 7.x
 files[] = delvingsearch.install
 files[] = delvingsearch.module
+files[] = delvingsearch-block
 dependencies[] = delvingapi
 ;php = 5.2
