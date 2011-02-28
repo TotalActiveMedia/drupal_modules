@@ -71,7 +71,12 @@ function delving_admin_settings($form, &$form_state) {
       'drupal' => t('Within drupal'),
       'isShownAt' => t('In original context from the Dataprovider'),
       'norvegiana' => t('The Norvegiana website'),
+      'delvingFramework' => t('A Delving Framework compliant portal'),
     ),
+//    '#ajax' => array(
+//      'callback' => 'delving_admin_show_field',
+//      'wrapper' => 'replace_textfield_div',
+//     ),
   );
   $form['search-display-settings']['delving_search_page_return'] = array(
     '#type' => 'textfield',
@@ -80,6 +85,7 @@ function delving_admin_settings($form, &$form_state) {
     '#required' => TRUE,
     '#description' => t('The text which appears in the link back to results page')
   );
+
   $form['search-display-settings']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
 
 

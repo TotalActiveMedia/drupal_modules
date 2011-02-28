@@ -13,3 +13,5 @@ is recommended you create a /sites/all/modules/custom directory and place it in 
 
 Once the module is placed you can go to the drupal modules page and activate both the Delving API and Delving Search
 modules.
+
+Once the modules are activated you can
