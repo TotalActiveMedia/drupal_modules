@@ -56,8 +56,9 @@ function delvingapi_remote_search($query = NULL, $qps) {
   $data = delvingapi_do_search($url);
   // TODO: make this configurable
   $layout = array(
-      "" => "europeana:object",
-      "Title" => "dc:title",
+      "#thumbnail" => "europeana:object",
+      "#title" => "dc:title",
+      "#uri" => "europeana:uri",
       "Creator" => "dc:creator",
       "Description" => "dc:description",
       "Subject(s)" => "dc:subject",
