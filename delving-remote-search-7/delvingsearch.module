@@ -20,7 +20,7 @@ function delvingsearch_menu() {
   // to find the position of the last two elements (our obj id) in the path.
   // Give these positions to the 'page arguments' for this menu item so that
   // it can extract the object id from the URL and use it to send the query
-  $path_ar = explode('/',variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
+  $path_ar = explode('/', variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
   $first_arg = count($path_ar) - 2;
   $second_arg = count($path_ar) - 1;
 
@@ -50,7 +50,6 @@ function delvingsearch_menu() {
  */
 function delvingsearch_load_search() {
   drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
-
   return drupal_get_form('delvingsearch_form');
 }
 
@@ -118,66 +117,62 @@ function delvingsearch_form_submit($form, &$form_state) {
  */
 function delvingsearch_show_results($xml, $query, $layout) {
 
-    $data = simplexml_load_string($xml);
-    $total_records = $data->query['numFound'];
-    $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
+  $data = simplexml_load_string($xml);
+  $total_records = $data->query['numFound'];
+  $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
 
-    pager_default_initialize($total_records, $num_per_page);
+  pager_default_initialize($total_records, $num_per_page);
 
-    $output = '<div id="delving">';
-    $output .= '<h4>Number of records found: ' . $total_records . '</h4>';
+  $output = '<div id="delving">';
+  $output .= '<h4>Number of records found: ' . $total_records . '</h4>';
 
-    if ($total_records > 0) {
-        // set up the variables to pass along to the pager
-        $variables = array(
-            'parameters' => array(
-                'query' => $query,
-                'rows' => $num_per_page,
-            ),
-        );
-        $output .= delvingsearch_breadcrumbs();
-        $output .= theme('pager', $variables);
-        $output .= "<table class='search-results'>";
-        foreach ($data->xpath("/results/items/item") as $item) {
+  if ($total_records > 0) {
+    // set up the variables to pass along to the pager
+    $variables = array(
+      'parameters' => array(
+        'query' => $query,
+        'rows' => $num_per_page,
+      ),
+    );
+    $output .= delvingsearch_breadcrumbs();
+    $output .= theme('pager', $variables);
+    $output .= "<table class='search-results'>";
+    foreach ($data->xpath("/results/items/item") as $item) {
 
-            $thumbnail = implode('',$item->xpath($layout["#thumbnail"]));
-            $title = implode('',$item->xpath($layout["#title"]));
+      $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
+      $title = implode('', $item->xpath($layout["#title"]));
+      $prefix = str_replace('%/%', '', variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
+      $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
 
-
-
-            $prefix = str_replace('%/%','',variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
-
-            $uri =  $prefix . implode('',$item->xpath($layout["#uri"]));
-
-            $output .= '<tr><td>';
-            if ($thumbnail) {
-                $output .= '<img width="100px" class="overlay" src="' . $thumbnail . '"/>';
-            }
-            else {
-                $output .= '<p>no thumbnail</p>';
-            }
-            $output .= '</td><td>';
-            $output .= l($title, $uri) . '<br/>';
-            foreach ($layout as $key => $value) {
-                if (substr($key,0,1) != '#') {
-                    $value_array = $item->xpath($value);
-                    if ($value_array) {
-                        $value = implode(', ', $value_array);
-                        $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
-                    }
-                }
-            }
-            $output .= '</td></tr>';
+      $output .= '<tr><td>';
+      if ($thumbnail) {
+        $output .= '<img width="100px" class="overlay" src="' . $thumbnail . '"/>';
+      }
+      else {
+        $output .= '<p>no thumbnail</p>';
+      }
+      $output .= '</td><td>';
+      $output .= '<h3>' . l($title, $uri) . '</h3>';
+      foreach ($layout as $key => $value) {
+        if (substr($key, 0, 1) != '#') {
+          $value_array = $item->xpath($value);
+          if ($value_array) {
+            $value = implode(', ', $value_array);
+            $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+          }
         }
-        $output .= '</table>';
-        $output .= theme('pager', $variables);
+      }
+      $output .= '</td></tr>';
     }
-    else {
-        $output .= "No results found. Please try another search";
-    }
+    $output .= '</table>';
+    $output .= theme('pager', $variables);
+  }
+  else {
+    $output .= "No results found. Please try another search";
+  }
 
-    $output .= '</div>';
-    return $output;
+  $output .= '</div>';
+  return $output;
 }
 
 /**

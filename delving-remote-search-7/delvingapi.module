@@ -9,11 +9,11 @@
  *
  */
 
-define('DELVING_SETTINGS_MENU_PATH', 'Administer > Site configuration > Delving Remote-Search API Settings');
+define('DELVING_SETTINGS_MENU_PATH', 'Administer/Site configuration/Delving Remote-Search API Settings');
 define('DELVING_API_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
 define('DELVING_API_RESULTS_ROWS', 12);
 define('DELVING_API_DIGITAL_OBJECT', TRUE);
-
+define('DELVING_API_COUNTIES', '');
 
 /**
  * Implement hook_menu()
@@ -52,35 +52,52 @@ function delvingapi_remote_search($query = NULL, $qps = NULL, $obj_id = NULL, $t
   $target = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
   $results = '';
 
+
   switch ($type) {
     case 'result-list':
       $rows = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
       $start = $qps['start'];
       $has_digital_object = variable_get('delving_api_digital_object', DELVING_API_DIGITAL_OBJECT);
+      $counties =  variable_get('delving_api_counties', DELVING_API_COUNTIES);
       // remove the [] from the qf[] key before being sent to search api
       $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
+
       // clean up the search terms before sending
       $search_terms = urlencode(str_replace(' ', '+', $query));
+
       $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
+
       if ($has_digital_object == TRUE) {
-        $url .= '&hqf=HASDIGITALOBJECT:true&hqf=COUNTY:Oslo';
+        $url .= '&hqf=HASDIGITALOBJECT:true';
       }
+
+      $counties_limit = '';
+      if (!empty($counties)) {
+        foreach ($counties as $key => $value) {
+            if ($value) {
+                $counties_limit .= '&hqf=COUNTY:' . $value;
+            }
+        }
+        $url .= $counties_limit;
+      }
+      debug($url);
+
   $data = delvingapi_do_search($url);
   // TODO: make this configurable
-  $layout = array(
+  $layout_brief = array(
       "#thumbnail" => "europeana:object",
       "#title" => "dc:title",
       "#uri" => "europeana:uri",
       "Creator" => "dc:creator",
       "Description" => "dc:description",
-      "Subject(s)" => "dc:subject",
-      "County" => "abm:county",
-      "Municipality" => "abm:municipality",
-      "Place" => "abm:namedPlace",
-      "Person(s)" => "abm:aboutPerson"
+//      "Subject(s)" => "dc:subject",
+//      "County" => "abm:county",
+//      "Municipality" => "abm:municipality",
+//      "Place" => "abm:namedPlace",
+//      "Person(s)" => "abm:aboutPerson"
   );
 
-      $results = delvingsearch_show_results($data, $query, $layout);
+      $results = delvingsearch_show_results($data, $query, $layout_brief);
       break;
     case 'result-item':
        $url = $target . '?id=' . $obj_id;

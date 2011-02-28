@@ -30,7 +30,7 @@
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
-    width: 250px !important;
+    width: !00% !important;
 }
 
 .block.block-delvingsearch .content {
@@ -38,7 +38,7 @@
     max-height: 120px;
     overflow: auto;
     padding: 0 !important;
-    width: 250px;
+    width: inherit;
     margin: 0 0 2em 0;
     /*background: #F6F6F2;*/
 }
@@ -76,6 +76,10 @@
 
 #delving table.search-results td label {
     font-weight: bold;
+}
+
+#delving table.search-results h3 {
+    margin: 0;
 }
 
 div.delving-facets-container h4 {

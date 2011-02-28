@@ -7,40 +7,35 @@
  * @ingroup forms
  * @see system_settings_form()
  */
+
+header('Content-Type: text/html; charset=utf-8');
+
 function delving_admin_settings($form, &$form_state) {
 
   $options_do = array('1' => t('true'), '0' => t('false'));
   $options_df = array('1' => t('true'), '0' => t('false'));
-
-  $form['api-settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Delving Remote-Search API settings',
+  $options_counties = array(
+    '&#248;stfold' => '&#248;stfold',
+    'akershus' => 'akershus',
+    'oslo' => 'oslo',
+    'hedmark' => 'hedmark',
+    'oppland' => 'oppland',
+    'buskerud' => 'buskerud',
+    'vestfold' => 'vestfold',
+    'telemark' => 'telemark',
+    'aust-agder'=> 'aust-agder',
+    'vest-agder' => 'vest-agder',
+    'rogaland' => 'rogaland',
+    'hordaland' => 'hordaland',
+    'sogn og fjordane' => 'sogn og fjordane',
+    'm&#248;re og romsdal' => 'm&#248;re og romsdal',
+    's&#248;r-tr&#248;ndelag' => 's&#248;r-tr&#248;ndelag',
+    'nord-tr&#248;ndelag' => 'nord-tr&#248;ndelag',
+    'nordland' => 'nordland',
+    'troms' => 'troms',
+    'finnmark' => 'finnmark',
   );
-  $form['api-settings']['delving_api_remote_url'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Delving Remote-search API URL'),
-    '#description' => t('URL to send search request to. For example: <a href="@api_url">@api_url</a>', array(
-      '@api_url' => url(DELVING_API_REMOTE_URL),
-    )),
-    '#default_value' => variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL),
-    '#required' => TRUE,
-  );
-  $form['api-settings']['delving_api_results_rows'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Number of rows to return in search results'),
-    '#size' => 2,
-    '#default_value' => variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS),
-  );
-  $form['search-constraints'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Search Constraints',
-  );
-  $form['search-constraints']['delving_api_digital_object'] = array(
-    '#type' => 'radios',
-    '#title' => t('Return only results with digital objects'),
-    '#default_value' => variable_get('delving_api_digital_object', DELVING_API_DIGITAL_OBJECT),
-    '#options' => $options_do,
-  );
+ // '¿stfold','akershus','oslo','hedmark','oppland','buskerud','vestfold','telemark','aust-agder','vest-agder','rogaland','hordaland','sogn og fjordane','m¿re og romsdal','s¿r-tr¿ndelag','nord-tr¿ndelag','nordland','troms','finnmark'
   $form['search-display-settings'] = array(
     '#type' => 'fieldset',
     '#title' => 'Display Settings',
@@ -68,6 +63,49 @@ function delving_admin_settings($form, &$form_state) {
     '#description' => t('The name for the Delving-Remote-Search page. This is the name that will show in the menu and the top of the search page')
   );
   $form['search-display-settings']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
+
+  $form['api-settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Delving Remote-Search API settings',
+  );
+  $form['api-settings']['delving_api_remote_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Delving Remote-search API URL'),
+    '#description' => t('URL to send search request to. For example: <a href="@api_url">@api_url</a>', array(
+      '@api_url' => url(DELVING_API_REMOTE_URL),
+    )),
+    '#default_value' => variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL),
+    '#required' => TRUE,
+  );
+  $form['api-settings']['delving_api_results_rows'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of rows to return in search results'),
+    '#size' => 2,
+    '#default_value' => variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS),
+  );
+  $form['search-constraints'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Search Constraints',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+
+  );
+  $form['search-constraints']['delving_api_digital_object'] = array(
+    '#type' => 'radios',
+    '#title' => t('Return only results with digital objects'),
+    '#default_value' => variable_get('delving_api_digital_object', DELVING_API_DIGITAL_OBJECT),
+    '#options' => $options_do,
+  );
+  $form['search-constraints']['delving_api_counties'] = array(
+    '#title' => t('Limit results to these counties only'),
+    '#description' => t('Leave ALL unchecked to return results from all counties'),
+    '#type' => 'checkboxes',
+    '#tree' => TRUE,
+    '#options' => $options_counties,
+    '#default_value' => variable_get('delving_api_counties', DELVING_API_COUNTIES),
+    '#multicolumn' => array('width' => 3)
+
+  );
 
 
   return system_settings_form($form);

@@ -5,8 +5,10 @@ function delvingsearch_show_item($xml) {
   $data = simplexml_load_string($xml);
 
   $layout = array(
-    "" => "europeana:object",
-    "Title" => "dc:title",
+    "#thumbnail" => "europeana:object",
+    "#title" => "dc:title",
+    "#uri" => "europeana:uri",
+    'Title' => "dc:title",
     "Creator" => "dc:creator",
     "Description" => "dc:description",
     "Subject(s)" => "dc:subject",
@@ -23,26 +25,37 @@ function delvingsearch_show_item($xml) {
   $output = "<table class='search-results-item'>";
 
   foreach ($data->xpath("/result/item") as $item) {
-    $thumbnail = implode('', $item->xpath($layout[""]));
-    $output .= '<tr><td>';
-    if ($thumbnail) {
-      $output .= '<img width="300px" class="overlay" src="' . $thumbnail . '"/>';
-    }
-    else {
-      $output .= '<p>no thumbnail</p>';
-    }
-    $output .= '</td><td>';
-    foreach ($layout as $key => $value) {
-      if ($key) {
-        $value_array = $item->xpath($value);
-        if ($value_array) {
-          $value = implode(', ', $value_array);
-          $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+      $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
+      $title = implode('', $item->xpath($layout["#title"]));
+      $prefix = str_replace('%/%', '', variable_get('delving_item_page_path', DELVING_ITEM_PAGE_PATH));
+      $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
+
+      $output .= '<tr><td>';
+      if ($thumbnail) {
+        $output .= '<img width="300px" class="overlay" src="' . $thumbnail . '"/>';
+      }
+      else {
+        $output .= '<p>no thumbnail</p>';
+      }
+      $output .= '</td><td>';
+      $output .= '<h3>' . l($title, $uri) . '</h3>';
+      foreach ($layout as $key => $value) {
+        if (substr($key, 0, 1) != '#') {
+          $value_array = $item->xpath($value);
+          if ($value_array) {
+            $value = implode(', ', $value_array);
+            $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+          }
         }
       }
-    }
-    $output .= '</td></tr>';
+      $output .= '</td></tr>';
   }
   $output .= '</table>';
+  delvingsearch_set_page_title($title);
   return $output;
 }
+
+function delvingsearch_set_page_title($title){
+  drupal_set_title($title, $output = CHECK_PLAIN);
+}
+
