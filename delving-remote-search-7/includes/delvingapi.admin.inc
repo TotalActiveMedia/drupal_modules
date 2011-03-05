@@ -15,6 +15,7 @@ function delving_admin_settings($form, &$form_state) {
   $options_do = array('1' => t('true'), '0' => t('false'));
   $options_df = array('1' => t('true'), '0' => t('false'));
   $options_external_link = array('1' => t('Within Drupal'), '0' => t('To the original data provider'), '0' => t('A Delving Framework Portal instance'));
+  $options_language = array('en' => 'English', 'no' => 'Norsk', 'nb' => 'Bokmal');
   $form['api-settings'] = array(
     '#type' => 'fieldset',
     '#title' => 'Delving Remote-Search API settings',
@@ -33,6 +34,13 @@ function delving_admin_settings($form, &$form_state) {
     '#title' => t('Number of rows to return in search results'),
     '#size' => 2,
     '#default_value' => variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS),
+  );
+  $form['api-settings']['delving_api_language'] = array(
+    '#type' => 'select',
+    '#title'=> t('Choose your environment langauge'),
+    '#description' => t('All metadata field names will be returned in this language.'),
+    '#options' => $options_language,
+    '#default_value' => variable_get('delving_api_language', DELVING_API_LANGUAGE),
   );
   $form['search-constraints'] = array(
     '#type' => 'fieldset',

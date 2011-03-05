@@ -15,4 +15,5 @@ function delvingsearch_uninstall() {
   variable_del('delving_search_item_page_path');
   variable_del('delving_search_item_view_path');
   variable_del('delving_search_item_external_url');
+
 }
