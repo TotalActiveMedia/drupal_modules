@@ -52,11 +52,13 @@ function delvingsearch_menu() {
  */
 function delvingsearch_load_search() {
   drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
+//  drupal_add_js(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.js');
   return drupal_get_form('delvingsearch_form');
 }
 
 function delvingsearch_load_item($obj_part1, $obj_part2) {
-    drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
+  drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
+//  drupal_add_js(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.js');
   module_load_include('inc', 'delvingsearch', 'includes/delvingsearch.item');
   $obj_id = $obj_part1 . '/' . $obj_part2;
   $xml = delvingapi_get_item($obj_id);
@@ -295,7 +297,7 @@ function delvingsearch_breadcrumbs() {
       // drupal_set_message(print_r($breadcrumbs));
     }
     $out = '<div class="delving-breadcrumbs">';
-    $out .= t('Your searched for:') . '&#160;';
+    $out .= t('Your searched for') . ':&#160;';
 
     // Temporary measure until HASDIGITALOBJECT is a hidden query filter
     //$crumbs = delving_remove_element($breadcrumbs, 'HASDIGITALOBJECT:true');

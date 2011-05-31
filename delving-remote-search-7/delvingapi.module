@@ -9,18 +9,31 @@
  *
  */
 
-define('DELVING_SETTINGS_MENU_PATH', 'Administer/Site configuration/Delving Remote-Search API Settings');
+//define('DELVING_SETTINGS_MENU_PATH', 'admin/config/search/delving');
 define('DELVING_API_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
-define('DELVING_API_RESULTS_ROWS', 12);
+define('DELVING_API_RESULTS_NR_ITEMS', 12);
+define('DELVING_API_RESULTS_DESCRIPTION_LENGTH', '');
 define('DELVING_API_DIGITAL_OBJECT', TRUE);
 define('DELVING_API_HQFS', '');
 define('DELVING_API_LANGUAGE', 'en');
+define('DELVING_API_RESULTS_DISPLAY_STYLE', 'list');
+
+
+/**
+ * Implement hook_help()
+ */
+//function delvingapi_help($path, $arg){
+//    if($path == 'admin/help#delving') {
+//        return t('The Delving Remote-Search API provides access to remote Delving Platform instances');
+//    }
+//}
 
 /**
  * Implement hook_menu()
  */
 function delvingapi_menu() {
-  $items[variable_get('delving_settings_menu_path', DELVING_SETTINGS_MENU_PATH)] = array(
+//  $items[variable_get('delving_settings_menu_path', DELVING_SETTINGS_MENU_PATH)] = array(
+  $items['admin/config/search/delving'] = array(
     'title' => 'Delving Remote-Search Settings',
     'description' => 'Configure Search URL, etc. for Delving Remote-Search API',
     'access callback' => 'user_access',
@@ -42,7 +55,7 @@ function delvingapi_menu() {
  */
 function delvingapi_get_list($query = NULL, $qps = NULL) {
   $target = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
-  $rows = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
+  $rows = variable_get('delving_api_results_nr_items', DELVING_API_RESULTS_NR_ITEMS);
   $start = $qps['start'];
   $has_digital_object = variable_get('delving_api_digital_object', DELVING_API_DIGITAL_OBJECT);
   $language = variable_get('delving_api_language', DELVING_API_LANGUAGE);
@@ -51,7 +64,7 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
   // remove the [] from the qf[] key before being sent to search api
   $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
 
-  // clean up the search terms before sending
+  // Do some housekeeping on the query before sending it on its way
   $search_terms = urlencode(str_replace(' ', '+', $query));
   // Build the basic url
   $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
@@ -140,7 +153,7 @@ function delvingapi_do_search($url) {
 function delvingapi_get_query_params() {
 
   $page = isset($_GET['page']) ? $_GET['page'] : 0;
-  $rows = variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS);
+  $rows = variable_get('delving_api_results_rows', DELVING_API_RESULTS_NR_ITEMS);
   $start = $page * $rows + 1;
   $query = isset($_GET['query']) ? $_GET['query'] : '';
   $qf_string = '';

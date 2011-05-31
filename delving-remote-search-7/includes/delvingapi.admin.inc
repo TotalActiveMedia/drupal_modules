@@ -10,12 +10,17 @@
 
 header('Content-Type: text/html; charset=utf-8');
 
-function delving_admin_settings($form, &$form_state) {
+function delving_admin_settings($form, &$form_state)
+{
 
   $options_do = array('1' => t('true'), '0' => t('false'));
   $options_df = array('1' => t('true'), '0' => t('false'));
+  $options_dl = array('grid' => t('grid'), 'list' => t('list'));
   $options_external_link = array('1' => t('Within Drupal'), '0' => t('To the original data provider'), '0' => t('A Delving Framework Portal instance'));
   $options_language = array('en' => 'English', 'no' => 'Norsk', 'nb' => 'Bokmal');
+  /**
+   * API SETTINGS
+   */
   $form['api-settings'] = array(
     '#type' => 'fieldset',
     '#title' => 'Delving Remote-Search API settings',
@@ -24,24 +29,51 @@ function delving_admin_settings($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Delving Remote-search API URL'),
     '#description' => t('URL to send search request to. For example: <a href="@api_url">@api_url</a>', array(
-      '@api_url' => url(DELVING_API_REMOTE_URL),
-    )),
+                                                                                                            '@api_url' => url(DELVING_API_REMOTE_URL),
+                                                                                                       )),
     '#default_value' => variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL),
     '#required' => TRUE,
   );
-  $form['api-settings']['delving_api_results_rows'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Number of rows to return in search results'),
-    '#size' => 2,
-    '#default_value' => variable_get('delving_api_results_rows', DELVING_API_RESULTS_ROWS),
+  /**
+   * RESULTS DISPLAY SETTINGS
+   */
+  $form['results-display'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Results display settings',
   );
-  $form['api-settings']['delving_api_language'] = array(
+  $form['results-display']['delving_api_language'] = array(
     '#type' => 'select',
-    '#title'=> t('Choose your environment langauge'),
+    '#title' => t('Choose your environment langauge'),
     '#description' => t('All metadata field names will be returned in this language.'),
     '#options' => $options_language,
     '#default_value' => variable_get('delving_api_language', DELVING_API_LANGUAGE),
   );
+
+  $form['results-display']['delving_api_results_display_style'] = array(
+    '#type' => 'radios',
+    '#title' => t('Show the initials results as a list or gird'),
+    '#default_value' => variable_get('delving_api_results_display_style', DELVING_API_RESULTS_DISPLAY_STYLE),
+    '#options' => $options_dl,
+  );
+
+  $form['results-display']['delving_api_results_nr_items'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of items to return in search results'),
+    '#size' => 2,
+    '#default_value' => variable_get('delving_api_results_nr_items', DELVING_API_RESULTS_NR_ITEMS),
+  );
+  $form['results-display']['delving_api_results_description_length'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Length of the description field.'),
+    '#description' => t('The number of characters visible for the description field in the returned results list. Leave blank for full description.'),
+    '#size' => 4,
+    '#default_value' => variable_get('delving_api_results_description_length', DELVING_API_RESULTS_DESCRIPTION_LENGTH),
+  );
+
+
+  /**
+   * SEARCH CONSTRAINTS
+   */
   $form['search-constraints'] = array(
     '#type' => 'fieldset',
     '#title' => 'Search Constraints',
@@ -53,6 +85,7 @@ function delving_admin_settings($form, &$form_state) {
     '#default_value' => variable_get('delving_api_digital_object', DELVING_API_DIGITAL_OBJECT),
     '#options' => $options_do,
   );
+
   $form['search-constraints']['delving_api_hqfs'] = array(
     '#title' => t('Limit results by facets'),
     '#description' => t('Enter a comma separted list of facets by which you wish to limit the search. For example "COUNTY:Oslo,MUNICIPALITY:Majorstuen".
@@ -61,6 +94,9 @@ function delving_admin_settings($form, &$form_state) {
     '#default_value' => variable_get('delving_api_hqfs', DELVING_API_HQFS),
     '#required' => FALSE,
   );
+  /**
+   * PAGE DISPLAY SETTINGS
+   */
   $form['search-display-settings'] = array(
     '#type' => 'fieldset',
     '#title' => 'Page Display Settings',
@@ -79,13 +115,16 @@ function delving_admin_settings($form, &$form_state) {
     '#required' => TRUE,
     '#description' => t('The text which appears in the link back to results page')
   );
-   $form['search-item-view-settings'] = array(
+  /**
+   *  OBJECT / ITEM PAGE SETTINGS
+   */
+  $form['search-item-view-settings'] = array(
     '#type' => 'fieldset',
     '#title' => 'Object Display Settings',
   );
-   $form['search-item-view-settings']['delving_search_item_view_path'] = array(
+  $form['search-item-view-settings']['delving_search_item_view_path'] = array(
     '#type' => 'select',
-    '#title'=> t('Choose where you would like to view the object'),
+    '#title' => t('Choose where you would like to view the object'),
     '#description' => t('All links on the titles of the returned results will point to this setting.'),
     '#default_value' => variable_get('delving_search_item_view_path', DELVING_SEARCH_ITEM_VIEW_PATH),
     '#options' => array(
@@ -101,7 +140,6 @@ function delving_admin_settings($form, &$form_state) {
     '#default_value' => variable_get('delving_search_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL)
   );
   $form['search-display-settings']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
-
 
 
   return system_settings_form($form);

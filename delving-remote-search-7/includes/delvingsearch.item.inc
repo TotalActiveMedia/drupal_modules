@@ -44,7 +44,7 @@ function delvingsearch_show_item($xml) {
       $output .= '<img width="300px" class="overlay" src="' . $thumbnail . '"/>';
     }
     else {
-      $output .= '<p>no thumbnail</p>';
+      $output .= t('no thumbnail available');
     }
     $output .= '</td><td>';
     //      $output .= '<h3>' . l($title, $uri) . '</h3>';
