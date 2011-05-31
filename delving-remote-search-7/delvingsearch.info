@@ -7,4 +7,5 @@ files[] = delvingsearch.install
 files[] = delvingsearch.module
 files[] = delvingsearch-block
 dependencies[] = delvingapi
+configure = admin/config/search/delving-search
 ;php = 5.2

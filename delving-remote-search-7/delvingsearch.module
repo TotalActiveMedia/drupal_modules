@@ -13,6 +13,11 @@ define('DELVING_SEARCH_RESULTS_PAGE_PATH', 'delving/search');
 define('DELVING_SEARCH_ITEM_PAGE_PATH', 'delving/item/%/%');
 define('DELVING_SEARCH_ITEM_VIEW_PATH', 'drupal');
 define('DELVING_SEARCH_ITEM_EXTERNAL_URL', 'http://norvegiana2.delving.org/portal/object/');
+define('DELVING_SEARCH_RESULTS_DISPLAY_STYLE', 'list');
+define('DELVING_SEARCH_RESULTS_TITLE_LENGTH', '');
+define('DELVING_SEARCH_RESULTS_DESCRIPTION_LENGTH', '');
+define('DELVING_SEARCH_THUMB_WIDTH', '165');
+define('DELVING_SEARCH_THUMB_VIEWER_HEIGHT', '165');
 /**
  * Implements hook_menu()
  */
@@ -25,6 +30,17 @@ function delvingsearch_menu() {
   $path_ar = explode('/', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
   $first_arg = count($path_ar) - 2;
   $second_arg = count($path_ar) - 1;
+
+  $items['admin/config/search/delving-search'] = array(
+    'title' => 'Delving Remote-Search Settings',
+    'description' => 'Configure result display, thumbnail widths, etc...',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('delvingsearch_admin_settings'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'includes/delvingsearch.admin.inc'
+  );
 
   $items[variable_get('delving_search_results_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)] = array(
     'title' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),

@@ -12,11 +12,10 @@
 //define('DELVING_SETTINGS_MENU_PATH', 'admin/config/search/delving');
 define('DELVING_API_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
 define('DELVING_API_RESULTS_NR_ITEMS', 12);
-define('DELVING_API_RESULTS_DESCRIPTION_LENGTH', '');
 define('DELVING_API_DIGITAL_OBJECT', TRUE);
 define('DELVING_API_HQFS', '');
 define('DELVING_API_LANGUAGE', 'en');
-define('DELVING_API_RESULTS_DISPLAY_STYLE', 'list');
+
 
 
 /**
@@ -33,13 +32,13 @@ define('DELVING_API_RESULTS_DISPLAY_STYLE', 'list');
  */
 function delvingapi_menu() {
 //  $items[variable_get('delving_settings_menu_path', DELVING_SETTINGS_MENU_PATH)] = array(
-  $items['admin/config/search/delving'] = array(
+  $items['admin/config/search/delving-api'] = array(
     'title' => 'Delving Remote-Search Settings',
     'description' => 'Configure Search URL, etc. for Delving Remote-Search API',
     'access callback' => 'user_access',
     'access arguments' => array('administer site configuration'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('delving_admin_settings'),
+    'page arguments' => array('delvingapi_admin_settings'),
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/delvingapi.admin.inc'
   );
@@ -116,6 +115,7 @@ function delvingapi_do_search($url) {
     if ($response->code == 200) {
       // Set the root of the response data
       $data = $response->data;
+//      var_dump($data);
       // Cache response and set semaphore for use by blocks.
       delving_static_response_cache($data);
       delving_has_searched(TRUE);
