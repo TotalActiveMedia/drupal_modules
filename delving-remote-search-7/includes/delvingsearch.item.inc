@@ -20,17 +20,22 @@ function delvingsearch_show_item($xml) {
     "Language" => "dc:language",
     "Dataprovider" => "europeana:dataProvider",
     "Provider" => "europeana:provider",
+    "#originalContext" => "europeana:isShownAt"
   );
   //    $layout = array();
   //    foreach ($data->xpath("/results/layout/drupal/field") as $field) {
   //        $layout[(string)$field->key] = (string)$field->value;
   //    }
-  $ref = getenv("HTTP_REFERER");
-  $back_text = variable_get('delving_search_page_return', DELVING_SEARCH_PAGE_RETURN);
+  $link_attributes = array();
+  if(variable_get('delving_search_item_hyperlink_button', DELVING_SEARCH_ITEM_HYPERLINK_BUTTON) == 1) {
+    $link_attributes['class'] = 'button';
+  }
 
+  $ref = getenv("HTTP_REFERER");
+  $back_text = variable_get('delving_search_item_page_return_to_results', DELVING_SEARCH_ITEM_PAGE_RETURN_TO_RESULTS);
 
   $output = '<div id="delving">';
-  $output .= l($back_text, $ref);
+  $output .= l($back_text, $ref, array('attributes' => $link_attributes));
   $output .= "<table class='search-results-item'>";
 
   foreach ($data->xpath("/result/item") as $item) {
@@ -38,7 +43,7 @@ function delvingsearch_show_item($xml) {
     $title = implode('', $item->xpath($layout["#title"]));
     $prefix = str_replace('%/%', '', variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
     $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
-
+    $originalContext =  implode('', $item->xpath($layout["#originalContext"]));
     $output .= '<tr><td>';
     if ($thumbnail) {
       $output .= '<img width="300px" class="overlay" src="' . $thumbnail . '"/>';
@@ -57,7 +62,14 @@ function delvingsearch_show_item($xml) {
         }
       }
     }
+
+    if ($originalContext && variable_get('delving_search_item_show_in_original_context', DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT) == 1) {
+//      $output .= '<a class="button" href="' . $originalContext .'" target="_blank">' . t("Show in original context") . '</a>';
+      $output .= l(t("Show in original context"), $originalContext, array('attributes' => $link_attributes));
+    }
+
     $output .= '</td></tr>';
+
   }
   $output .= '</table>';
   $output .= '<div id="pb-delving">' . l('Search Powered by Delving', 'http://www.delving.eu',  array('attributes' => array('target' => '_blank')))  . '</div>';

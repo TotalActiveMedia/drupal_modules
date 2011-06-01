@@ -8,16 +8,18 @@
  */
 
 define('DELVING_SEARCH_PAGE_NAME', 'Delving Search');
-define('DELVING_SEARCH_PAGE_RETURN', 'Return to results');
 define('DELVING_SEARCH_RESULTS_PAGE_PATH', 'delving/search');
-define('DELVING_SEARCH_ITEM_PAGE_PATH', 'delving/item/%/%');
-define('DELVING_SEARCH_ITEM_VIEW_PATH', 'drupal');
-define('DELVING_SEARCH_ITEM_EXTERNAL_URL', 'http://norvegiana2.delving.org/portal/object/');
-define('DELVING_SEARCH_RESULTS_DISPLAY_STYLE', 'list');
 define('DELVING_SEARCH_RESULTS_TITLE_LENGTH', '');
+define('DELVING_SEARCH_RESULTS_DISPLAY_STYLE', 'list');
 define('DELVING_SEARCH_RESULTS_DESCRIPTION_LENGTH', '');
 define('DELVING_SEARCH_THUMB_WIDTH', '165');
+define('DELVING_SEARCH_ITEM_PAGE_PATH', 'delving/item/%/%');
 define('DELVING_SEARCH_THUMB_VIEWER_HEIGHT', '165');
+define('DELVING_SEARCH_ITEM_PAGE_RETURN_TO_RESULTS', 'Return to results');
+define('DELVING_SEARCH_ITEM_VIEW_PATH', 'drupal');
+define('DELVING_SEARCH_ITEM_EXTERNAL_URL', 'http://norvegiana2.delving.org/portal/object/');
+define('DELVING_SEARCH_ITEM_HYPERLINK_BUTTON', 1);
+define('DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT', '');
 /**
  * Implements hook_menu()
  */
@@ -44,10 +46,17 @@ function delvingsearch_menu() {
 
   $items[variable_get('delving_search_results_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)] = array(
     'title' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),
-    'description' => 'Page for searching remote Delving Framework API without dependency on the Search module.',
+    'description' => 'Page for searching remote Delving Framework API.',
     'page callback' => 'delvingsearch_load_search',
     'access callback' => TRUE,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
+  );
+  $items[variable_get('delving_search_results_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)] = array(
+    'title' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),
+    'description' => 'Page for searching remote Delving Framework API.',
+    'page callback' => 'delvingsearch_load_search',
+    'access callback' => TRUE,
+    'type' => MENU_VISIBLE_IN_BREADCRUMB,
   );
   $items[variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH)] = array(
     'title' => variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH),
@@ -135,6 +144,12 @@ function delvingsearch_form_submit($form, &$form_state) {
 function delvingsearch_block_info() {
 
   $blocks = array();
+//  $blocks['search'] = array(
+//    'info' => t('Delving Simple Search Form'),
+//    'status' => 0,
+//    'visibility' => BLOCK_VISIBILITY_LISTED,
+//    'cache' => DRUPAL_NO_CACHE,
+//  );
   $blocks['county'] = array(
     'info' => t('Delving Facets: County'),
     'status' => 0,

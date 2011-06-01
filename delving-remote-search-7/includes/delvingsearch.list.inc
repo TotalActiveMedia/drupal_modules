@@ -48,6 +48,9 @@ function delvingsearch_show_list($xml, $query)
 
         $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
         $title = implode('', $item->xpath($layout["#title"]));
+        if (trim($title)== '' || trim($title) == '-') {
+          $title = t("Untitled");
+        }
 //        $description =  implode('', $item->xpath($layout["#description"]));
 
         $link_attributes = array();
@@ -266,6 +269,7 @@ function delving_teaser($str, $num=50, $type='chars'){
 		$ret .= ' '.$chunk;
 		$i++;
 	}
-  $ret .= '...';
+//  $ret .= '&hellip;';
+  $ret .= ' ...';
 	return trim($ret);
 }

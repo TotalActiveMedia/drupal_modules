@@ -10,15 +10,16 @@
  */
 function delvingsearch_uninstall() {
   variable_del('delving_search_page_name');
-  variable_del('delving_search_page_return');
   variable_del('delving_search_results_page_path');
-  variable_del('delving_search_item_page_path');
-  variable_del('delving_search_item_view_path');
-  variable_del('delving_search_item_external_url');
   variable_del('delving_search_results_display_style');
   variable_del('delving_search_results_title_length');
   variable_del('delving_search_results_description_length');
   variable_del('delving_search_thumb_width');
   variable_del('delving_search_thumb_viewer_height');
+  variable_del('delving_search_item_page_return_to_results');
+  variable_del('delving_search_item_view_path');
+  variable_del('delving_search_item_external_url');
+  variable_del('delving_search_item_hyperlink_button');
+  variable_del('delving_search_item_show_in_original_context');
 
 }
