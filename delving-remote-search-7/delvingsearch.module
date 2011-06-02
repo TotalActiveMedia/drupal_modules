@@ -34,8 +34,8 @@ function delvingsearch_menu() {
   $second_arg = count($path_ar) - 1;
 
   $items['admin/config/search/delving-search'] = array(
-    'title' => 'Delving Remote-Search Settings',
-    'description' => 'Configure result display, thumbnail widths, etc...',
+    'title' => 'Delving Remote-Search RESULTS Settings',
+    'description' => 'Configure result layout, thumbnail widths, field lengths, etc.',
     'access callback' => 'user_access',
     'access arguments' => array('administer site configuration'),
     'page callback' => 'drupal_get_form',

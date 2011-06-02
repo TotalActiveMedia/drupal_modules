@@ -33,7 +33,7 @@ define('DELVING_API_LANGUAGE', 'en');
 function delvingapi_menu() {
 //  $items[variable_get('delving_settings_menu_path', DELVING_SETTINGS_MENU_PATH)] = array(
   $items['admin/config/search/delving-api'] = array(
-    'title' => 'Delving Remote-Search Settings',
+    'title' => 'Delving Remote-Search API Settings',
     'description' => 'Configure Search URL, etc. for Delving Remote-Search API',
     'access callback' => 'user_access',
     'access arguments' => array('administer site configuration'),
