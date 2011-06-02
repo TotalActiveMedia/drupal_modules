@@ -102,11 +102,65 @@
 /** RESULTS GRID *************************************************/
 
 #delving .results {
-   width: 100%;
-   overflow:  hidden;
+
 }
 
-#delving .result {
+#delving .results.list .result {
+    width: 100%;
+    clear: both;
+    display: inline-block;
+    margin:  0 0 20px 0;
+    height: auto;
+
+}
+
+/*#delving .results.list .result.odd .meta-container {*/
+    /*background-color: #ebeded;*/
+    /*height: 140px;*/
+/*}*/
+
+/*#delving .results.list .result {*/
+    /*display: block;*/
+    /*margin-bottom: 1em;*/
+    /*height: 140px;*/
+/*}*/
+
+#delving .results.list .result .img-container{
+    display: block;
+    float: left;
+    margin-right: 1em;
+    /*margin-bottom: 1em;*/
+    /*padding:  .5em;*/
+}
+
+#delving .results.list .result .img-window {
+    position: relative;
+    /*height: 120px;*/
+    width: auto;
+    overflow: hidden;
+    /*text-align: center;*/
+}
+
+#delving .results.list .result .meta-container {
+    margin-bottom: 1em;
+}
+
+#delving .results.list .result.odd {
+   background:  #F6F6F2;
+}
+
+/*#delving .results.list .result .meta-container .title {*/
+    /*display: inline-block;*/
+    /*float: left;*/
+    /*word-wrap: break-word;*/
+/*}*/
+
+/*#delving .results {*/
+   /*width: 100%;*/
+   /*overflow:  hidden;*/
+/*}*/
+
+#delving .results.grid .result {
     display: inline;
     float: left;
     margin-left: 1%;
@@ -114,28 +168,85 @@
     width: 23%;
 }
 
-#delving .result .img-container {
+#delving .results.grid .img-window {
     position: relative;
     height: 120px;
-    width: 100%;
+    width: auto;
     overflow: hidden;
     text-align: center;
-    vertical-align: bottom;
 }
 
-#delving .result .img-container img {
+/*#delving .results.list .result {*/
+    /*width: 100%;*/
+    /*display: table-row;*/
+    /*background:  gold;*/
+    /*overflow:  hidden;*/
+    /*vertical-align: top;*/
+    /*border-collapse:collapse;*/
+
+/*}*/
+
+/*#delving .results.list .img-container {*/
+   /*display: table-cell;*/
+    /*border-collapse:collapse;*/
+    /*overflow:  hidden;*/
+
+/*}*/
+
+/*delving .results.list .meta-container {*/
+    /*border-collapse:collapse;*/
+
+    /*display: table-cell;*/
+    /*vertical-align: top;*/
+/*}*/
+
+/*#delving .results .img-window {*/
+    /*background:  green;*/
+    /*position: relative;*/
+    /*height: 120px;*/
+    /*width: auto;*/
+    /*overflow: hidden;*/
+    /*text-align: center;*/
+/*}*/
+
+/*#delving results.grid .result .img-container img {*/
     /*position:absolute;*/
     /*clip:rect(0px,210px,120px,0px);*/
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-    vertical-align: baseline;
-}
+    /*position: absolute;*/
+    /*bottom: 0px;*/
+    /*left: 0px;*/
+    /*vertical-align: baseline;*/
+/*}*/
 
+/*#delving .result.grid .meta-container {*/
+   /*display: block;*/
+/*}*/
+
+/*#delving .results.list .img-container {*/
+    /*display: inline-block;*/
+    /*float: left;*/
+/*}*/
+
+/*#delving .result .meta-container {*/
+    /*background: #ccc;*/
+   /*display: inline-block;*/
+   /*float: left;*/
+/*}*/
+
+/*#delving .result h2 {*/
+    /*font-size: 14px;*/
+    /*font-weight: normal;*/
+    /*vertical-align: top !important;*/
+    /*display: inline;*/
+    /*white-space: normal;*/
+    /*word-wrap:break-word;*/
+
+/*}*/
 
 #delving .result h2 {
     font-size: 14px;
     font-weight: normal;
+    letter-spacing: normal;
 }
 
 
