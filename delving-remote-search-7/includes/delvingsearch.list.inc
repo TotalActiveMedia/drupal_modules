@@ -94,7 +94,11 @@ function delvingsearch_show_list($xml, $query)
         $output .= l('<img width="' . $thumb_width . '" class="overlay" src="' . $thumbnail . '"/>', $uri, array('attributes' => $link_attributes, 'html' => TRUE));
       }
       else {
-        $output .= '<p>' . t('no thumbnail available') . $thumbnail . '</p>';
+//        $output .= '<p>' . t('no thumbnail available') . '</p>';
+        $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/no-image.png';
+//        $output .= base_path();
+      $output .= l('<img width="' . $thumb_width . '" src="' .  $thumbnail . '"/>', $uri, array('attributes' => $link_attributes, 'html' => TRUE));
+
       }
 
       $output .= '</div>'; // end img-window
@@ -102,7 +106,7 @@ function delvingsearch_show_list($xml, $query)
       $output .= '<div class="meta-container">';
       $output .= '<div class="meta-window">';
       if (trim($max_title) != '') {
-        $output .= '' . l(delving_teaser($title, $max_title, 'chars'), $uri, array('attributes' => $link_attributes)) . '';
+        $output .= '<h2>' . l(delving_teaser($title, $max_title, 'chars'), $uri, array('attributes' => $link_attributes)) . '</h2>';
 
       }
       else {
