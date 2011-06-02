@@ -21,5 +21,5 @@ function delvingsearch_uninstall() {
   variable_del('delving_search_item_external_url');
   variable_del('delving_search_item_hyperlink_button');
   variable_del('delving_search_item_show_in_original_context');
-
+  variable_del('delving_search_object_img_width');
 }

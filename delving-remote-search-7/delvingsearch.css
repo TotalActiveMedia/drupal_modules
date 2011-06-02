@@ -249,6 +249,21 @@
     letter-spacing: normal;
 }
 
+#delving .result-object {
+    clear: both;
+    overflow:  hidden;
+}
+
+#delving .result-object-img {
+    display: inline-block;
+    float: left;
+}
+
+#delving .result-object-meta {
+    display: inline-block;
+    float: left;
+    margin-left: 1em;
+}
 
 
 

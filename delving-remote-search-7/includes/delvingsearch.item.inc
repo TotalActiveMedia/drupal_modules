@@ -1,6 +1,7 @@
 <?php
 
-function delvingsearch_show_item($xml) {
+function delvingsearch_show_item($xml)
+{
 
   $data = simplexml_load_string($xml);
 
@@ -27,32 +28,37 @@ function delvingsearch_show_item($xml) {
   //        $layout[(string)$field->key] = (string)$field->value;
   //    }
   $link_attributes = array();
-  if(variable_get('delving_search_item_hyperlink_button', DELVING_SEARCH_ITEM_HYPERLINK_BUTTON) == 1) {
+  if (variable_get('delving_search_item_hyperlink_button', DELVING_SEARCH_ITEM_HYPERLINK_BUTTON) == 1) {
     $link_attributes['class'] = 'button';
   }
 
   $ref = getenv("HTTP_REFERER");
   $back_text = variable_get('delving_search_item_page_return_to_results', DELVING_SEARCH_ITEM_PAGE_RETURN_TO_RESULTS);
 
-  $output = '<div id="delving">';
+  $output = '<div id="delving" class="object">';
+  $output .= '<div class="delving-breadcrumbs">';
   $output .= l($back_text, $ref, array('attributes' => $link_attributes));
-  $output .= "<table class='search-results-item'>";
-
+  $output .= '</div>';
+  $output .= '<div class="result-object">';
+  $output .= '<div class="result-object-img">';
   foreach ($data->xpath("/result/item") as $item) {
     $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
     $title = implode('', $item->xpath($layout["#title"]));
     $prefix = str_replace('%/%', '', variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
     $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
-    $originalContext =  implode('', $item->xpath($layout["#originalContext"]));
-    $output .= '<tr><td>';
+    $originalContext = implode('', $item->xpath($layout["#originalContext"]));
+    $img_width = variable_get('delving_search_object_img_width', DELVING_SEARCH_OBJECT_IMG_WIDTH);
+
     if ($thumbnail) {
-      $output .= '<img width="300px" class="overlay" src="' . $thumbnail . '"/>';
+      $output .= '<img width="' . $img_width . '" class="overlay" src="' . $thumbnail . '"/>';
     }
     else {
-      $output .= t('no thumbnail available');
+      $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/no-image.png';
+      $output .= l('<img width="' . $img_width . '" src="' . $thumbnail . '"/>', $uri, array('html' => TRUE));
+
     }
-    $output .= '</td><td>';
-    //      $output .= '<h3>' . l($title, $uri) . '</h3>';
+    $output .= '</div>'; // result-object-img
+    $output .= '<div class="result-object-meta">';
     foreach ($layout as $key => $value) {
       if (substr($key, 0, 1) != '#') {
         $value_array = $item->xpath($value);
@@ -63,16 +69,17 @@ function delvingsearch_show_item($xml) {
       }
     }
 
+
     if ($originalContext && variable_get('delving_search_item_show_in_original_context', DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT) == 1) {
-//      $output .= '<a class="button" href="' . $originalContext .'" target="_blank">' . t("Show in original context") . '</a>';
       $output .= l(t("Show in original context"), $originalContext, array('attributes' => $link_attributes));
     }
 
-    $output .= '</td></tr>';
+    $output .= '</div>'; // result-object-meta
+    $output .= '</div>'; // result-object
 
   }
-  $output .= '</table>';
-  $output .= '<div id="pb-delving">' . l('Search Powered by Delving', 'http://www.delving.eu',  array('attributes' => array('target' => '_blank')))  . '</div>';
+
+  $output .= '<div id="pb-delving">' . l('Search Powered by Delving', 'http://www.delving.eu', array('attributes' => array('target' => '_blank'))) . '</div>';
   $output .= '</div>';
 
   delvingsearch_set_page_title($title);
@@ -80,7 +87,8 @@ function delvingsearch_show_item($xml) {
   return $output;
 }
 
-function delvingsearch_set_page_title($title) {
+function delvingsearch_set_page_title($title)
+{
   drupal_set_title($title, $output = CHECK_PLAIN);
 }
 

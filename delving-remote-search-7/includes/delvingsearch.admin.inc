@@ -43,7 +43,7 @@ function delvingsearch_admin_settings($form, &$form_state)
   // Page layout style grid / list
   $form['results-display']['display-layout-page'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Page layout'),
+    '#title' => t('Results layout'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -196,7 +196,21 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#options' => $options_oc,
     '#description' => t('By choosing "show" a link will be created (if the field is available) which will open the object in a new window in it\'s original context.')
   );
-
+  // Thumbnails settings
+  $form['search-item-view-settings']['object-image-width'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Object Image'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  // Thumbnail width
+  $form['search-item-view-settings']['object-image-width']['delving_search_object_img_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Image width'),
+    '#description' => t('The WIDTH (in pixels) of the image displayed on the object page.'),
+    '#size' => 4,
+    '#default_value' => variable_get('delving_search_object_img_width', DELVING_SEARCH_OBJECT_IMG_WIDTH),
+  );
 
   return system_settings_form($form);
 }

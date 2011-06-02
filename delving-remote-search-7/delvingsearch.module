@@ -20,6 +20,7 @@ define('DELVING_SEARCH_ITEM_VIEW_PATH', 'drupal');
 define('DELVING_SEARCH_ITEM_EXTERNAL_URL', 'http://norvegiana2.delving.org/portal/object/');
 define('DELVING_SEARCH_ITEM_HYPERLINK_BUTTON', 1);
 define('DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT', '');
+define('DELVING_SEARCH_OBJECT_IMG_WIDTH', 300);
 /**
  * Implements hook_menu()
  */
