@@ -212,6 +212,23 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#default_value' => variable_get('delving_search_object_img_width', DELVING_SEARCH_OBJECT_IMG_WIDTH),
   );
 
+  $form['wikipedia'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Extra Search Results',
+  );
+  $form['wikipedia']['wikipedia-api'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Wikipedia Results'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['wikipedia']['wikipedia-api']['delving_search_wikipedia_api_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Wikipedia URL'),
+    '#description' => t('<p>The base url of the wikipedia url (no trailing slash). Eg: http://en.wikipedia.org, http://no.wikipedia.org, http://nl.wikipedia.org</p>
+    <p>The display of the Wikipedia results block can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.</p>'),
+    '#default_value' => variable_get('delving_search_wikipedia_api_url', DELVING_SEARCH_WIKIPEDIA_API_URL),
+  );
   return system_settings_form($form);
 }
 

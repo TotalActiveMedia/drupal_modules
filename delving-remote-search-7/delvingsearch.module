@@ -21,6 +21,8 @@ define('DELVING_SEARCH_ITEM_EXTERNAL_URL', 'http://norvegiana2.delving.org/porta
 define('DELVING_SEARCH_ITEM_HYPERLINK_BUTTON', 1);
 define('DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT', '');
 define('DELVING_SEARCH_OBJECT_IMG_WIDTH', 300);
+define('DELVING_SEARCH_WIKIPEDIA_API_URL', 'http://en.wikipedia.org');
+
 /**
  * Implements hook_menu()
  */
@@ -145,12 +147,19 @@ function delvingsearch_form_submit($form, &$form_state) {
 function delvingsearch_block_info() {
 
   $blocks = array();
-//  $blocks['search'] = array(
-//    'info' => t('Delving Simple Search Form'),
-//    'status' => 0,
-//    'visibility' => BLOCK_VISIBILITY_LISTED,
-//    'cache' => DRUPAL_NO_CACHE,
-//  );
+  $blocks['search'] = array(
+    'info' => t('Delving Simple Search Form'),
+    'status' => 0,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  $blocks['delving-search'] = array(
+    'info' => t('Delving Search Form'),
+    'status' => 0,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
   $blocks['county'] = array(
     'info' => t('Delving Facets: County'),
     'status' => 0,
@@ -200,7 +209,13 @@ function delvingsearch_block_info() {
     'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
-
+  $blocks['wikipedia'] = array(
+    'info' => t('Delving Object: Wikipedia info'),
+    'status' => 0,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
   return $blocks;
 }
 
@@ -219,6 +234,9 @@ function delvingsearch_block_view($delta = '') {
   );
 
   switch ($delta) {
+    case 'delving-search':
+      $block['subject'] = t('Search');
+      $block['content'] = t('Search box goes here');
     case 'county':
       $block['subject'] = t('County');
       $block['content'] = delvingsearch_facet_get('COUNTY');
@@ -247,10 +265,59 @@ function delvingsearch_block_view($delta = '') {
       $block['subject'] = t('Type');
       $block['content'] = delvingsearch_facet_get('TYPE');
       break;
+    case 'wikipedia':
+      $block['subject'] = t('More Results from Wikepedia');
+      $block['content'] = delvingsearch_wikipedia_get();
+      break;
   }
   // Only display the block if it actually has any content
   if (count($block['content']['#items']) > 0) {
     return $block;
+  }
+//  return $block;
+
+}
+
+
+function delvingsearch_wikipedia_get()
+{
+  // Use the response cache to grab the query
+  if (isset($_COOKIE['delving-query'])) {
+    $query = $_COOKIE['delving-query'];
+  }
+  else {
+    return;
+  }
+  $endpoint = variable_get('delving_search_wikipedia_api_url', DELVING_SEARCH_WIKIPEDIA_API_URL);
+  $response = drupal_http_request($endpoint . '/w/api.php?action=opensearch&search=' . urlencode($query) . '&format=json');
+  if ($response->code == 200) {
+    // Set the root of the response data
+    $data = json_decode($response->data);
+    $term = $data[0];
+    $items_raw = $data[1];
+    $items = array();
+    $i = 0;
+    foreach($items_raw as $item){
+       $items[] = '<a href="' . $endpoint .  '/wiki/' . $item . '" target="_blank">' . $item . '</a>';
+      $i++;
+    }
+    // Give back
+    $content = array(
+      '#theme' => 'item_list',
+      '#items' => $items
+    );
+    return $content;
+  }
+  else {
+    // Deal with HTTP errors
+    switch ($response->code) {
+      case 401:
+        drupal_set_message(t('Yikes! A 401. Do we have the correct target url?'));
+        break;
+      default:
+        drupal_set_message(t('Something went wrong @error', array('@error' => 'HTTP ' . $response->code . ': ' . strip_tags($response->data),)), 'error');
+        break;
+    }
   }
 
 }
@@ -315,6 +382,7 @@ function delvingsearch_facet_get($facet_name) {
 
   return $content;
 }
+
 
 function delvingsearch_breadcrumbs() {
   if (delving_has_searched() == TRUE) {

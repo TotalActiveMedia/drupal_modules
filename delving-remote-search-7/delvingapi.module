@@ -65,6 +65,10 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
 
   // Do some housekeeping on the query before sending it on its way
   $search_terms = urlencode(str_replace(' ', '+', $query));
+
+  // Put the search term(s) in a cookie for re-use on the object page
+  setcookie("delving-query", $query);
+
   // Build the basic url
   $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
   // Add query contstraints
