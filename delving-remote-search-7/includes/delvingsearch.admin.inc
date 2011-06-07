@@ -20,9 +20,9 @@ function delvingsearch_admin_settings($form, &$form_state)
    * RESULTS PAGE DISPLAY SETTINGS *************************************************************************************
    */
   $form['results-display'] = array(
-    '#type' => 'fieldset',
+    '#type' => 'vertical_tabs',
     '#title' => 'Results page display settings',
-    '#description' => t('Configure page name, results layout style, field lengths and thumbnail display properties.')
+    '#prefix' => t('<h2>Results Page Settings</h2>Configure page name, results layout style, field lengths and thumbnail display properties.')
   );
 
   // Page title
@@ -105,23 +105,28 @@ function delvingsearch_admin_settings($form, &$form_state)
   /**
    * RESULTS FACETS DISPLAY SETTINGS ***********************************************************************************
    */
-  $form['facets-display'] = array(
+  $form['results-display']['facets-display'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Facet display settings',
+    '#title' => 'Facets display',
   );
 
-  $form['facets-display']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
+  $form['results-display']['facets-display']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
 
   /**
    *  OBJECT / ITEM PAGE SETTINGS **************************************************************************************
    */
-  $form['search-item-view-settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Item Page Display Settings',
+  $form['item-page'] = array(
+    '#type' => 'vertical_tabs',
+    '#prefix' => '<h2>Item Page Display Settings</h2>',
   );
 
   // Where the object is viewed
-  $form['search-item-view-settings']['delving_search_item_view_path'] = array(
+
+  $form['item-page']['location'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Item Page Display Settings',
+  );
+  $form['item-page']['location']['delving_search_item_view_path'] = array(
     '#type' => 'select',
     '#title' => t('Choose where you would like to view the object'),
     '#description' => t('All links on the titles of the returned results will point to this setting.'),
@@ -137,14 +142,14 @@ function delvingsearch_admin_settings($form, &$form_state)
     )
   );
   // Empty placeholder for ajax fill
-  $form['search-item-view-settings']['delving_search_item_object_page'] = array(
+  $form['item-page']['location']['delving_search_item_object_page'] = array(
     '#type' => 'markup',
     '#prefix' => '<div id="delving_object_page">',
     '#suffix' => '</div>'
   );
   // If object viewed in remote delving portal, then show this form field
   if (isset($form_state['values']['delving_search_item_view_path']) && $form_state['values']['delving_search_item_view_path'] == 'delvingPlatform') {
-    $form['search-item-view-settings']['delving_search_item_object_page']['delving_search_item_external_url'] = array(
+    $form['item-page']['delving_search_item_object_page']['delving_search_item_external_url'] = array(
       '#type' => 'textfield',
       '#title' => t('External URL'),
       '#description' => t('If you chose "A Delving Platform compliant portal" above, then enter the URL here. For example "http://norvegiana2.delving.org/portal/object/"'),
@@ -153,13 +158,13 @@ function delvingsearch_admin_settings($form, &$form_state)
   }
 
   // Text string for 'return to results' hyperlink
-  $form['search-item-view-settings']['return-to-results'] = array(
+  $form['item-page']['return-to-results'] = array(
     '#type' => 'fieldset',
     '#title' => t('"Return to results" hyperlink'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $form['search-item-view-settings']['return-to-results']['delving_search_page_return'] = array(
+  $form['item-page']['return-to-results']['delving_search_page_return'] = array(
     '#type' => 'textfield',
     '#title' => 'Hyperlink text',
     '#default_value' => variable_get('delving_search_page_return', DELVING_SEARCH_ITEM_PAGE_RETURN_TO_RESULTS),
@@ -168,13 +173,13 @@ function delvingsearch_admin_settings($form, &$form_state)
   );
 
   // Hyperlink styles
-  $form['search-item-view-settings']['display-layout-hyperlinks'] = array(
+  $form['item-page']['display-layout-hyperlinks'] = array(
     '#type' => 'fieldset',
     '#title' => t('Hyperlink styles'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $form['search-item-view-settings']['display-layout-hyperlinks']['delving_search_item_hyperlink_style'] = array(
+  $form['item-page']['display-layout-hyperlinks']['delving_search_item_hyperlink_style'] = array(
     '#type' => 'radios',
     '#title' => t('Render a hyperlink as a button or as a plain hyperlink'),
     '#default_value' => variable_get('delving_search_item_hyperlink_button', DELVING_SEARCH_ITEM_HYPERLINK_BUTTON),
@@ -182,14 +187,14 @@ function delvingsearch_admin_settings($form, &$form_state)
   );
 
   // Show original context field
-  $form['search-item-view-settings']['original-context-options'] = array(
+  $form['item-page']['original-context-options'] = array(
     '#type' => 'fieldset',
     '#title' => 'Original Context Field',
     '#description' => t('If a record contains a field with a URI to the object in it\'s original context, choose here what you what like to do with this URI'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $form['search-item-view-settings']['original-context-options']['delving_search_show_in_original_context'] = array(
+  $form['item-page']['original-context-options']['delving_search_show_in_original_context'] = array(
     '#type' => 'radios',
     '#title' => t('Show "Original Context" field'),
     '#default_value' => variable_get('delving_search_item_show_in_original_context', DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT),
@@ -197,14 +202,14 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#description' => t('By choosing "show" a link will be created (if the field is available) which will open the object in a new window in it\'s original context.')
   );
   // Thumbnails settings
-  $form['search-item-view-settings']['object-image-width'] = array(
+  $form['item-page']['object-image-width'] = array(
     '#type' => 'fieldset',
     '#title' => t('Object Image'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
   // Thumbnail width
-  $form['search-item-view-settings']['object-image-width']['delving_search_object_img_width'] = array(
+  $form['item-page']['object-image-width']['delving_search_object_img_width'] = array(
     '#type' => 'textfield',
     '#title' => t('Image width'),
     '#description' => t('The WIDTH (in pixels) of the image displayed on the object page.'),
@@ -212,23 +217,34 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#default_value' => variable_get('delving_search_object_img_width', DELVING_SEARCH_OBJECT_IMG_WIDTH),
   );
 
-  $form['wikipedia'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Extra Search Results',
+  $form['wiki'] = array(
+    '#type' => 'vertical_tabs',
+    '#title' => 'Extra Search Result Blocks from Wikipedia or similar targets',
+    '#prefix' => t('<h2>Extra Search Result Blocks from Wikipedia or similar targets</h2><p>Add API and TARGET URL\'s for up to 3 Wikipedia (or similar) targets<br/>
+      The display of the Wikipedia results blocks can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.</p>'),
   );
-  $form['wikipedia']['wikipedia-api'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Wikipedia Results'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-  $form['wikipedia']['wikipedia-api']['delving_search_wikipedia_api_url'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Wikipedia URL'),
-    '#description' => t('<p>The base url of the wikipedia url (no trailing slash). Eg: http://en.wikipedia.org, http://no.wikipedia.org, http://nl.wikipedia.org</p>
-    <p>The display of the Wikipedia results block can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.</p>'),
-    '#default_value' => variable_get('delving_search_wikipedia_api_url', DELVING_SEARCH_WIKIPEDIA_API_URL),
-  );
+  for ($i = 1; $i < 4; $i++) {
+    $wiki_nr = $i;
+    $form['wiki']['wiki-api'][$i] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Wiki ' . $i ),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['wiki']['wiki-api'][$i]['delving_search_wiki_api_url_'.$i] = array(
+      '#type' => 'textfield',
+      '#title' => t("Wiki @wiki_nr API URL", array('@wiki_nr' => $i)),
+      '#description' => t('<p>The base url of the wikipedia api url (no trailing slash). Eg: http://en.wikipedia.org/w/api.php, http://no.wikipedia.org/w/api.php, http://lokalhistoriewiki.no/api.php</p>'),
+      '#default_value' => variable_get('delving_search_wiki_api_url_'.$i),
+    );
+    $form['wiki']['wiki-api'][$i]['delving_search_wiki_target_url_'.$i] = array(
+      '#type' => 'textfield',
+      '#title' => t('Wiki @wiki_nr TARGET URL', array('@wiki_nr' => $i)),
+      '#description' => t('<p>The base url of the wikipedia target url (width trailing slash). Eg: http://en.wikipedia.org/wiki/, http://no.wikipedia.org/wiki/, http://lokalhistoriewiki.no/index.php/</p>'),
+      '#default_value' => variable_get('delving_search_wiki_target_url_'.$i),
+    );
+  }
+
   return system_settings_form($form);
 }
 
@@ -239,5 +255,5 @@ function delvingsearch_admin_settings($form, &$form_state)
  */
 function delving_show_object_page_input($form, $form_state)
 {
-  return $form['search-item-view-settings']['delving_search_item_object_page']['delving_search_item_external_url'];
+  return $form['item-page']['delving_search_item_object_page']['delving_search_item_external_url'];
 }

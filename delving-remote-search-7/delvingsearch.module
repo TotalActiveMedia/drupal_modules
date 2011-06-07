@@ -21,8 +21,12 @@ define('DELVING_SEARCH_ITEM_EXTERNAL_URL', 'http://norvegiana2.delving.org/porta
 define('DELVING_SEARCH_ITEM_HYPERLINK_BUTTON', 1);
 define('DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT', '');
 define('DELVING_SEARCH_OBJECT_IMG_WIDTH', 300);
-define('DELVING_SEARCH_WIKIPEDIA_API_URL', 'http://en.wikipedia.org');
-
+define('DELVING_SEARCH_WIKI_API_URL_1', '');
+define('DELVING_SEARCH_WIKI_API_URL_2', '');
+define('DELVING_SEARCH_WIKI_API_URL_3', '');
+define('DELVING_SEARCH_WIKI_TARGET_URL_1', '');
+define('DELVING_SEARCH_WIKI_TARGET_URL_2', '');
+define('DELVING_SEARCH_WIKI_TARGET_URL_3', '');
 /**
  * Implements hook_menu()
  */
@@ -147,19 +151,19 @@ function delvingsearch_form_submit($form, &$form_state) {
 function delvingsearch_block_info() {
 
   $blocks = array();
-  $blocks['search'] = array(
-    'info' => t('Delving Simple Search Form'),
-    'status' => 0,
-    'visibility' => BLOCK_VISIBILITY_LISTED,
-    'cache' => DRUPAL_NO_CACHE,
-  );
-  $blocks['delving-search'] = array(
-    'info' => t('Delving Search Form'),
-    'status' => 0,
-    'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
-    'cache' => DRUPAL_NO_CACHE,
-  );
+//  $blocks['search'] = array(
+//    'info' => t('Delving Simple Search Form'),
+//    'status' => 0,
+//    'visibility' => BLOCK_VISIBILITY_LISTED,
+//    'cache' => DRUPAL_NO_CACHE,
+//  );
+//  $blocks['delving-search'] = array(
+//    'info' => t('Delving Search Form'),
+//    'status' => 0,
+//    'visibility' => BLOCK_VISIBILITY_LISTED,
+//    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
+//    'cache' => DRUPAL_NO_CACHE,
+//  );
   $blocks['county'] = array(
     'info' => t('Delving Facets: County'),
     'status' => 0,
@@ -209,13 +213,15 @@ function delvingsearch_block_info() {
     'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
-  $blocks['wikipedia'] = array(
-    'info' => t('Delving Object: Wikipedia info'),
-    'status' => 0,
-    'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH),
-    'cache' => DRUPAL_NO_CACHE,
-  );
+  for ($i = 1; $i < 4; $i++) {
+    $blocks['wiki-'.$i] = array(
+      'info' => t('Delving: Wikipedia Search Results: ' . $i),
+      'status' => 0,
+      'visibility' => BLOCK_VISIBILITY_LISTED,
+      'pages' => 'delving/item/*',
+      'cache' => DRUPAL_NO_CACHE,
+    );
+  }
   return $blocks;
 }
 
@@ -265,9 +271,17 @@ function delvingsearch_block_view($delta = '') {
       $block['subject'] = t('Type');
       $block['content'] = delvingsearch_facet_get('TYPE');
       break;
-    case 'wikipedia':
-      $block['subject'] = t('More Results from Wikepedia');
-      $block['content'] = delvingsearch_wikipedia_get();
+    case 'wiki-1':
+      $block['subject'] = t('More Results from ...');
+      $block['content'] = delvingsearch_wiki_get($wiki_index=1);
+      break;
+    case 'wiki-2':
+      $block['subject'] = t('More Results from ...');
+      $block['content'] = delvingsearch_wiki_get($wiki_index=2);
+      break;
+    case 'wiki-3':
+      $block['subject'] = t('More Results from ...');
+      $block['content'] = delvingsearch_wiki_get($wiki_index=3);
       break;
   }
   // Only display the block if it actually has any content
@@ -279,7 +293,7 @@ function delvingsearch_block_view($delta = '') {
 }
 
 
-function delvingsearch_wikipedia_get()
+function delvingsearch_wiki_get($wiki_index)
 {
   // Use the response cache to grab the query
   if (isset($_COOKIE['delving-query'])) {
@@ -288,8 +302,10 @@ function delvingsearch_wikipedia_get()
   else {
     return;
   }
-  $endpoint = variable_get('delving_search_wikipedia_api_url', DELVING_SEARCH_WIKIPEDIA_API_URL);
-  $response = drupal_http_request($endpoint . '/w/api.php?action=opensearch&search=' . urlencode($query) . '&format=json');
+  $api_url = variable_get('delving_search_wiki_api_url_'.$wiki_index);
+  $target_url = variable_get('delving_search_wiki_target_url_'.$wiki_index);
+
+  $response = drupal_http_request($api_url . '?action=opensearch&search=' . urlencode($query) . '&format=json');
   if ($response->code == 200) {
     // Set the root of the response data
     $data = json_decode($response->data);
@@ -298,7 +314,7 @@ function delvingsearch_wikipedia_get()
     $items = array();
     $i = 0;
     foreach($items_raw as $item){
-       $items[] = '<a href="' . $endpoint .  '/wiki/' . $item . '" target="_blank">' . $item . '</a>';
+       $items[] = '<a href="' . $target_url .  $item . '" target="_blank">' . $item . '</a>';
       $i++;
     }
     // Give back
