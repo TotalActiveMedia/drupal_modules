@@ -16,16 +16,34 @@ define('DELVING_API_DIGITAL_OBJECT', TRUE);
 define('DELVING_API_HQFS', '');
 define('DELVING_API_LANGUAGE', 'en');
 
-
-
 /**
  * Implement hook_help()
  */
-//function delvingapi_help($path, $arg){
-//    if($path == 'admin/help#delving') {
-//        return t('The Delving Remote-Search API provides access to remote Delving Platform instances');
-//    }
-//}
+function delvingapi_help($path,$arg) {
+  switch($path) {
+    case 'admin/help#delvingapi':
+      $output = '';
+      $output .= '<h3>' .t('About') .'</h3>';
+      $output .= '<p>' .t('The Delving emote-Search RAPI module is a search and retrieve back-end which can be pointed at a remote <a href="http://www.delving.eu/" target="_blank" title="Visit the Delving website">Delving Platform</a> instance. This module only contains the query-building and search capabilities and should be used together with the Delving Remote-Search RESULTS module to display the search results and facets.') .'</p>';
+      $output .= '<h3>' .t('Configuration Help') .'</h3>';
+      $output .= '<dl>';
+      $output .= '<dt><strong>' .t('API URL') .'</strong></dt>';
+      $output .= '<dd>' .t('The API URL is where all queries will be sent to. This must be a valid Delving Platform instance in order for the Delving Search Results Module to function correctly') .'</dd>';
+      $output .= '<dt><strong>' .t('Environment Language') .'</strong></dt>';
+      $output .= '<dd>' .t('The language in which all metadata field names will be returned') .'</dd>';
+      $output .= '<dt><strong>' .t('Nr. Results') .'</strong></dt>';
+      $output .= '<dd>' .t('Here you can set the number of results returned per query');
+      $output .= '<dt><strong>' .t('Digital Objects Only') .'</strong></dt>';
+      $output .= '<dd>' .t('Constrain the query to return only results that contain digital objects (i.e. thumbnails). By setting this to true you will drastically increase the chance that the returned results will contain thumnails.') . '</dd>';
+      $output .= '<dt><strong>' .t('Custom Constraints') .'</strong></dt>';
+      $output .= '<dd>' .t('Here you can enter a comma separated list of facet constraints for all queries. This is usefull if you want to limit your queries to a particular data provider or (if available) county or municipality. Some example constraints are:');
+      $output .= '<ul><li>' . t('COUNTY:Oslo,MUNICIPALITY:Majorstuen') . '</li>';
+      $output .= '<li>' . t('PROVIDER:"Sunnfjord Museum"') . ' <strong>(' .  t('When using values with multiple words, surround the value with double quotes') . ')</strong></li>';
+      $output .= '</ul>';
+      $output .= '</dl>';
+      return $output;
+  }
+}
 
 /**
  * Implement hook_menu()
@@ -119,6 +137,7 @@ function delvingapi_do_search($url) {
     if ($response->code == 200) {
       // Set the root of the response data
       $data = $response->data;
+//      drupal_set_message($data);
 //      var_dump($data);
       // Cache response and set semaphore for use by blocks.
       delving_static_response_cache($data);
@@ -218,3 +237,4 @@ function delving_static_response_cache($response = NULL) {
   }
   return $_response;
 }
+

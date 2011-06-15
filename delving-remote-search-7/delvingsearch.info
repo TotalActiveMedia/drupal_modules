@@ -1,11 +1,10 @@
 ;$Id$
-name = Delving Search
+name = Delving Remote-Search RESULTS
 description = A module for displaying results from the Delving API Module.
 package = Delving
 core = 7.x
 files[] = delvingsearch.install
 files[] = delvingsearch.module
-files[] = delvingsearch-block
 dependencies[] = delvingapi
 configure = admin/config/search/delving-search
 ;php = 5.2
