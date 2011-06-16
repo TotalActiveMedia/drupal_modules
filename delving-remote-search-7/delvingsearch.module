@@ -6,64 +6,13 @@
  * A module for making query to and getting results from a remote Delving Platform Search API.
  *
  */
-function delvingsearch_help($path,$arg) {
-  switch($path) {
-    case 'admin/help#delvingsearch':
-      $output = '';
-      $output .= '<h3>' . t('About') .'</h3>';
-      $output .= '<p>' . t('The Delving Remote-Search RESULTS module is used for displaying results retrieved from the Delving API Module.') .'</p>';
-      $output .= '<h3>' . t('Results Page Settings') . '</h3>';
-      $output .= '<dl>';
-      $output .= '<dt><strong>' . t('Page Name') .'</strong></dt>';
-      $output .= '<dd>' . t('The title of the Search and Results Page. This is also the title that will appear by in the navigation menu. If you change this value you must empty the Drupal cache for the change to become visible.') .'</dd>';
-      $output .= '<dt><strong>' . t('Results Layout') .'</strong></dt>';
-      $output .= '<dd>' . t('Here you can toggle between "list" or "grid" view for the layout of the results page.') .'</dd>';
-      $output .= '<dt><strong>' . t('Field Lengths') .'</strong></dt>';
-      $output .= '<dd>' . t('Sometimes the values for certain fields may be too long to maintain a pleasing layout. Here you can limit the length of the "title" and "description" fields. The string will be truncated at the nearest word and ellipses will be added at the end. Leave blank to display the complete value.');
-      $output .= '<dt><strong>' . t('Thumbnail Display') .'</strong></dt>';
-      $output .= '<dd>' . t('Depending on the Results Layout you choose, you may wish to change the width of the thumbnails in order to get the most pleasing layout.');
-      $output .= '<ul><li><strong>' . t('Thumbnail Width') . ':</strong> ' . t('The actual width (in pixels) of the thumbnail image') . '</li>';
-      $output .= '<li><strong>' . t('Thumbnail Container Height') .':</strong> ' . t('The height of the wrapper around the thumbnail image. If the image height is greater than the wrapper, then part of the image is hidden. Play around with this setting when you have chosen "grid" as Page Layout to find the most visually pleasing dimensions.') . '</li></ul></dd>';
-      $output .= '<dt><strong>' . t('Facets Display') .'</strong></dt>';
-      $output .= '<dd>' . t('Facets are used to refine the search results. The display of the Facets is done on the "Blocks" configuration page. The block with facets will appear only if the search results contain the facets, otherwise the block will not appear.') . '</dd>';
-      $output .= '</dl>';
-      $output .= '<h3>' . t('Item Page Settings') . '</h3>';
-      $output .= '<dl>';
-      $output .= '<dt><strong>' . t('Item Page Location') .'</strong></dt>';
-      $output .= '<dd>' . t('This is where the thumbnail and title will link to from the initial returned results.');
-      $output .=  '<ul><li>' . t('"Within Drupal" will open the item page in the current Drupal environment.') . '</li>';
-      $output .= '<li>' . t('"In original context from the Dataprovider" will open the page outside of the Drupal environment and in the website from the provider of the object') . '</li>';
-      $output .= '<li>' . t('"A Delving Platform portal" will open the page oustide of the Drupal environment and on the item page of a provider running a a portal instance of the Delving Platform') . '</li></ul>';
-      $output .= '<dt><strong>' . t('Return to results') . '</strong></dt>';
-      $output .= '<dd>' . t('This is the text that will appear as a hyperlink back to the results page.') . '</dd>';
-      $output .= '<dt><strong>' . t('Original Context Field') . '</strong></dt>';
-      $output .= '<dd>' . t('Choose if you want to display the field containing the hyperlink back to the item you are viewing in it\'s original context (i.e. the originating Dataprovider).') . '</dd>';
-      $output .= '<dt><strong>' . t('Hyperlink Styles') . '</strong></dt>';
-      $output .= '<dd>' . t('If set to "Button" will add a css class to the "Return to Results" and "Show in Original Context" hyperlinks which will style them like an attractive button.') . '</dd>';
-      $output .= '<dt><strong>' . t('Object Image') . '</strong></dt>';
-      $output .= '<dd>' . t('Set the width (in pixels) of the image associated with the item you are viewing.') . '</dd>';
-      $output .= '<h3>' . t('Extra Search Result Blocks from Wikipedia or similar targets') . '</h3>';
-      $output .= '<p>' . t('Configure the display of more results from an external Wikipedia or wikipedia-like target. Check the documentation of the external wiki service you wish to use for details.') . '</p>';
-      $output .= '<dt><strong>' . t('API URL') . '</strong></dt>';
-      $output .= '<dd>' . t('The URL of the api where the search will be sent to and which will return a results list for that query') . '</dd>';
-      $output .= '<dt><strong>' . t('TARGET URL') . '</strong></dt>';
-      $output .= '<dd>' . t('The URL of the page where the returned results can be viewed.') . '</dd>';
-      $output .= '<dd>' . t('') . '</dd>';
-
-      $output .= '</dl>';
-
-     return $output;
-  }
-
-}
-
 define('DELVING_SEARCH_PAGE_NAME', 'Delving Search');
 define('DELVING_SEARCH_RESULTS_PAGE_PATH', 'delving/search');
 define('DELVING_SEARCH_RESULTS_TITLE_LENGTH', '');
 define('DELVING_SEARCH_RESULTS_DISPLAY_STYLE', 'list');
 define('DELVING_SEARCH_RESULTS_DESCRIPTION_LENGTH', '');
 define('DELVING_SEARCH_THUMB_WIDTH', '165');
-define('DELVING_SEARCH_ITEM_PAGE_PATH', 'delving/item/%/%');
+define('DELVING_SEARCH_ITEM_PAGE_PATH', 'delving/search/item/%/%');
 define('DELVING_SEARCH_THUMB_VIEWER_HEIGHT', '165');
 define('DELVING_SEARCH_ITEM_PAGE_RETURN_TO_RESULTS', 'Return to results');
 define('DELVING_SEARCH_ITEM_VIEW_PATH', 'drupal');
@@ -77,6 +26,59 @@ define('DELVING_SEARCH_WIKI_API_URL_3', '');
 define('DELVING_SEARCH_WIKI_TARGET_URL_1', '');
 define('DELVING_SEARCH_WIKI_TARGET_URL_2', '');
 define('DELVING_SEARCH_WIKI_TARGET_URL_3', '');
+
+/**
+ * Implements hook_help()
+ */
+function delvingsearch_help($path,$arg) {
+  switch($path) {
+    case 'admin/help#delvingsearch':
+      $output = '';
+      $output .= '<h3>' . t('About') .'</h3>';
+      $output .= '<p>' . t('The Delving Remote-Search RESULTS module is used for displaying results retrieved from the Delving API Module.') .'</p>';
+      $output .= '<h3>' . t('Results Page Settings') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt><strong>' . t('Page Name') .'</strong></dt>';
+      $output .= '<dd>' . t('The title of the Search and Results Page. This is also the title that will appear by in the navigation menu. If you change this value you must empty the Drupal cache for the change to become visible.') .'</dd>';
+      $output .= '<dt><strong>' . t('Results Layout') .'</strong></dt>';
+      $output .= '<dd>' . t('Here you can toggle between "list" or "grid" view for the layout of the results page.') .'</dd>';
+      $output .= '<dt><strong>' . t('Field Lengths') .'</strong></dt>';
+      $output .= '<dd>' . t('Sometimes the values for certain fields may be too long to maintain a pleasing layout. Here you can limit the length of the "title" and "description" fields. The string will be truncated at the nearest word and ellipses will be added at the end. Leave blank to display the complete value.') . '<br/> ' .
+                 '<strong>' . t('Translation note: Because the "description" field is isolated for truncation it\'s label can not be translated "on the fly" by this module\'s API\'s "Environment Language" setting. However, the term is surrounded by the drupal t() function, and can be translated via Drupal\'s own Localization API.') . '</strong>';
+      $output .= '<dt><strong>' . t('Thumbnail Display') .'</strong></dt>';
+      $output .= '<dd>' . t('Depending on the Results Layout you choose, you may wish to change the width of the thumbnails in order to get the most pleasing layout.');
+      $output .= '<ul><li><strong>' . t('Thumbnail Width') . ':</strong> ' . t('The actual width (in pixels) of the thumbnail image') . '</li>';
+      $output .= '<li><strong>' . t('Thumbnail Container Height') .':</strong> ' . t('The height of the wrapper around the thumbnail image. If the image height is greater than the wrapper, then part of the image is hidden. Play around with this setting when you have chosen "grid" as Page Layout to find the most visually pleasing dimensions.') . '</li></ul></dd>';
+      $output .= '<dt><strong>' . t('Facets Display') .'</strong></dt>';
+      $output .= '<dd>' . t('Facets are used to refine the search results. The display of the Facets is done on the "Blocks" configuration page. The block with facets will appear only if the search results contain the facets, otherwise the block will not appear.') . '</dd>';
+      $output .= '</dl>';
+      $output .= '<h3>' . t('Item Page Settings') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt><strong>' . t('Item Page Location') .'</strong></dt>';
+      $output .= '<dd>' . t('This is where the thumbnail and title will link to from the initial returned results.');
+      $output .=  '<ul><li>' . t('"Within Drupal" will open the item page in the current Drupal environment.') . '</li>';
+      $output .= '<li>' . t('"In original context from the Dataprovider" will open the page outside of the Drupal environment and in the website from the provider of the object') . '</li>';
+      $output .= '<li>' . t('"A Delving Platform portal" will open the page oustide of the Drupal environment and on the item page of a provider running a portal instance of the Delving Platform') . '</li></ul>';
+      $output .= '<dt><strong>' . t('Return to results') . '</strong></dt>';
+      $output .= '<dd>' . t('This is the text that will appear as a hyperlink back to the results page.') . '</dd>';
+      $output .= '<dt><strong>' . t('Original Context Field') . '</strong></dt>';
+      $output .= '<dd>' . t('Choose if you want to display the field containing the hyperlink back to the item you are viewing in it\'s original context (i.e. the originating Dataprovider).') . '</dd>';
+      $output .= '<dt><strong>' . t('Hyperlink Styles') . '</strong></dt>';
+      $output .= '<dd>' . t('If set to "Button" will add a css class to the "Return to Results" and "Show in Original Context" hyperlinks which will style them like an attractive button.') . '</dd>';
+      $output .= '<dt><strong>' . t('Object Image') . '</strong></dt>';
+      $output .= '<dd>' . t('Set the width (in pixels) of the image associated with the item you are viewing.') . '</dd>';
+      $output .= '<h3>' . t('Extra Search Result Blocks from Wikipedia or similar targets') . '</h3>';
+      $output .= '<p>' . t('Configure the display of more results from an external Wikipedia or wikipedia-like target. Check the documentation of the external wiki service you wish to use for details. Leave these fields blank if you do not wish to return extra results.') . '</p>';
+      $output .= '<dt><strong>' . t('API URL') . '</strong></dt>';
+      $output .= '<dd>' . t('The URL of the api where the search will be sent to and which will return a results list for that query') . '</dd>';
+      $output .= '<dt><strong>' . t('TARGET URL') . '</strong></dt>';
+      $output .= '<dd>' . t('The URL of the page where the returned results can be viewed.') . '</dd>';
+      $output .= '</dl>';
+
+     return $output;
+  }
+}
+
 /**
  * Implements hook_menu()
  */
@@ -113,7 +115,7 @@ function delvingsearch_menu() {
     'description' => 'Page for searching remote Delving Framework API.',
     'page callback' => 'delvingsearch_load_search',
     'access callback' => TRUE,
-    'type' => MENU_VISIBLE_IN_BREADCRUMB,
+    'type' => MENU_NORMAL_ITEM,
   );
   $items[variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH)] = array(
     'title' => variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH),
@@ -121,7 +123,7 @@ function delvingsearch_menu() {
     'page callback' => 'delvingsearch_load_item',
     'page arguments' => array($first_arg, $second_arg),
     'access callback' => TRUE,
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
   );
   return $items;
 }
@@ -346,7 +348,8 @@ function delvingsearch_block_view($delta = '') {
 function delvingsearch_wiki_get($wiki_index)
 {
   // Use the response cache to grab the query
-  if (isset($_COOKIE['delving-query'])) {
+  // And don't run this if the query is the catch-all *:*
+  if (isset($_COOKIE['delving-query']) && $_COOKIE['delving-query'] != "*:*") {
     $query = $_COOKIE['delving-query'];
   }
   else {

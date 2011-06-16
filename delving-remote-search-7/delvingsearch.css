@@ -68,74 +68,49 @@
 
 /** RESULTS LIST *************************************************/
 
-#delving table.search-results {
-    width: 100%;
-}
-
-#delving table.search-results tr:nth-child(odd) td {
-    background: #F6F6F2;
-}
-
-#delving table.search-results tr:nth-child(even) td {
-    background: #fff;
-}
-
-#delving table.search-results td {
-    vertical-align: top;
-    padding: .5em;
-}
-
-#delving table.search-results td p {
-    margin: 0px;
-}
-
-#delving table.search-results td label {
-    font-weight: bold;
-}
-
-#delving table.search-results h3 {
-    margin: 0;
-}
-
-#delving table.search-results-item td {
-    background: #fff;
-    vertical-align: top;
-}
-
-/** RESULTS GRID *************************************************/
-
-#delving .results {
-
+#delving .results.list {
+    display: table;
+    border-collapse:separate;
+    border-spacing:.5em;
 }
 
 #delving .results.list .result {
+    display: table-row;
     width: 100%;
-    clear: both;
-    display: inline-block;
-    margin:  0 0 20px 0;
-    height: auto;
+
 }
 
 #delving .results.list .result .img-container{
-    display: block;
-    float: left;
-    margin-right: 1em;
+    background:  #000;
+    display: table-cell;
+    padding: .5em;
+    vertical-align: top;
 }
 
 #delving .results.list .result .img-window {
-    position: relative;
+    background:  #000;
     height: 120px;
-    width: auto;
     overflow: hidden;
+    position: relative;
+    width: auto;
 }
 
 #delving .results.list .result .meta-container {
-    margin-bottom: 1em;
+    display: table-cell;
+    padding: .5em;
+    vertical-align: top;
+    width: auto;
+}
+
+#delving .results.list .result .meta-container p {
+    margin: 0;
 }
 
 #delving .results.list .result.odd {
-   background:  #F6F6F2;
+   background: #ebeded;
 }
+
+/** RESULTS GRID *************************************************/
 
 #delving .results.grid .result {
     display: inline;
@@ -170,12 +145,22 @@
     max-width: 50%;
 }
 
+#delving .result-object-img img {
+    float: left;
+}
+
 #delving .result-object-meta {
     display: inline-block;
     float: left;
     max-width: 50%;
 
     margin-left: 20px;
+}
+
+#delving .row-break {
+    clear: both;
+    display: block;
+    height: 2em;
 }
 
 

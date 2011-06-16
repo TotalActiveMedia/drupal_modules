@@ -5,10 +5,13 @@ function delvingsearch_show_item($xml)
 
   $data = simplexml_load_string($xml);
 
+//  drupal_set_message($xml);
+
   $layout = array(
     "#thumbnail" => "europeana:object",
     "#title" => "dc:title",
     "#uri" => "europeana:uri",
+    "#originalContext" => "europeana:isShownAt",
     'Title' => "dc:title",
     "Creator" => "dc:creator",
     "Description" => "dc:description",
@@ -21,7 +24,8 @@ function delvingsearch_show_item($xml)
     "Language" => "dc:language",
     "Dataprovider" => "europeana:dataProvider",
     "Provider" => "europeana:provider",
-    "#originalContext" => "europeana:isShownAt"
+    "Created" => "dcterms:created",
+    "Rights" => "dc:rights"
   );
   //    $layout = array();
   //    foreach ($data->xpath("/results/layout/drupal/field") as $field) {
@@ -50,7 +54,7 @@ function delvingsearch_show_item($xml)
     $img_width = variable_get('delving_search_object_img_width', DELVING_SEARCH_OBJECT_IMG_WIDTH);
 
     if ($thumbnail) {
-      $output .= '<img width="' . $img_width . '" class="overlay" src="' . $thumbnail . '"/>';
+      $output .= '<img width="' . $img_width . '" src="' . $thumbnail . '" alt="'. $title .'"/>';
     }
     else {
       $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/no-image.png';
@@ -64,7 +68,11 @@ function delvingsearch_show_item($xml)
         $value_array = $item->xpath($value);
         if ($value_array) {
           $value = implode(', ', $value_array);
-          $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+
+//          $output .= '<label>' . $key . ': </label><span>' . check_plain(trim($value)) . '</span>';
+          $output .= '<dl>';
+          $output .= '<dt>' . $key . ': </dt><dd>' . check_plain(trim($value)) . '</dd>';
+          $output .= '</dl>';
         }
       }
     }
