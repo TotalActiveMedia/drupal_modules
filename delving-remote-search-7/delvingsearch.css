@@ -1,72 +1,46 @@
 
 /** INPUT FORM *************************************************/
 
-/*#delvingsearch-form {*/
-    /*background: #ebeded;*/
-    /*-moz-border-radius: 5px;*/
-    /*-webkit-border-radius: 5px;*/
-    /*border-radius: 5px;*/
-    /*padding:  1em;*/
-/*}*/
+#delvingsearch-form {
+    background: #ebeded;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    padding:  1em;
+}
 
-/*#delvingsearch-form input#edit-query {*/
-    /*width: 100%;*/
-    /*height: 21px;*/
-    /*line-height: 21px;*/
-    /*padding:  2px 4px;*/
-/*}*/
+#delvingsearch-form input#edit-query {
+    width: 99%;
+    height: 21px;
+    line-height: 21px;
+    padding:  4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	border-radius:4px;
+}
 
 #delvingsearch-form .form-item {
-    /*width: auto;*/
-    float: left;
     margin:  0;
 }
 
 #delvingsearch-form label {
-    display: none;
-}
-
-#delvingsearch-form input
-{
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-	border-radius:4px;
-	font-size:12px;
-	font-weight:700;
-	vertical-align:middle;
-}
-
-#delvingsearch-form input[type="text"]
-{
-	background:#fff;
-	border:1px solid #bbb;
-	padding:8px 95px 8px 8px;
-	width:450px;
+    padding:  0 0 0 2px;
+    margin-bottom: .5em;
+    display: block;
 }
 
 #delvingsearch-form input[type="submit"]
 {
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
-	background: #557a8a;
-	border:none;
-	border-radius:3px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+    border-radius:4px;
+    background: #000;
+    border:none;
 	color:#fff;
 	cursor:pointer;
-	margin-left:-80px;
-	margin-right:1em;
-	padding:9px;
+	margin-top: .5em;
+	padding:6px;
 	width:80px;
-}
-
-#delvingsearch-form input[type="submit"]::-moz-focus-inner
-{
-	border:0;
-}
-
-#delvingsearch-form input[type="submit"]:focus
-{
-	background:#555;
 }
 
 #block-delvingsearch-facets {
@@ -238,6 +212,7 @@
 
 .delving-breadcrumbs {
     margin: 1em 0;
+    font-size: 1.15em;
 }
 
 .delving-breadcrumbs a.crumb {
