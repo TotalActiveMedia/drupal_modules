@@ -13,7 +13,7 @@ function delvingsearch_show_list($xml, $query)
   $total_records = $data->query['numFound'];
   $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_NR_ITEMS);
 
-    $layout = array();
+  $layout = array();
   $layout = array(
     "#thumbnail" => "europeana:object",
     "#title" => "dc:title",
@@ -98,10 +98,10 @@ function delvingsearch_show_list($xml, $query)
         $output .= l('<img width="' . $thumb_width . '" class="overlay" src="' . $thumbnail . '"/>', $uri, array('attributes' => $link_attributes, 'html' => TRUE));
       }
       else {
-        //        $output .= '<p>' . t('no thumbnail available') . '</p>';
         $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/img/no-image.png';
         //        $output .= base_path();
         $output .= l('<img width="' . $thumb_width . '" src="' . $thumbnail . '"/>', $uri, array('attributes' => $link_attributes, 'html' => TRUE));
+        $output .= '<div class="image-not-available">' . t('no thumbnail available') . '</div>';
       }
 
       $output .= '</div>'; // end img-window
@@ -121,14 +121,15 @@ function delvingsearch_show_list($xml, $query)
       }
 
       if ($result_style == 'list') {
-      // DESCRIPTIONS DISPLAY ******************************************************************************************
-      if (trim($max_description) != '') {
-        $output .= '<p><strong>' . t('Description: ') . '</strong>' . delving_teaser($description, $max_description, 'chars') . '</p>';
+        // DESCRIPTIONS DISPLAY ******************************************************************************************
+        if (trim($max_description) != '') {
+          $output .= '<p><strong>' . t('Description: ') . '</strong>' . delving_teaser($description, $max_description, 'chars') . '</p>';
 
-      }
-      else {
-        $output .= '<p><strong>'  . t('Description: ') . '</strong>' . $description . '</p>';
-      }
+        }
+        else {
+          $output .= '<p><strong>' . t('Description: ') . '</strong>' . $description . '</p>';
+        }
+
         foreach ($layout as $key => $value) {
 
           if (substr($key, 0, 1) != '#') {
