@@ -2,7 +2,7 @@
 // $Id$
 /**
  * @file
- * Form builder for Delving Remote-Search API settings.
+ * Form builder for Delving Remote Search API settings.
  *
  * @ingroup forms
  * @see system_settings_form()
@@ -37,7 +37,7 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#title' => t('Page Name'),
     '#default_value' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),
     '#required' => TRUE,
-    '#description' => t('The name for the Delving-Remote-Search page. This is the name that will appear in the menu and as the page title.<br/> You will need to clear the Drupal cache for this change to be visible.')
+    '#description' => t('The name for the Delving Remote Search page. This is the name that will appear in the menu and as the page title.<br/> You will need to clear the Drupal cache for this change to be visible.')
   );
 
   // Page layout style grid / list
@@ -139,7 +139,7 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#default_value' => variable_get('delving_search_item_view_path', DELVING_SEARCH_ITEM_VIEW_PATH),
     '#options' => array(
       'drupal' => t('Within drupal'),
-      'isShownAt' => t('In original context from the Dataprovider'),
+      'isShownAt' => t('In original context from the Data Provider'),
       'delvingPlatform' => t('A Delving Platform portal'),
     ),
     '#ajax' => array(
@@ -158,7 +158,7 @@ function delvingsearch_admin_settings($form, &$form_state)
     $form['item-page']['delving_search_item_object_page']['delving_search_item_external_url'] = array(
       '#type' => 'textfield',
       '#title' => t('External URL'),
-      '#description' => t('If you chose "A Delving Platform compliant portal" above, then enter the URL here. For example "http://norvegiana2.delving.org/portal/object/"'),
+      '#description' => t('If you chose "A Delving Platform compliant portal" above, then enter the URL here. For example "http://example.com/portal/object/"'),
       '#default_value' => variable_get('delving_search_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL)
     );
   }
@@ -241,13 +241,13 @@ function delvingsearch_admin_settings($form, &$form_state)
     $form['wiki']['wiki-api'][$i]['delving_search_wiki_api_url_'.$i] = array(
       '#type' => 'textfield',
       '#title' => t("Wiki @wiki_nr API URL", array('@wiki_nr' => $i)),
-      '#description' => t('<p>The base url of the wikipedia api url (<strong>no trailing slash</strong>). Eg: http://en.wikipedia.org/w/api.php, http://no.wikipedia.org/w/api.php, http://lokalhistoriewiki.no/api.php</p>'),
+      '#description' => t('<p>The base URL of the wikipedia api URL (<strong>no trailing slash</strong>). Eg: http://en.wikipedia.org/w/api.php, http://no.wikipedia.org/w/api.php, http://lokalhistoriewiki.no/api.php</p>'),
       '#default_value' => variable_get('delving_search_wiki_api_url_'.$i),
     );
     $form['wiki']['wiki-api'][$i]['delving_search_wiki_target_url_'.$i] = array(
       '#type' => 'textfield',
       '#title' => t('Wiki @wiki_nr TARGET URL', array('@wiki_nr' => $i)),
-      '#description' => t('<p>The base url of the wikipedia target url (<strong>with trailing slash</strong>). Eg: http://en.wikipedia.org/wiki/, http://no.wikipedia.org/wiki/, http://lokalhistoriewiki.no/index.php/</p>'),
+      '#description' => t('<p>The base URL of the wikipedia target URL (<strong>with trailing slash</strong>). Eg: http://en.wikipedia.org/wiki/, http://no.wikipedia.org/wiki/, http://lokalhistoriewiki.no/index.php/</p>'),
       '#default_value' => variable_get('delving_search_wiki_target_url_'.$i),
     );
   }

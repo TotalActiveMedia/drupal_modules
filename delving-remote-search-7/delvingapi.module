@@ -24,7 +24,7 @@ function delvingapi_help($path,$arg) {
     case 'admin/help#delvingapi':
       $output = '';
       $output .= '<h3>' .t('About') .'</h3>';
-      $output .= '<p>' .t('The Delving emote-Search RAPI module is a search and retrieve back-end which can be pointed at a remote <a href="http://www.delving.eu/" target="_blank" title="Visit the Delving website">Delving Platform</a> instance. This module only contains the query-building and search capabilities and should be used together with the Delving Remote-Search RESULTS module to display the search results and facets.') .'</p>';
+      $output .= '<p>' .t('The Delving Remote Search API module is a search and retrieve back-end which can be pointed at a remote <a href="http://www.delving.eu/" target="_blank" title="Visit the Delving website">Delving Platform</a> instance. This module only contains the query-building and search capabilities and should be used together with the Delving Remote Search Results module to display the search results and facets.') .'</p>';
       $output .= '<h3>' .t('Configuration Help') .'</h3>';
       $output .= '<dl>';
       $output .= '<dt><strong>' .t('API URL') .'</strong></dt>';
@@ -36,7 +36,7 @@ function delvingapi_help($path,$arg) {
       $output .= '<dt><strong>' .t('Digital Objects Only') .'</strong></dt>';
       $output .= '<dd>' .t('Constrain the query to return only results that contain digital objects (i.e. thumbnails). By setting this to true you will drastically increase the chance that the returned results will contain thumnails.') . '</dd>';
       $output .= '<dt><strong>' .t('Custom Constraints') .'</strong></dt>';
-      $output .= '<dd>' .t('Here you can enter a comma separated list of facet constraints for all queries. This is usefull if you want to limit your queries to a particular data provider or (if available) county or municipality. Some example constraints are:');
+      $output .= '<dd>' .t('Here you can enter a comma separated list of facet constraints for all queries. This is useful if you want to limit your queries to a particular data provider or (if available) county or municipality. Some example constraints are:');
       $output .= '<ul><li>' . t('COUNTY:Oslo,MUNICIPALITY:Majorstuen') . '</li>';
       $output .= '<li>' . t('PROVIDER:"Sunnfjord Museum"') . ' <strong>(' .  t('When using values with multiple words, surround the value with double quotes') . ')</strong></li>';
       $output .= '</ul>';
@@ -51,8 +51,8 @@ function delvingapi_help($path,$arg) {
 function delvingapi_menu() {
 //  $items[variable_get('delving_settings_menu_path', DELVING_SETTINGS_MENU_PATH)] = array(
   $items['admin/config/search/delving-api'] = array(
-    'title' => 'Delving Remote-Search API Settings',
-    'description' => 'Configure Search URL, etc. for Delving Remote-Search API',
+    'title' => 'Delving Remote Search API Settings',
+    'description' => 'Configure Search URL, etc. for Delving Remote Search API',
     'access callback' => 'user_access',
     'access arguments' => array('administer site configuration'),
     'page callback' => 'drupal_get_form',

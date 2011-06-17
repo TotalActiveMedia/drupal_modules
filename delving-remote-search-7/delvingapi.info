@@ -1,5 +1,5 @@
 ;$Id$
-name = Delving Remote-Search API
+name = Delving Remote Search API
 description = A module for querying an instance of a Delving Platform Search API.
 package = Delving
 core = 7.x

@@ -2,7 +2,7 @@
 // $Id$
 /**
  * @file
- * Form builder for Delving Remote-Search API settings.
+ * Form builder for Delving Remote Search API settings.
  *
  * @ingroup forms
  * @see system_settings_form()
@@ -20,7 +20,7 @@ function delvingapi_admin_settings($form, &$form_state)
    */
   $form['api-settings'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Delving Remote-Search API settings',
+    '#title' => 'Delving Remote Search API settings',
   );
   $form['api-settings']['delving_api_remote_url'] = array(
     '#type' => 'textfield',
