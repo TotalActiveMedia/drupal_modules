@@ -186,7 +186,7 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $form['item-page']['original-context-options']['delving_search_show_in_original_context'] = array(
+  $form['item-page']['original-context-options']['delving_search_item_show_in_original_context'] = array(
     '#type' => 'radios',
     '#title' => t('Show "Original Context" field'),
     '#default_value' => variable_get('delving_search_item_show_in_original_context', DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT),

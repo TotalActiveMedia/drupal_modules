@@ -12,17 +12,16 @@ function delvingsearch_show_list($xml, $query)
   $data = simplexml_load_string($xml);
   $total_records = $data->query['numFound'];
   $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_NR_ITEMS);
+  $result_style = variable_get('delving_search_results_display_style', DELVING_SEARCH_RESULTS_DISPLAY_STYLE);
 
-
-//  $layout = array();
-//  $layout = array(
-//    "#thumbnail" => "europeana:object",
-//    "#title" => "dc:title",
-//    "#description" => "dc:description",
-//  );
-//  foreach ($data->xpath("/results/layout/drupal/field") as $field) {
-//    $layout[(string)$field->key] = (string)$field->value;
-//  }
+  $layout = array(
+    "#thumbnail" => "europeana:object",
+    "#title" => "dc:title",
+    "#description" => "dc:description",
+  );
+  foreach ($data->xpath("/results/layout/drupal/field") as $field) {
+    $layout[(string)$field->key] = (string)$field->value;
+  }
 
 
   pager_default_initialize($total_records, $num_per_page);
@@ -40,13 +39,7 @@ function delvingsearch_show_list($xml, $query)
     );
 
     $output .= delvingsearch_breadcrumbs();
-
     $output .= theme('pager', $variables);
-
-    $result_style = variable_get('delving_search_results_display_style', DELVING_SEARCH_RESULTS_DISPLAY_STYLE);
-
-    //    if ($result_style == 'grid') {
-
     $output .= '<div class="results ' . $result_style . '">';
 
     $count = 1;
