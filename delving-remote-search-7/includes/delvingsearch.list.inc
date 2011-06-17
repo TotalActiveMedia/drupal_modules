@@ -13,15 +13,15 @@ function delvingsearch_show_list($xml, $query)
   $total_records = $data->query['numFound'];
   $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_NR_ITEMS);
 
-  $layout = array();
-  $layout = array(
-    "#thumbnail" => "europeana:object",
-    "#title" => "dc:title",
-    "#description" => "dc:description",
-  );
-  foreach ($data->xpath("/results/layout/drupal/field") as $field) {
-    $layout[(string)$field->key] = (string)$field->value;
-  }
+//  $layout = array();
+//  $layout = array(
+//    "#thumbnail" => "europeana:object",
+//    "#title" => "dc:title",
+//    "#description" => "dc:description",
+//  );
+//  foreach ($data->xpath("/results/layout/drupal/field") as $field) {
+//    $layout[(string)$field->key] = (string)$field->value;
+//  }
 
   pager_default_initialize($total_records, $num_per_page);
 
