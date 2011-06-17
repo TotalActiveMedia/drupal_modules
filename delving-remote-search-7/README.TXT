@@ -20,3 +20,8 @@ modules.
 
 Once the modules are activated you can follow the modules configuration links to further configure the API and RESULTS module. More information about
 the configuration settings are supplied by the "help" links provided on the modules list page and via the Drupal Administration help pages.
+
+Information for Developers
+--------------------------
+
+Much of the display css for the module can be overwritten. Have a look at the delvingsearch.css and redefine the definitions within your own theme's css.

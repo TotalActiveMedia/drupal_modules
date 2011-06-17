@@ -110,50 +110,51 @@ function delvingsearch_show_list($xml, $query)
       $output .= '<div class="meta-window">';
 
       // TITLE DISPLAY *************************************************************************************************
+
+      // if max title length set as configuration option then trim
       if (trim($max_title) != '') {
         $output .= '<h2>' . l(delving_teaser($title, $max_title, 'chars'), $uri, array('attributes' => $link_attributes)) . '</h2>';
 
       }
       else {
-        //             $output .= '<div class="title">' . l($title, $uri, array('attributes' => $link_attributes)) . '</div>';
         $output .= '<h2>' . l($title, $uri, array('attributes' => $link_attributes)) . '</h2>';
-        //             $output .= $title;
       }
 
-      if ($result_style == 'list') {
-        // DESCRIPTIONS DISPLAY ******************************************************************************************
-        if (trim($max_description) != '') {
-          $output .= '<p><strong>' . t('Description: ') . '</strong>' . delving_teaser($description, $max_description, 'chars') . '</p>';
+      // DO THIS ONLY FOR LIST VIEW
 
-        }
-        else {
-          $output .= '<p><strong>' . t('Description: ') . '</strong>' . $description . '</p>';
+      if ($result_style == 'list') {
+
+        // DESCRIPTIONS DISPLAY ******************************************************************************************
+        if($description){
+          // If max description length set as configuration option then trim
+          if (trim($max_description) != '') {
+            $output .= '<p><strong>' . t('Description: ') . '</strong>' . delving_teaser($description, $max_description, 'chars') . '</p>';
+
+          }
+          else {
+            $output .= '<p><strong>' . t('Description: ') . '</strong>' . $description . '</p>';
+          }
         }
 
         foreach ($layout as $key => $value) {
-
           if (substr($key, 0, 1) != '#') {
             $value_array = $item->xpath($value);
             if ($value_array) {
               $value = implode(', ', $value_array);
-              // TODO: either find a way to internationalize, or the in the config have admin define the field name explicitly in their chosen environment language
-              // Trim field content length
               $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
             }
           }
         }
       }
-      else {
-        foreach ($layout as $key => $value) {
-          if (strtolower($key) == 'creator') {
-            $output .= 'test';
-          }
-        }
-      }
+
+      // CONTINUE ON FOR LIST AND GRID
 
       $output .= '</div>'; // end meta-window
       $output .= '</div>'; // end meta-container
       $output .= '</div>'; // result
+
+
+      // FOR GRID VIEW WE NEED 4 COLLUMNS AND THEN A CLEAN BREAK
       if ($result_style == 'grid' && $count % 4 == 0) {
         $output .= '<div class="row-break"></div>';
       }
