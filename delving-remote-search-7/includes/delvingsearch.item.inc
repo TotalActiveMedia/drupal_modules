@@ -57,9 +57,8 @@ function delvingsearch_show_item($xml)
       $output .= '<img width="' . $img_width . '" src="' . $thumbnail . '" alt="'. $title .'"/>';
     }
     else {
-      $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/no-image.png';
-      $output .= l('<img width="' . $img_width . '" src="' . $thumbnail . '"/>', $uri, array('html' => TRUE));
-
+     $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/img/no-image.png';
+     $output .= l('<img width="' . $img_width . '" src="' . $thumbnail . '"/>', $uri, array('html' => TRUE));
     }
     $output .= '</div>'; // result-object-img
     $output .= '<div class="result-object-meta">';
