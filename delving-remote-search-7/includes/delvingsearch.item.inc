@@ -76,9 +76,9 @@ function delvingsearch_show_item($xml)
       }
     }
 
-
+    $link_attributes['target'] = '_blank';
     if ($originalContext && variable_get('delving_search_item_show_in_original_context', DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT) == 1) {
-      $output .= l(t("Show in original context"), $originalContext, array('attributes' => $link_attributes));
+      $output .= l(t("Show in original context"), trim($originalContext), array('attributes' => $link_attributes));
     }
 
     $output .= '</div>'; // result-object-meta
