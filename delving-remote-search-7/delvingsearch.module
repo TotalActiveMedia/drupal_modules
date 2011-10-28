@@ -367,19 +367,21 @@ function delvingsearch_wiki_get($wiki_index)
     // Set the root of the response data
     $data = json_decode($response->data);
 	//$term = $data[0];
-    $items_raw = $data->query->search;
-    $items = array();
-    $i = 0;
-    foreach($items_raw as $item){
-       $items[] = '<a title="'. strip_tags($item->snippet) .'" href="' . $target_url .  $item->title . '">' . $item->title . '</a>';
-      $i++;
-    }
-    // Give back
-    $content = array(
-      '#theme' => 'item_list',
-      '#items' => $items
-    );
+    if (!empty($data->query->search)) {
+      $items_raw = $data->query->search;
+      $items = array();
+      $i = 0;
+      foreach($items_raw as $item){
+         $items[] = '<a title="'. strip_tags($item->snippet) .'" href="' . $target_url .  $item->title . '">' . $item->title . '</a>';
+        $i++;
+      }
+      // Give back
+      $content = array(
+        '#theme' => 'item_list',
+        '#items' => $items
+      );
     return $content;
+    }
   }
   else {
     // Deal with HTTP errors
@@ -498,6 +500,3 @@ function delvingsearch_breadcrumbs() {
     return $out;
   }
 }
-
-
-
