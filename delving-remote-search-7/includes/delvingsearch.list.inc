@@ -9,7 +9,7 @@
 function delvingsearch_show_list($xml, $query)
 {
   if (empty($xml)): { 
-    $output = '<div style="clear:both">' . t('No results found. Please try another search') . '</div>'; 
+    $output = '<div style="clear:both">' . t('There was a problem showing the search results. Please try another search phrase.') . '</div>'; 
   }
   else: {
     $data = simplexml_load_string($xml);
