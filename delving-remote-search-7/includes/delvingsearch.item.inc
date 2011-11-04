@@ -3,6 +3,7 @@
 function delvingsearch_show_item($xml)
 {
   if (empty($xml)): { 
+    delvingsearch_set_page_title(t('Error'));
     $output = '<div id="delving" class="object">' . t('There was a problem displaying this item. Sorry!') . '</div>'; 
   }
   else: {
