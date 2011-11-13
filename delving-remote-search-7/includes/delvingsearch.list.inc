@@ -8,162 +8,167 @@
  */
 function delvingsearch_show_list($xml, $query)
 {
-
-  $data = simplexml_load_string($xml);
-  $total_records = $data->query['numFound'];
-  $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_NR_ITEMS);
-  $result_style = variable_get('delving_search_results_display_style', DELVING_SEARCH_RESULTS_DISPLAY_STYLE);
-
-  $layout = array(
-    "#thumbnail" => "europeana:object",
-    "#title" => "dc:title",
-    "#description" => "dc:description",
-  );
-  foreach ($data->xpath("/results/layout/drupal/field") as $field) {
-    $layout[(string)$field->key] = (string)$field->value;
+  if (empty($xml)): { 
+    $output = '<div style="clear:both">' . t('There was a problem showing the search results. Please try another search phrase.') . '</div>'; 
   }
+  else: {
+    $data = simplexml_load_string($xml);
+    $total_records = $data->query['numFound'];
+    $num_per_page = variable_get('delving_api_results_rows', DELVING_API_RESULTS_NR_ITEMS);
+    $result_style = variable_get('delving_search_results_display_style', DELVING_SEARCH_RESULTS_DISPLAY_STYLE);
 
-
-  pager_default_initialize($total_records, $num_per_page);
-
-  $output = '<div id="delving">';
-  $output .= '<div class="delving-count"><h4>' . t('Number of records found: ') . $total_records . '</h4></div>';
-
-  if ($total_records > 0 && $layout) {
-    // set up the variables to pass along to the pager
-    $variables = array(
-      'parameters' => array(
-        'query' => $query,
-        'rows' => $num_per_page,
-      ),
+    $layout = array(
+      "#thumbnail" => "europeana:object",
+      "#title" => "dc:title",
+      "#description" => "dc:description",
     );
+    foreach ($data->xpath("/results/layout/drupal/field") as $field) {
+      $layout[(string)$field->key] = (string)$field->value;
+    }
 
-    $output .= delvingsearch_breadcrumbs();
-    $output .= theme('pager', $variables);
-    $output .= '<div class="results ' . $result_style . '">';
 
-    $count = 1;
+    pager_default_initialize($total_records, $num_per_page);
 
-    foreach ($data->xpath("/results/items/item") as $item) {
+    $output = '<div id="delving">';
+    $output .= '<div class="delving-count"><h4>' . t('Number of records found: ') . $total_records . '</h4></div>';
 
-      // THUMBNAIL SETTINGS ********************************************************************************************
-      $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
-      $thumb_width = variable_get('delving_search_thumb_width', DELVING_SEARCH_THUMB_WIDTH);
-      $viewer_height = variable_get('delving_search_thumb_viewer_height', DELVING_SEARCH_THUMB_VIEWER_HEIGHT);
+    if ($total_records > 0 && $layout) {
+      // set up the variables to pass along to the pager
+      $variables = array(
+        'parameters' => array(
+          'query' => $query,
+          'rows' => $num_per_page,
+        ),
+      );
 
-      // TITLE SETTINGS ************************************************************************************************
-      $title = implode('', $item->xpath($layout["#title"]));
-      if (trim($title) == '' || trim($title) == '-') {
-        $title = t("Untitled");
-      }
-      $max_title = variable_get('delving_search_results_title_length', DELVING_SEARCH_RESULTS_TITLE_LENGTH);
+      $output .= delvingsearch_breadcrumbs();
+      $output .= theme('pager', $variables);
+      $output .= '<div class="results ' . $result_style . '">';
 
-      // DESCRIPTION SETTINGS ******************************************************************************************
-      $description = implode('', $item->xpath($layout["#description"]));
-      $max_description = variable_get('delving_search_results_description_length', DELVING_SEARCH_RESULTS_DESCRIPTION_LENGTH);
+      $count = 1;
 
-      // OBJECT LINK/VIEWPATH SETTTINGS ********************************************************************************
-      $link_attributes = array();
-      switch ((string)variable_get('delving_search_item_view_path', DELVING_SEARCH_ITEM_VIEW_PATH)) {
-        case 'isShownAt':
-          $uri = trim(implode('', $item->xpath($layout['#isShownAt'])));
-          $link_attributes['target'] = "_blank";
-          break;
-        case 'delvingPlatform':
-          $prefix = variable_get('delving_search_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL);
-          $uri = $prefix . implode('', $item->xpath($layout['#uri'])) . '.html';
-          $link_attributes['target'] = "_blank";
-          break;
-        default:
-          $prefix = str_replace('%/%', '', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
-          $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
-          break;
-      }
+      foreach ($data->xpath("/results/items/item") as $item) {
 
-      // ROW SETTINGS **************************************************************************************************
-      $row_class = '';
-      $result_style == 'list' && $count % 2 == 0 ? $row_class = 'even' : $row_class = 'odd';
+        // THUMBNAIL SETTINGS ********************************************************************************************
+        $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
+        $thumb_width = variable_get('delving_search_thumb_width', DELVING_SEARCH_THUMB_WIDTH);
+        $viewer_height = variable_get('delving_search_thumb_viewer_height', DELVING_SEARCH_THUMB_VIEWER_HEIGHT);
 
-      // RESULTS  ******************************************************************************************************
-      $output .= '<div class="result ' . $row_class . '">';
-      $output .= '<div class="img-container">';
-      $output .= '<div class="img-window" style="height:' . $viewer_height . 'px">';
+        // TITLE SETTINGS ************************************************************************************************
+        $title = implode('', $item->xpath($layout["#title"]));
+        if (trim($title) == '' || trim($title) == '-') {
+          $title = t("Untitled");
+        }
+        $max_title = variable_get('delving_search_results_title_length', DELVING_SEARCH_RESULTS_TITLE_LENGTH);
 
-      if ($thumbnail) {
-        $output .= l('<img width="' . $thumb_width . '" class="overlay" src="' . $thumbnail . '"/>', $uri, array('attributes' => $link_attributes, 'html' => TRUE));
-      }
-      else {
-        $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/img/no-image.png';
-        //        $output .= base_path();
-        $output .= l('<img width="' . $thumb_width . '" src="' . $thumbnail . '"/>', $uri, array('attributes' => $link_attributes, 'html' => TRUE));
-        $output .= '<div class="image-not-available">' . t('no thumbnail available') . '</div>';
-      }
+        // DESCRIPTION SETTINGS ******************************************************************************************
+        $description = implode('', $item->xpath($layout["#description"]));
+        $max_description = variable_get('delving_search_results_description_length', DELVING_SEARCH_RESULTS_DESCRIPTION_LENGTH);
 
-      $output .= '</div>'; // end img-window
-      $output .= '</div>'; // end img-container
-      $output .= '<div class="meta-container">';
-      $output .= '<div class="meta-window">';
-
-      // TITLE DISPLAY *************************************************************************************************
-
-      // if max title length set as configuration option then trim
-      if (trim($max_title) != '') {
-        $output .= '<h2>' . l(delving_teaser($title, $max_title, 'chars'), $uri, array('attributes' => $link_attributes)) . '</h2>';
-
-      }
-      else {
-        $output .= '<h2>' . l($title, $uri, array('attributes' => $link_attributes)) . '</h2>';
-      }
-
-      // DO THIS ONLY FOR LIST VIEW
-
-      if ($result_style == 'list') {
-
-        // DESCRIPTIONS DISPLAY ******************************************************************************************
-        if($description){
-          // If max description length set as configuration option then trim
-          if (trim($max_description) != '') {
-            $output .= '<p><strong>' . t('Description: ') . '</strong>' . delving_teaser($description, $max_description, 'chars') . '</p>';
-
-          }
-          else {
-            $output .= '<p><strong>' . t('Description: ') . '</strong>' . $description . '</p>';
-          }
+        // OBJECT LINK/VIEWPATH SETTTINGS ********************************************************************************
+        $link_attributes = array();
+        switch ((string)variable_get('delving_search_item_view_path', DELVING_SEARCH_ITEM_VIEW_PATH)) {
+          case 'isShownAt':
+            $uri = trim(implode('', $item->xpath($layout['#isShownAt'])));
+            $link_attributes['target'] = "_blank";
+            break;
+          case 'delvingPlatform':
+            $prefix = variable_get('delving_search_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL);
+            $uri = $prefix . implode('', $item->xpath($layout['#uri'])) . '.html';
+            $link_attributes['target'] = "_blank";
+            break;
+          default:
+            $prefix = str_replace('%/%', '', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
+            $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
+            break;
         }
 
-        foreach ($layout as $key => $value) {
-          if (substr($key, 0, 1) != '#') {
-            $value_array = $item->xpath($value);
-            if ($value_array) {
-              $value = implode(', ', $value_array);
-              $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+        // ROW SETTINGS **************************************************************************************************
+        $row_class = '';
+        $result_style == 'list' && $count % 2 == 0 ? $row_class = 'even' : $row_class = 'odd';
+
+        // RESULTS  ******************************************************************************************************
+        $output .= '<div class="result ' . $row_class . '">';
+        $output .= '<div class="img-container">';
+        $output .= '<div class="img-window" style="height:' . $viewer_height . 'px">';
+
+        if ($thumbnail) {
+          $output .= l('<img width="' . $thumb_width . '" class="overlay" src="' . $thumbnail . '"/>', $uri, array('attributes' => $link_attributes, 'html' => TRUE));
+        }
+        else {
+          $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/img/no-image.png';
+          //        $output .= base_path();
+          $output .= l('<img width="' . $thumb_width . '" src="' . $thumbnail . '"/>', $uri, array('attributes' => $link_attributes, 'html' => TRUE));
+          $output .= '<div class="image-not-available">' . t('no thumbnail available') . '</div>';
+        }
+
+        $output .= '</div>'; // end img-window
+        $output .= '</div>'; // end img-container
+        $output .= '<div class="meta-container">';
+        $output .= '<div class="meta-window">';
+
+        // TITLE DISPLAY *************************************************************************************************
+
+        // if max title length set as configuration option then trim
+        if (trim($max_title) != '') {
+          $output .= '<h2>' . l(delving_teaser($title, $max_title, 'chars'), $uri, array('attributes' => $link_attributes)) . '</h2>';
+
+        }
+        else {
+          $output .= '<h2>' . l($title, $uri, array('attributes' => $link_attributes)) . '</h2>';
+        }
+
+        // DO THIS ONLY FOR LIST VIEW
+
+        if ($result_style == 'list') {
+
+          // DESCRIPTIONS DISPLAY ******************************************************************************************
+          if($description){
+            // If max description length set as configuration option then trim
+            if (trim($max_description) != '') {
+              $output .= '<p><strong>' . t('Description: ') . '</strong>' . delving_teaser($description, $max_description, 'chars') . '</p>';
+
+            }
+            else {
+              $output .= '<p><strong>' . t('Description: ') . '</strong>' . $description . '</p>';
+            }
+          }
+
+          foreach ($layout as $key => $value) {
+            if (substr($key, 0, 1) != '#') {
+              $value_array = $item->xpath($value);
+              if ($value_array) {
+                $value = implode(', ', $value_array);
+                $output .= '<strong>' . $key . ': </strong>' . $value . '<br/>';
+              }
             }
           }
         }
+
+        // CONTINUE ON FOR LIST AND GRID
+
+        $output .= '</div>'; // end meta-window
+        $output .= '</div>'; // end meta-container
+        $output .= '</div>'; // result
+
+
+        // FOR GRID VIEW WE NEED 4 COLLUMNS AND THEN A CLEAN BREAK
+        if ($result_style == 'grid' && $count % 4 == 0) {
+          $output .= '<div class="row-break"></div>';
+        }
+        $count++;
       }
-
-      // CONTINUE ON FOR LIST AND GRID
-
-      $output .= '</div>'; // end meta-window
-      $output .= '</div>'; // end meta-container
-      $output .= '</div>'; // result
-
-
-      // FOR GRID VIEW WE NEED 4 COLLUMNS AND THEN A CLEAN BREAK
-      if ($result_style == 'grid' && $count % 4 == 0) {
-        $output .= '<div class="row-break"></div>';
-      }
-      $count++;
+      $output .= '</div>';
+      $output .= theme('pager', $variables);
+      $output .= '<div id="pb-delving">' . l('Search Powered by Delving', 'http://www.delving.eu', array('attributes' => array('target' => '_blank'))) . '</div>';
     }
-    $output .= '</div>';
-    $output .= theme('pager', $variables);
-    $output .= '<div id="pb-delving">' . l('Search Powered by Delving', 'http://www.delving.eu', array('attributes' => array('target' => '_blank'))) . '</div>';
-  }
-  else {
-    $output .= t('No results found. Please try another search');
-  }
+    else {
+      $output .= t('No results found. Please try another search');
+    }
 
-  $output .= '</div>';
+    $output .= '</div>';
+  }
+  endif;
   return $output;
 }
 
