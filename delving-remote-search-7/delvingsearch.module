@@ -172,6 +172,25 @@ function delvingsearch_form($form, &$form_state) {
   if (!empty($qps['query'])) {
     $query = $qps['query'];
     $data = delvingapi_get_list($query, $qps);
+    $tabs = $xml = delving_static_response_cache();
+    $tabs = simplexml_load_string($tabs);
+    $tab = '';
+    foreach ($tabs->xpath("//facet") as $t) {
+      $facetname = implode('',$t->xpath("@name"));
+      if ($facetname == 'TYPE' && empty($tabsdone)) {
+        $tabsdone = 1;
+        $tab .= '<div class="delvingtabs">';
+        foreach ($t->xpath("link") as $l) {
+          global $base_url;
+          $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $query . $qps['qf'] . '&qf[]=TYPE:' . implode('',$l->xpath('@value'));
+          $options['attributes']['class'] = 'menutab';
+          $tab .= l(implode('',$l->xpath('@value')) . ' (' . implode('',$l->xpath('@count')) . ')', $furl, $options);
+          /* $tab['type'] = implode('',$l->xpath('@value'));
+          $tab[$i]['count'] = implode('',$l->xpath('@count')); */
+        }
+      $tab .= '</div>';
+      }
+    }
     $results = delvingsearch_show_list($data, $query);
   }
 
@@ -180,14 +199,30 @@ function delvingsearch_form($form, &$form_state) {
     '#title' => t('Enter a search term'),
     '#size' => 60,
     '#maxlength' => 256,
-    '#required' => TRUE,
   );
   $form['submit_query'] = array(
     '#type' => 'submit',
     '#value' => t('Find'),
   );
-  $form['#suffix'] = $results;
-
+  $form['advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced search settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['advanced']['county'] = array(
+    '#type' => 'textfield',
+    '#title' => t('County'),
+    '#size' => 60,
+    '#maxlength' => 256,
+	);
+  $form['advanced']['municipality'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Municipality'),
+    '#size' => 60,
+    '#maxlength' => 256,
+  );
+  $form['#suffix'] = $tab . $results;
   return $form;
 }
 
@@ -199,7 +234,11 @@ function delvingsearch_form_submit($form, &$form_state) {
   // This way when a query is resubmitted using the pager or facet refinement, the same process is followed each time
   global $base_url;
   $redirect_url = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH);
-  $redirect_url .= '?query=' . $form_state['values']['query'];
+  if (!empty($form_state['values']['query'])): { $redirect_url .= '?query=' . $form_state['values']['query']; }
+  else: $redirect_url .= '?query=*:*';
+  endif;
+  if (!empty($form_state['values']['county'])) { $redirect_url .= '&qf[]=COUNTY:' . $form_state['values']['county']; }
+  if (!empty($form_state['values']['municipality'])) { $redirect_url .= '&qf[]=MUNICIPALITY:' . $form_state['values']['municipality']; }
   $form_state['redirect'] = $redirect_url;
 }
 
@@ -446,10 +485,10 @@ function delvingsearch_facet_get($facet_name) {
           $options['attributes']['class'] = 'selected';
           if (!empty($facet_link)) {
             if ($link['isSelected'] != 'true') {
-              $items[] = l(trim($link), $furl);
+              $items[] = '<input type="checkbox">' . l(trim($link), $furl);
             }
             else {
-              $items[] = l(trim($link), $furl, $options);
+              $items[] = '<input type="checkbox" checked>' . l(trim($link), $furl, $options);
             }
           }
         }
