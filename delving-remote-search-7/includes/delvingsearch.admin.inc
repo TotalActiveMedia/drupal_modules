@@ -223,6 +223,20 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#size' => 4,
     '#default_value' => variable_get('delving_search_object_img_width', DELVING_SEARCH_OBJECT_IMG_WIDTH),
   );
+  $form['item-page']['social'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Share on social media networks',
+  );
+  $form['item-page']['social']['delving_search_social_widget_display'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable social media widget'),
+    '#description' => t('Enable social media widget to share items on Facebook, twitter etc.'),
+    '#options' => array(
+      'on' => t('Enabled'),
+      'off' => t('Disabled'),
+    ),
+    '#default_value' => variable_get('delving_search_social_widget_display', DELVING_SEARCH_SOCIAL_WIDGET_DISPLAY),
+  );
 
   $form['wiki'] = array(
     '#type' => 'vertical_tabs',
