@@ -85,9 +85,38 @@ function delvingsearch_show_item($xml)
         $output .= l(t("Show in original context"), trim($originalContext), array('attributes' => $link_attributes));
       }
 
+      
       $output .= '</div>'; // result-object-meta
+      
+      
       $output .= '</div>'; // result-object
-
+      $social_enabled = variable_get('delving_search_social_widget_display', DELVING_SEARCH_SOCIAL_WIDGET_DISPLAY);
+      if ($social_enabled = '1') {
+        $widget_type = variable_get('delving_search_social_widget_type', DELVING_SEARCH_SOCIAL_WIDGET_TYPE);
+        if ($widget_type < 3): {
+          $widget_class = 'addthis_toolbox addthis_default_style ';
+          if ($widget_type = 2) {
+            $widget_class = 'addthis_toolbox addthis_default_style addthis_32x32_style';
+          }
+          $output .= '<div class="' . $widget_class . '">
+                      <a class="addthis_button_preferred_1"></a>
+                      <a class="addthis_button_preferred_2"></a>
+                      <a class="addthis_button_preferred_3"></a>
+                      <a class="addthis_button_preferred_4"></a>
+                      <a class="addthis_button_compact"></a>
+                      <a class="addthis_counter addthis_bubble_style"></a>
+                      </div>
+                      <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=xa-4eef057268595af4"></script>';
+        }
+        else: $output .='<div class="addthis_toolbox addthis_default_style ">
+                        <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+                        <a class="addthis_button_tweet"></a>
+                        <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+                        <a class="addthis_counter addthis_pill_style"></a>
+                        </div>
+                        <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=xa-4eef057d42454250"></script>';
+        endif;
+      }
     }
 
     $output .= '<div id="pb-delving">' . l('Search Powered by Delving', 'http://www.delving.eu', array('attributes' => array('target' => '_blank'))) . '</div>';
