@@ -95,7 +95,7 @@ function delvingsearch_show_item($xml)
         $widget_type = variable_get('delving_search_social_widget_type', DELVING_SEARCH_SOCIAL_WIDGET_TYPE);
         if ($widget_type < 3): {
           $widget_class = 'addthis_toolbox addthis_default_style ';
-          if ($widget_type = 2) {
+          if ($widget_type == 2) {
             $widget_class = 'addthis_toolbox addthis_default_style addthis_32x32_style';
           }
           $output .= '<div class="' . $widget_class . '">
