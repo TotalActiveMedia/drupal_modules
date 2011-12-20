@@ -78,7 +78,7 @@ function delvingsearch_show_list($xml, $query)
             $link_attributes['target'] = "_blank";
             break;
           default:
-            $prefix = str_replace('%/%', '', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
+            $prefix = str_replace('%delvingsearch_obj/%', '', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
             $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
             break;
         }
