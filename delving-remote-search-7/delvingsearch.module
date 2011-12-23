@@ -230,16 +230,28 @@ function delvingsearch_form($form, &$form_state) {
     }
     $results = delvingsearch_show_list($data, $query);
   }
-  foreach ($result->xpath("//breadcrumb") as $t) {
-    $name = implode('',$t->xpath('@field'));
-    if (empty($name)): {
-      $query = implode('',$t->xpath('@value'));
+  $facet = array(
+      'COUNTY' => '',
+      'TYPE' => '',
+      'MUNICIPALITY' => '',
+    );
+  if (!empty($qps['query'])): {
+    foreach ($result->xpath("//breadcrumb") as $t) {
+      $name = implode('',$t->xpath('@field'));
+      if (empty($name)): {
+        $query = implode('',$t->xpath('@value'));
+      }
+      else: {
+        $facet[$name] = implode('',$t->xpath('@value')); 
+      }
+      endif;
     }
-    else: {
-      $facet[$name] = implode('',$t->xpath('@value')); 
-    }
-    endif;
   }
+  else: {
+    $query = '';
+  }
+  endif;
+    
   $form['query'] = array(
     '#type' => 'textfield',
     '#title' => t('Enter a search term'),
