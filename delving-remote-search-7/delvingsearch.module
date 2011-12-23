@@ -12,7 +12,7 @@ define('DELVING_SEARCH_RESULTS_TITLE_LENGTH', '');
 define('DELVING_SEARCH_RESULTS_DISPLAY_STYLE', 'list');
 define('DELVING_SEARCH_RESULTS_DESCRIPTION_LENGTH', '');
 define('DELVING_SEARCH_THUMB_WIDTH', '165');
-define('DELVING_SEARCH_ITEM_PAGE_PATH', 'delving/search/item/%delvingsearch_obj/%');
+define('DELVING_SEARCH_ITEM_PAGE_PATH', 'delving/search/item/%/%');
 define('DELVING_SEARCH_THUMB_VIEWER_HEIGHT', '165');
 define('DELVING_SEARCH_ITEM_PAGE_RETURN_TO_RESULTS', 'Return to results');
 define('DELVING_SEARCH_ITEM_VIEW_PATH', 'drupal');
