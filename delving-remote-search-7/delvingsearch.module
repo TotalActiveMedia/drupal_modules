@@ -172,24 +172,60 @@ function delvingsearch_form($form, &$form_state) {
   if (!empty($qps['query'])) {
     $query = $qps['query'];
     $data = delvingapi_get_list($query, $qps);
-    $tabs = $xml = delving_static_response_cache();
+    $tabs = delving_static_response_cache();
     $tabs = simplexml_load_string($tabs);
     $tab = '';
     foreach ($tabs->xpath("//facet") as $t) {
       $facetname = implode('',$t->xpath("@name"));
-      if ($facetname == 'TYPE' && empty($tabsdone)) {
+      if ($facetname == 'TYPE' && empty($tabsdone)): {
+        //Don't act on the first <facet>, it contains the result set only, not including the possibility to extend to other types.
         $tabsdone = 1;
+      }
+      elseif ($facetname == 'TYPE' && !empty($tabsdone)): {
         $tab .= '<div class="delvingtabs">';
+        global $base_url;
+        $opt['attributes']['class'] = 'menutab';
+        if (strpos($qps['qf'], 'TYPE')>0): {
+          $qfs = explode('&qf[]', $qps['qf']);
+          $allqf = '';
+          foreach($qfs as $q) {
+            if (empty($q)): {
+              //skip the empty qfs in the array
+            }
+            elseif (strpos($q, 'TYPE:')): {
+              $allqf .= '';
+            }
+            else: {
+              $allqf .= '&qf[]' . $q;
+            }
+            endif;
+          }
+          $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $query . $allqf;
+        }
+        else: {
+          $opt['attributes']['class'] .= ' active';
+          $allqf = $qps['qf'];
+          $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $query . $qps['qf'];
+        }
+        endif;
+        $tab .= l(t('All'), $furl, $opt);;
         foreach ($t->xpath("link") as $l) {
-          global $base_url;
-          $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $query . $qps['qf'] . '&qf[]=TYPE:' . implode('',$l->xpath('@value'));
+          $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $query . $allqf . '&qf[]=TYPE:' . implode('',$l->xpath('@value'));
           $options['attributes']['class'] = 'menutab';
+          //If the type is already selected, let's make it different looking and clickable to remove the constrain.
+          if (implode('',$l->xpath('@isSelected')) == 'true') {
+            $options['attributes']['class'] .= ' active';
+            $removethis = '&qf[]=TYPE:' . implode('',$l->xpath('@value'));
+            $qf = str_replace($removethis, '', $qps['qf']);
+            $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $query . $qf;
+          }
           $tab .= l(implode('',$l->xpath('@value')) . ' (' . implode('',$l->xpath('@count')) . ')', $furl, $options);
           /* $tab['type'] = implode('',$l->xpath('@value'));
           $tab[$i]['count'] = implode('',$l->xpath('@count')); */
         }
       $tab .= '</div>';
       }
+      endif;
     }
     $results = delvingsearch_show_list($data, $query);
   }
@@ -221,6 +257,12 @@ function delvingsearch_form($form, &$form_state) {
     '#title' => t('Municipality'),
     '#size' => 60,
     '#maxlength' => 256,
+  );
+  $form['advanced']['type'] = array(
+    '#type' => 'select',
+    '#title' => t('Search by type'),
+    '#default value' => '',
+    '#options' => array('' => t('All'), 'IMAGE' => t('Images')),
   );
   $form['#suffix'] = $tab . $results;
   return $form;
