@@ -167,15 +167,16 @@ function delvingsearch_form($form, &$form_state) {
   $results = '';
   //i'm guessing the admin variable search page name goes here
   drupal_set_title(variable_get('delving_search_page_name'));
+  drupal_add_js(drupal_get_path('module','delvingsearch') . '/delvingsearch.js');
 
   // there is a query in the URL, do a search and fill up $html
   if (!empty($qps['query'])) {
     $query = $qps['query'];
     $data = delvingapi_get_list($query, $qps);
-    $tabs = delving_static_response_cache();
-    $tabs = simplexml_load_string($tabs);
+    $result = delving_static_response_cache();
+    $result = simplexml_load_string($result);
     $tab = '';
-    foreach ($tabs->xpath("//facet") as $t) {
+    foreach ($result->xpath("//facet") as $t) {
       $facetname = implode('',$t->xpath("@name"));
       if ($facetname == 'TYPE' && empty($tabsdone)): {
         //Don't act on the first <facet>, it contains the result set only, not including the possibility to extend to other types.
@@ -229,11 +230,21 @@ function delvingsearch_form($form, &$form_state) {
     }
     $results = delvingsearch_show_list($data, $query);
   }
-
+  foreach ($result->xpath("//breadcrumb") as $t) {
+    $name = implode('',$t->xpath('@field'));
+    if (empty($name)): {
+      $query = implode('',$t->xpath('@value'));
+    }
+    else: {
+      $facet[$name] = implode('',$t->xpath('@value')); 
+    }
+    endif;
+  }
   $form['query'] = array(
     '#type' => 'textfield',
     '#title' => t('Enter a search term'),
     '#size' => 60,
+    '#default_value' => $query,
     '#maxlength' => 256,
   );
   $form['submit_query'] = array(
@@ -250,19 +261,21 @@ function delvingsearch_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('County'),
     '#size' => 60,
+    '#default_value' => $facet['COUNTY'],
     '#maxlength' => 256,
 	);
   $form['advanced']['municipality'] = array(
     '#type' => 'textfield',
     '#title' => t('Municipality'),
     '#size' => 60,
+    '#default_value' => $facet['MUNICIPALITY'],
     '#maxlength' => 256,
   );
   $form['advanced']['type'] = array(
     '#type' => 'select',
     '#title' => t('Search by type'),
-    '#default value' => '',
-    '#options' => array('' => t('All'), 'IMAGE' => t('Images')),
+    '#default_value' => $facet['TYPE'],
+    '#options' => array('' => t('All'), 'IMAGE' => t('Images'), 'TEXT' => t('Text')),
   );
   $form['#suffix'] = $tab . $results;
   return $form;
@@ -281,6 +294,7 @@ function delvingsearch_form_submit($form, &$form_state) {
   endif;
   if (!empty($form_state['values']['county'])) { $redirect_url .= '&qf[]=COUNTY:' . $form_state['values']['county']; }
   if (!empty($form_state['values']['municipality'])) { $redirect_url .= '&qf[]=MUNICIPALITY:' . $form_state['values']['municipality']; }
+  if (!empty($form_state['values']['type'])) { $redirect_url .= '&qf[]=TYPE:' . $form_state['values']['type']; }
   $form_state['redirect'] = $redirect_url;
 }
 
