@@ -123,8 +123,7 @@ function delvingsearch_menu() {
     'title' => variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH),
     'description' => 'Page for showing an individual search result item',
     'page callback' => 'delvingsearch_load_item',
-    'page arguments' => array($first_arg),
-    'load arguments' => array($second_arg),
+    'page arguments' => array($first_arg, $second_arg),
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
@@ -137,21 +136,18 @@ function delvingsearch_menu() {
  *
  * Displays the page(s) and calls necessary functions needed to run the page functionality
  */
-function delvingsearch_obj_load($arg1, $arg2) {
-  drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
-  //drupal_add_js(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.js');
-  module_load_include('inc', 'delvingsearch', 'includes/delvingsearch.item');
-  $obj_id = $arg1 . '/' . $arg2;
-  $xml = delvingapi_get_item($obj_id);
-  return $xml;
-}
 function delvingsearch_load_search() {
   drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
 //  drupal_add_js(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.js');
   return drupal_get_form('delvingsearch_form');
 }
 
-function delvingsearch_load_item($xml) {
+function delvingsearch_load_item($arg1, $arg2) {
+  drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
+  //drupal_add_js(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.js');
+  module_load_include('inc', 'delvingsearch', 'includes/delvingsearch.item');
+  $obj_id = $arg1 . '/' . $arg2;
+  $xml = delvingapi_get_item($obj_id);
   $page = delvingsearch_show_item($xml);
   return $page;
 }
@@ -235,7 +231,7 @@ function delvingsearch_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Search by type'),
     '#default_value' => $facet['TYPE'],
-    '#options' => array('' => t('All'), 'IMAGE' => t('Images'), 'TEXT' => t('Text')),
+    '#options' => array('' => t('All'), 'IMAGE' => t('Images'), 'TEXT' => t('Text'), 'VIDEO' => t('Video')),
   );
   $form['#suffix'] = $results;
   return $form;
