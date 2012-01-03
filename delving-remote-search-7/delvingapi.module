@@ -133,7 +133,7 @@ function delvingapi_do_search($url) {
   try {
     // Send out the request
     $response = drupal_http_request($url);
-    dsm($url);
+    //dsm($url);
     // We have a response code 200: success!
     if ($response->code == 200) {
       // Set the root of the response data
