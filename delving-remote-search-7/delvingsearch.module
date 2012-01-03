@@ -163,11 +163,11 @@ function delvingsearch_form($form, &$form_state) {
   $results = '';
   //i'm guessing the admin variable search page name goes here
   drupal_set_title(variable_get('delving_search_page_name'));
-  drupal_add_js(drupal_get_path('module','delvingsearch') . '/delvingsearch.js');
   
   // there is a query in the URL, do a search and fill up $html
   if (!empty($qps['query'])) {
     $query = $qps['query'];
+    drupal_add_js(drupal_get_path('module','delvingsearch') . '/delvingsearch.js');
     $data = delvingapi_get_list($query, $qps);
     $result = delving_static_response_cache();
     $result = simplexml_load_string($result);
