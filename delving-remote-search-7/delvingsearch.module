@@ -200,7 +200,7 @@ function delvingsearch_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Enter a search term'),
     '#size' => 60,
-    '#default_value' => $query,
+    '#default_value' => urldecode($query),
     '#maxlength' => 256,
   );
   $form['submit_query'] = array(
@@ -246,6 +246,7 @@ function delvingsearch_form_submit($form, &$form_state) {
   global $base_url;
   $redirect_url = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH);
   if (!empty($form_state['values']['query'])): { $redirect_url .= '?query=' . $form_state['values']['query']; }
+  //If the query was empty, let's search for all values. Maybe the user enterent some constrains, who knows?
   else: $redirect_url .= '?query=*:*';
   endif;
   if (!empty($form_state['values']['county'])) { $redirect_url .= '&qf[]=COUNTY:' . $form_state['values']['county']; }
