@@ -551,12 +551,27 @@ function delvingsearch_facet_get($facet_name) {
           $furl = url($base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)) . '?query=' . $terms . $facet_link;
           $options = array();
           $options['attributes']['class'] = 'selected';
+          $facetname = trim($facet['name']);
           if (!empty($facet_link)) {
+            if ($facetname == 'TYPE'): {
+              $link = t(trim($link['value'])) . ' (' . $link['count'] . ')';
+            }
+            endif;
             if ($link['isSelected'] != 'true') {
-              $items[] = '<input type="checkbox">' . l(trim($link), $furl);
+              $testrepeat = implode($items);
+              $stringtotest = trim($link);
+              $postest = (strpos($testrepeat, $stringtotest));
+              if ($postest == false) {
+                $items[] = '<input type="checkbox">' . l(trim($link), $furl);
+              }
             }
             else {
-              $items[] = '<input type="checkbox" checked>' . l(trim($link), $furl, $options);
+              $testrepeat = implode($items);
+              $stringtotest = trim($link);
+              $postest = (strpos($testrepeat, $stringtotest));
+              if ($postest == false) {
+                $items[] = '<input type="checkbox" checked>' . l(trim($link), $furl, $options);
+              }
             }
           }
         }
