@@ -141,7 +141,6 @@ function delvingsearch_admin_settings($form, &$form_state)
       endif;
     }
   }
-  
   endif;
   asort($fields);
   $form['results-display']['field-list']['delvingsearch_the_list'] = array(
