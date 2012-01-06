@@ -11,12 +11,14 @@
 		var offset = $('#edit-query').offset();
 		var append = '<div id="clearsearch"><a href="javascript:void(0)" title="' + Drupal.t('Clear') + '">' + querylength + '</a></div>';
 		$('#edit-query').before(append);
+		var css = $('#edit-query').css('font-size');
+		$('#clearsearch').css("font-size", css);
 		var width = $('#clearsearch').width();
 		css = {
-			"width": width+15 + 'px',
+			"width": width + 15 + 'px',
 			"line-height": height-8 + 'px',
 		}
-		$('#clearsearch').css(css)
+		$('#clearsearch').css(css);
 		$('#clearsearch a').text('X');
 		offset.left = offset.left+2;
 		offset.top = offset.top+3;
