@@ -107,7 +107,62 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#maxlength' => 3,
     '#default_value' => variable_get('delving_search_thumb_viewer_height', DELVING_SEARCH_THUMB_VIEWER_HEIGHT),
   );
-
+  $form['results-display']['field-list'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Customize fields'),
+    '#description' => t('Change the order of these fields to manipulate the order in the search results. This only applies for list view.'),
+  );
+  $defaults = variable_get('delvingsearch_the_list',0);
+  //TODO: CHANGE THIS LINK!
+  $lang = variable_get('delving_api_language', DELVING_API_LANGUAGE);
+  $xml = drupal_http_request('http://norvegiana2.delving.org/services/api/search?query=none&lang=' . $lang);
+  $fields = array();
+  $exclude = array(
+      "europeana:object",
+      "dc:title",
+      "dc:description",
+      "europeana:uri",
+      "europeana:isShownAt",
+    );
+  if ($xml->code == 200): {
+    $data = simplexml_load_string($xml->data);
+    foreach ($data->xpath("//drupal/field") as $item) {
+      $field = implode('',$item->xpath("value"));
+      if (in_array($field, $exclude)): {
+        //discard these from field list. They should be left alone anyway.
+      }
+      else: {
+        $weight = '';
+        if (!empty($defaults[$field]['weight'])) {
+          $weight = $defaults[$field]['weight'];
+        }
+        $fields[$field] = $weight;
+      }
+      endif;
+    }
+  }
+  
+  endif;
+  asort($fields);
+  $form['results-display']['field-list']['delvingsearch_the_list'] = array(
+    '#tree' => TRUE,
+    '#theme' => 'delvingsearch_admin_settings',
+  );
+  foreach ($fields as $t=>$key) {
+    $form['results-display']['field-list']['delvingsearch_the_list'][$t]['name'] = array(
+      '#markup' => implode('',$data->xpath("//field[value='" . $t . "']/key"))
+    );
+    $form['results-display']['field-list']['delvingsearch_the_list'][$t]['hidden'] = array(
+      '#type' => 'select',
+      '#options' => array('hidden' => t('Hidden'), 'visible' => t('Visible')),
+      '#default_value' => $defaults[$t]['hidden'],
+    );
+    $form['results-display']['field-list']['delvingsearch_the_list'][$t]['weight'] = array(
+      '#type' => 'weight',
+      '#default_value' => $defaults[$t]['weight'],
+      '#delta' => 20,
+    );
+  }
   /**
    * RESULTS FACETS DISPLAY SETTINGS ***********************************************************************************
    */
@@ -253,7 +308,44 @@ function delvingsearch_admin_settings($form, &$form_state)
   }
 
   $form['#validate'][] = 'delving_search_validate_numeric';
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save changes'));
   return system_settings_form($form);
+}
+
+/**
+ * @param $variables
+ *   An associative array containing:
+ *   - form: A render element representing the form.
+ *
+ * @ingroup themeable
+ */
+function theme_delvingsearch_admin_settings($variables) {
+  $form = $variables['form'];
+  $test = array();
+  $defaults = variable_get('delvingsearch_the_list',0);
+  foreach (element_children($form) as $id) {
+    $test[$id] = $defaults[$id]['weight'];
+  }
+  asort($test);
+  drupal_add_tabledrag('delving-fields', 'order', 'sibling', 'delving-fields-weight');
+
+  $rows = array();
+  foreach (element_children($form) as $id) {
+    $form[$id]['weight']['#attributes']['class'] = array('delving-fields-weight');
+    $rows[] = array(
+      'data' => array(
+        drupal_render($form[$id]['name']),
+        drupal_render($form[$id]['weight']),
+        drupal_render($form[$id]['hidden']),
+      ),
+      'class' => array('draggable'),
+    );
+  }
+  $header = array(t('Name'), t('Weight'), t('Visibilty'));
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'delving-fields')));
+
+  return $output;
 }
 
 /**

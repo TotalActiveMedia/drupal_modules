@@ -22,11 +22,22 @@ function delvingsearch_show_list($xml, $query)
       "#title" => "dc:title",
       "#description" => "dc:description",
     );
-    foreach ($data->xpath("/results/layout/drupal/field") as $field) {
-      $layout[(string)$field->key] = (string)$field->value;
+    //get all field variables from the settings form
+    $vars = variable_get('delvingsearch_the_list',0);
+    //Sort it based on weight. Actually it ends up getting sorted first on visibility,
+    //then weight, but either way works since we are excluding hidden fields.
+    asort($vars);
+    foreach ($vars as $field=>$value) {
+      if ($value['hidden'] == 'hidden'): {
+        //Don't render the ones that are hidden
+      }
+      else: {
+        $key = implode('', $data->xpath("/results/layout/drupal/field[value='" . $field . "']/key"));
+        $layout[$key] = $field;
+      }
+      endif;
     }
-
-
+    
     pager_default_initialize($total_records, $num_per_page);
 
     $output = '<div id="delving">';

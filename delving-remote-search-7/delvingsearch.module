@@ -500,3 +500,15 @@ function delvingsearch_breadcrumbs() {
     return $out;
   }
 }
+
+/**
+ * Implements hook_theme().
+ */
+function delvingsearch_theme() {
+  return array(
+    'delvingsearch_admin_settings' => array(
+      'render element' => 'form',
+      'file' => 'includes/delvingsearch.admin.inc',
+    ),
+  );
+}
