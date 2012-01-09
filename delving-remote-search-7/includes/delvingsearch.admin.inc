@@ -248,6 +248,12 @@ function delvingsearch_admin_settings($form, &$form_state)
     ),
     '#default_value' => variable_get('delving_search_social_widget_type', DELVING_SEARCH_SOCIAL_WIDGET_TYPE),
   );
+  $form['item-page']['social']['delving_search_addthis_pubid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('addThis Profile ID (optional)'),
+    '#description' => t('If you have an addThis profile, put your Profile ID here to track your visitors sharing. If you do not have a profile, you can either <a href="@addthis" target="_blank">register at addThis</a> or leave this blank. Your Profile ID is located under your addThis profile settings. Hover your username (top right) and click settings. Then click profiles, and your ID should show.', array('@addthis' => 'https://www.addthis.com/register')),
+    '#default_value' => variable_get('delving_search_addthis_pubid', ''),
+  );
 
   $form['wiki'] = array(
     '#type' => 'vertical_tabs',

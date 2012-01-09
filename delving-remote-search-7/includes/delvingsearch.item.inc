@@ -92,6 +92,10 @@ function delvingsearch_show_item($xml)
       $output .= '</div>'; // result-object
       $social_enabled = variable_get('delving_search_social_widget_display', DELVING_SEARCH_SOCIAL_WIDGET_DISPLAY);
       if ($social_enabled = '1') {
+        $pubid = variable_get('delving_search_addthis_pubid');
+        if (strlen($pubid)<1) {
+          $pubid = 'xa-4eef057268595af4';
+        }
         $widget_type = variable_get('delving_search_social_widget_type', DELVING_SEARCH_SOCIAL_WIDGET_TYPE);
         if ($widget_type < 3): {
           $widget_class = 'addthis_toolbox addthis_default_style ';
@@ -106,7 +110,7 @@ function delvingsearch_show_item($xml)
                       <a class="addthis_button_compact"></a>
                       <a class="addthis_counter addthis_bubble_style"></a>
                       </div>
-                      <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=xa-4eef057268595af4"></script>';
+                      <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=' . $pubid . '"></script>';
         }
         else: $output .='<div class="addthis_toolbox addthis_default_style ">
                         <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
@@ -114,7 +118,7 @@ function delvingsearch_show_item($xml)
                         <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
                         <a class="addthis_counter addthis_pill_style"></a>
                         </div>
-                        <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=xa-4eef057d42454250"></script>';
+                        <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=' . $pubid . '"></script>';
         endif;
       }
     }
