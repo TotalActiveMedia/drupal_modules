@@ -12,7 +12,7 @@ header('Content-Type: text/html; charset=utf-8');
 
 function delvingsearch_admin_settings($form, &$form_state)
 {
-
+  drupal_add_js(drupal_get_path('module', 'delvingsearch') . '/delvingsearch_admin.js');
   $options_dl = array('grid' => t('grid'), 'list' => t('list'));
   $options_hyperlink_button = array(1 => t('Button'), 0 => t('Regular hyperlink'));
   $options_oc = array(1 => t('show'), 0 => t('hide'));
