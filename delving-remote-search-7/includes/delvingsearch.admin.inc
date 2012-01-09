@@ -144,7 +144,7 @@ function delvingsearch_admin_settings($form, &$form_state)
     )
   );
   // If object viewed in remote delving portal, then show this form field
-  $form['item-page']['delving_search_item_object_page']['delving_search_item_external_url'] = array(
+  $form['item-page']['location']['delving_search_item_external_url'] = array(
     '#type' => 'textfield',
     '#title' => t('External URL'),
     '#description' => t('If you chose "A Delving Platform compliant portal" above, then enter the URL here. For example "http://example.com/portal/object/"'),
