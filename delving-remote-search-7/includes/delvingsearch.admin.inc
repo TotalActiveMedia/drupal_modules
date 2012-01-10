@@ -117,7 +117,25 @@ function delvingsearch_admin_settings($form, &$form_state)
   );
 
   $form['results-display']['facets-display']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
-
+  $form['results-display']['facets-display']['delvingsearch_sort_buttons'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sort option for facet blocks'),
+    '#options' => array(
+      '1' => t('On'),
+      '0' => t('Off'),
+    ),
+    '#default_value' => variable_get('delvingsearch_sort_buttons',0),
+  );
+  $form['results-display']['facets-display']['delvingsearch_sortbox_number_limit'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of hits to trigger sort buttons'),
+    '#default_value' => variable_get('delvingsearch_sortbox_number_limit',20),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="delvingsearch_sort_buttons"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
   /**
    *  OBJECT / ITEM PAGE SETTINGS **************************************************************************************
    */

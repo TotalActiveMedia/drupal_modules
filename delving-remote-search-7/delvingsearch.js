@@ -34,12 +34,15 @@
 		$('#edit-query').focusout(function() {
 			$('#edit-query').before(clearsearch);
 		});
+		var modulepath = Drupal.settings.delvingsearch.modulepath;
+		$('.delvingplacesorting').before('<img class="delvingsortabc" src="' + Drupal.settings.basePath + modulepath +
+		'/img/abc.gif"><img class="delvingsort123" src="' + Drupal.settings.basePath + modulepath + '/img/123.gif">');
 		$('.delvingsortabc').click(function() {
-			var list = $(this).parent().find('.item-list li');
+			var list = $(this).parent().find('li');
 			$(list).tsort();
 		});
 		$('.delvingsort123').click(function() {
-			var list = $(this).parent().find('.item-list li');
+			var list = $(this).parent().find('li');
 			$(list).tsort('.delvingcount', {order:'desc'});
 		});
 	})
