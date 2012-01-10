@@ -40,9 +40,6 @@
 		});
 		$('.delvingsort123').click(function() {
 			var list = $(this).parent().find('.item-list li');
-			var facet = $(this).closest('.block');
-			var facetid = $(facet).attr('id');
-			console.log(facetid);
 			$(list).tsort('.delvingcount', {order:'desc'});
 		});
 	})

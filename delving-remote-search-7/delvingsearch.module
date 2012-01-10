@@ -359,7 +359,7 @@ function delvingsearch_block_view($delta = '') {
       $block['content'] = t('Search box goes here');
     case 'county':
       $block['subject'] = t('County');
-      $block['content'] = delvingsearch_facet_get('COUNTY');
+      $block['content'] = $sortnav . render(delvingsearch_facet_get('COUNTY'));
       break;
     case 'municipality':
       $block['subject'] = t('Municipality');
@@ -367,15 +367,15 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'namedplace':
       $block['subject'] = t('Named Place');
-      $block['content'] = delvingsearch_facet_get('NAMEDPLACE');
+      $block['content'] = $sortnav . render(delvingsearch_facet_get('NAMEDPLACE'));
       break;
     case 'aboutperson':
       $block['subject'] = t('About Person');
-      $block['content'] = delvingsearch_facet_get('ABOUTPERSON');
+      $block['content'] = $sortnav . render(delvingsearch_facet_get('ABOUTPERSON'));
       break;
     case 'provider':
       $block['subject'] = t('Provider');
-      $block['content'] = delvingsearch_facet_get('PROVIDER');
+      $block['content'] = $sortnav . render(delvingsearch_facet_get('PROVIDER'));
       break;
     case 'dataprovider':
       $block['subject'] = t('Data Provider');
