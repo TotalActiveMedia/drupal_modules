@@ -168,6 +168,7 @@ function delvingsearch_form($form, &$form_state) {
   if (!empty($qps['query'])) {
     $query = $qps['query'];
     drupal_add_js(drupal_get_path('module','delvingsearch') . '/delvingsearch.js');
+    drupal_add_js(drupal_get_path('module','delvingsearch') . '/jquery.tinysort.js');
     $data = delvingapi_get_list($query, $qps);
     $result = delving_static_response_cache();
     $result = simplexml_load_string($result);
@@ -349,7 +350,9 @@ function delvingsearch_block_view($delta = '') {
     'subject' => '',
     'content' => '',
   );
-
+  global $base_path;
+  $sortnav = '<img class="delvingsortabc" src="' . $base_path . drupal_get_path('module', 'delvingsearch') . '/img/abc.gif">' .
+  '<img class="delvingsort123" src="' . $base_path . drupal_get_path('module', 'delvingsearch') . '/img/123.gif">';
   switch ($delta) {
     case 'delving-search':
       $block['subject'] = t('Search');
@@ -360,7 +363,7 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'municipality':
       $block['subject'] = t('Municipality');
-      $block['content'] = delvingsearch_facet_get('MUNICIPALITY');
+      $block['content'] = $sortnav . render(delvingsearch_facet_get('MUNICIPALITY'));
       break;
     case 'namedplace':
       $block['subject'] = t('Named Place');
@@ -376,7 +379,7 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'dataprovider':
       $block['subject'] = t('Data Provider');
-      $block['content'] = delvingsearch_facet_get('DATAPROVIDER');
+      $block['content'] = $sortnav . render(delvingsearch_facet_get('DATAPROVIDER'));
       break;
     case 'type':
       $block['subject'] = t('Type');
@@ -562,7 +565,7 @@ function delvingsearch_facet_get($facet_name) {
               $stringtotest = trim($link);
               $postest = (strpos($testrepeat, $stringtotest));
               if ($postest == false) {
-                $items[] = '<input type="checkbox">' . l(trim($link), $furl);
+                $items[] = '<input type="checkbox">' . l(trim($link), $furl) . '<span style="display:none" class="delvingcount">' . $link['count'] . '</span>';
               }
             }
             else {
@@ -570,7 +573,7 @@ function delvingsearch_facet_get($facet_name) {
               $stringtotest = trim($link);
               $postest = (strpos($testrepeat, $stringtotest));
               if ($postest == false) {
-                $items[] = '<input type="checkbox" checked>' . l(trim($link), $furl, $options);
+                $items[] = '<input type="checkbox" checked>' . l(trim($link), $furl, $options) . '<span style="display:none" class="delvingcount">' . $link['count'] . '</span>';
               }
             }
           }
