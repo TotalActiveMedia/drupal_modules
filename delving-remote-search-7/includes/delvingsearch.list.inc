@@ -21,6 +21,8 @@ function delvingsearch_show_list($xml, $query)
       "#thumbnail" => "europeana:object",
       "#title" => "dc:title",
       "#description" => "dc:description",
+      "#uri" => "europeana:uri",
+      "#isShownAt" => "europeana:isShownAt",
     );
     //get all field variables from the settings form
     $vars = variable_get('delvingsearch_the_list',0);
