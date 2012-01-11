@@ -104,7 +104,11 @@ function delvingsearch_menu() {
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/delvingsearch.admin.inc'
   );
-
+  /* $items['delving/ajax/county'] = array(
+    'page callback' => '_delvingsearch_county_autocomplete',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  ); */
   $items[variable_get('delving_search_results_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)] = array(
     'title' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),
     'description' => 'Page for searching remote Delving Framework API.',
@@ -220,6 +224,7 @@ function delvingsearch_form($form, &$form_state) {
     '#size' => 60,
     '#default_value' => $facet['COUNTY'],
     '#maxlength' => 256,
+    /* '#autocomplete_path' => 'delving/ajax/county', */
 	);
   $form['advanced']['municipality'] = array(
     '#type' => 'textfield',
@@ -529,10 +534,15 @@ function delvingsearch_wiki_get($wiki_index)
     if (!empty($data->query->search)) {
       $items_raw = $data->query->search;
       $items = array();
-      $i = 0;
+      if (empty($item->snippet)) {
+        $item->snippet = '';
+        $snippet = '';
+      }
+      else {
+        $snippet = strip_tags($item->snippet);
+      }
       foreach($items_raw as $item){
-         $items[] = '<a title="'. strip_tags($item->snippet) .'" href="' . $target_url .  $item->title . '">' . $item->title . '</a>';
-        $i++;
+         $items[] = '<a title="'. $snippet .'" href="' . $target_url .  $item->title . '">' . $item->title . '</a>';
       }
       // Give back
       $content = array(
@@ -674,3 +684,11 @@ function delvingsearch_breadcrumbs() {
     return $out;
   }
 }
+//TODO: Autocomplete the county. maybe some other?
+/* function _delvingsearch_county_autocomplete($string) {
+  $api_url = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
+  $response = drupal_http_request($api_url . '?some-magic-parameter' . urlencode($query) . '&format=json');
+  $matches = array();
+  $matches['eirik'] = 'eirik';
+  drupal_json_output($matches);
+} */
