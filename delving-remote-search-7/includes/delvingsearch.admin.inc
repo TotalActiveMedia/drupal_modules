@@ -110,12 +110,13 @@ function delvingsearch_admin_settings($form, &$form_state)
   $form['results-display']['field-list'] = array(
     '#type' => 'fieldset',
     '#title' => t('Customize fields'),
-    '#description' => t('Change the order of these fields to manipulate the order in the search results. This only applies for list view.'),
+    '#description' => t('Change these settings to manipulate the display order of the fields per object on the result page. This only applies for list view. Thumbnail, title and description is required and can not be changed or hidden through this interface.'),
   );
   $defaults = variable_get('delvingsearch_the_list',0);
-  //TODO: CHANGE THIS LINK!
   $lang = variable_get('delving_api_language', DELVING_API_LANGUAGE);
-  $xml = drupal_http_request('http://norvegiana2.delving.org/services/api/search?query=none&lang=' . $lang);
+  $apiurl = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
+  //TODO: CHANGE THIS URL TO THE ?EXPLAIN PARAMETER WHEN SJOERD IS READY!
+  $xml = drupal_http_request($apiurl . '?query=none&lang=' . $lang);
   $fields = array();
   $exclude = array(
       "europeana:object",
@@ -242,7 +243,7 @@ function delvingsearch_admin_settings($form, &$form_state)
   );
   $form['item-page']['original-context-options']['delving_search_item_show_in_original_context'] = array(
     '#type' => 'radios',
-    '#title' => t('Show "Original Context" field afdadfasfsdf'),
+    '#title' => t('Show "Original Context" field'),
     '#default_value' => variable_get('delving_search_item_show_in_original_context', DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT),
     '#options' => $options_oc,
     '#description' => t('By choosing "show" a link will be created (if the field is available) which will open the object in a new window in it\'s original context.')
