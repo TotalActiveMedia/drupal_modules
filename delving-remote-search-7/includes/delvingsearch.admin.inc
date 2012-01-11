@@ -223,6 +223,37 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#size' => 4,
     '#default_value' => variable_get('delving_search_object_img_width', DELVING_SEARCH_OBJECT_IMG_WIDTH),
   );
+  //Social media widgets
+  $form['item-page']['social'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Share on social media networks',
+  );
+  $form['item-page']['social']['delving_search_social_widget_display'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable social media widget'),
+    '#description' => t('Enable social media widget to share items on Facebook, twitter etc.'),
+    '#options' => array(
+      '1' => t('Enabled'),
+      '0' => t('Disabled'),
+    ),
+    '#default_value' => variable_get('delving_search_social_widget_display', DELVING_SEARCH_SOCIAL_WIDGET_DISPLAY),
+  );
+  $form['item-page']['social']['delving_search_social_widget_type'] = array(
+    '#type' => 'radios',
+    '#title' => t('Select which widget type to use'),
+    '#options' => array(
+      '1' => '<img src="' . base_path() . drupal_get_path('module', 'delvingsearch') . '/img/widget1.png">',
+      '2' => '<img src="' . base_path() . drupal_get_path('module', 'delvingsearch') . '/img/widget2.png">',
+      '3' => '<img src="' . base_path() . drupal_get_path('module', 'delvingsearch') . '/img/widget3.png">',
+    ),
+    '#default_value' => variable_get('delving_search_social_widget_type', DELVING_SEARCH_SOCIAL_WIDGET_TYPE),
+  );
+  $form['item-page']['social']['delving_search_addthis_pubid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('addThis Profile ID (optional)'),
+    '#description' => t('If you have an addThis profile, put your Profile ID here to track your visitors sharing. If you do not have a profile, you can either <a href="@addthis" target="_blank">register at addThis</a> or leave this blank. Your Profile ID is located under your addThis profile settings. Hover your username (top right) and click settings. Then click profiles, and your ID should show.', array('@addthis' => 'https://www.addthis.com/register')),
+    '#default_value' => variable_get('delving_search_addthis_pubid', ''),
+  );
 
   $form['wiki'] = array(
     '#type' => 'vertical_tabs',
