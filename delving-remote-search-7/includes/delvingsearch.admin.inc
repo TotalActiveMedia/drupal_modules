@@ -141,27 +141,21 @@ function delvingsearch_admin_settings($form, &$form_state)
       'drupal' => t('Within drupal'),
       'isShownAt' => t('In original context from the Data Provider'),
       'delvingPlatform' => t('A Delving Platform portal'),
-    ),
-    '#ajax' => array(
-      'callback' => 'delving_show_object_page_input',
-      'wrapper' => 'delving_object_page'
     )
   );
-  // Empty placeholder for ajax fill
-  $form['item-page']['location']['delving_search_item_object_page'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<div id="delving_object_page">',
-    '#suffix' => '</div>'
-  );
   // If object viewed in remote delving portal, then show this form field
-  if (isset($form_state['values']['delving_search_item_view_path']) && $form_state['values']['delving_search_item_view_path'] == 'delvingPlatform') {
-    $form['item-page']['delving_search_item_object_page']['delving_search_item_external_url'] = array(
-      '#type' => 'textfield',
-      '#title' => t('External URL'),
-      '#description' => t('If you chose "A Delving Platform compliant portal" above, then enter the URL here. For example "http://example.com/portal/object/"'),
-      '#default_value' => variable_get('delving_search_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL)
-    );
-  }
+  $form['item-page']['location']['delving_search_item_external_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('External URL'),
+    '#description' => t('If you chose "A Delving Platform compliant portal" above, then enter the URL here. For example "http://example.com/portal/object/"'),
+    '#default_value' => variable_get('delving_search_item_external_url', DELVING_SEARCH_ITEM_EXTERNAL_URL),
+    //#states show this immidiately with javascript instead of using ajax which is slower. Also, the ajax implemented earlier did not hide the field if you changed your mind.
+    '#states' => array(
+      'visible' => array(
+        ':input[name="delving_search_item_view_path"]' => array('value' => 'delvingPlatform'),
+      ),
+    ),
+  );
 
   // Text string for 'return to results' hyperlink
   $form['item-page']['return-to-results'] = array(
@@ -285,16 +279,6 @@ function delvingsearch_admin_settings($form, &$form_state)
 
   $form['#validate'][] = 'delving_search_validate_numeric';
   return system_settings_form($form);
-}
-
-/**
- * Callback element needs only select the portion of the form to be updated.
- * Since #ajax['callback'] return can be HTML or a renderable array (or an
- * array of commands), we can just return a piece of the form.
- */
-function delving_show_object_page_input($form, $form_state)
-{
-  return $form['item-page']['delving_search_item_object_page']['delving_search_item_external_url'];
 }
 
 function delving_search_validate_numeric($form, &$form_state){
