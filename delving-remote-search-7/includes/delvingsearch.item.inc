@@ -58,11 +58,18 @@ function delvingsearch_show_item($xml)
       $img_width = variable_get('delving_search_object_img_width', DELVING_SEARCH_OBJECT_IMG_WIDTH);
 
       if ($thumbnail) {
-        $output .= '<img width="' . $img_width . '" src="' . $thumbnail . '" alt="'. $title .'"/>';
+        $shown_by = implode('', $item->xpath('europeana:isShownBy'));
+        if(empty($shown_by)): {
+          $output .= '<img width="' . $img_width . '" src="' . $thumbnail . '" alt="'. $title .'"/>';
+        }
+        else: {
+          $output .= l('<img width="' . $img_width . '" src="' . $thumbnail . '" alt="'. $title .'"/>', trim($shown_by), array('html' => TRUE, 'attributes' => array('title' => t('Show original image'))));
+        }
+        endif;
       }
       else {
        $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/img/no-image.png';
-       $output .= l('<img width="' . $img_width . '" src="' . $thumbnail . '"/>', $uri, array('html' => TRUE));
+       $output .= '<img width="' . $img_width . '" src="' . $thumbnail . '"/>';
       }
       $output .= '</div>'; // result-object-img
       $output .= '<div class="result-object-meta">';
