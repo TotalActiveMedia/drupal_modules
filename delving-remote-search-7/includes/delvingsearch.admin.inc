@@ -166,8 +166,6 @@ function delvingsearch_admin_settings($form, &$form_state)
         );
       }
     }
-    dsm($search);
-    
   }
   /**
    * RESULTS FACETS DISPLAY SETTINGS ***********************************************************************************
