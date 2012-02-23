@@ -21,7 +21,7 @@ function delvingsearch_show_list($xml, $query)
       "#thumbnail" => "europeana:object",
       "#title" => "dc:title",
       "#description" => "dc:description",
-      "#uri" => "europeana:uri",
+      "#uri" => 'delving:pmhId',
       "#isShownAt" => "europeana:isShownAt",
     );
     //get all field variables from the settings form
@@ -60,7 +60,7 @@ function delvingsearch_show_list($xml, $query)
 
       $count = 1;
 
-      foreach ($data->xpath("/results/items/item") as $item) {
+      foreach ($data->xpath("/results/items/item/fields") as $item) {
 
         // THUMBNAIL SETTINGS ********************************************************************************************
         $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
@@ -91,7 +91,7 @@ function delvingsearch_show_list($xml, $query)
             $link_attributes['target'] = "_blank";
             break;
           default:
-            $prefix = str_replace('%delvingsearch_obj/%', '', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
+            $prefix = str_replace('%delvingsearch_obj%', '', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
             $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
             break;
         }
