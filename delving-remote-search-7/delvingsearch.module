@@ -213,7 +213,6 @@ function delvingsearch_block_info() {
   $blocks['search'] = array(
     'info' => t('Delving Simple Search Form'),
     'status' => 0,
-    'visibility' => BLOCK_VISIBILITY_LISTED,
     'cache' => DRUPAL_NO_CACHE,
   );
 //  $blocks['delving-search'] = array(
@@ -301,6 +300,9 @@ function delvingsearch_block_view($delta = '') {
   switch ($delta) {
     case 'search':
       $block['subject'] = t('Search');
+      if (delving_has_searched() == TRUE) {
+        break;
+      }
       $block['content'] = drupal_get_form('delvingsearch_form');
       break;
     case 'county':
