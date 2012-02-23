@@ -115,7 +115,6 @@ function delvingsearch_admin_settings($form, &$form_state)
   $defaults = variable_get('delvingsearch_the_list',0);
   $lang = variable_get('delving_api_language', DELVING_API_LANGUAGE);
   $apiurl = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
-  //TODO: CHANGE THIS URL TO THE ?EXPLAIN PARAMETER WHEN SJOERD IS READY!
   $xml = drupal_http_request($apiurl . '?explain&lang=' . $lang);
   $fields = array();
   $exclude = array(
@@ -149,19 +148,26 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#theme' => 'delvingsearch_admin_settings',
   );
   foreach ($fields as $t=>$key) {
-    $form['results-display']['field-list']['delvingsearch_the_list'][$t]['name'] = array(
-      '#markup' => implode('',$data->xpath("//field[@xml='" . $t . "']/@xml")) . ' (' . t('!count records', array('!count' => implode('',$data->xpath("//field[@xml='" . $t . "']/@docs")))) . ')'
-    );
-    $form['results-display']['field-list']['delvingsearch_the_list'][$t]['hidden'] = array(
-      '#type' => 'select',
-      '#options' => array('hidden' => t('Hidden'), 'visible' => t('Visible')),
-      '#default_value' => $defaults[$t]['hidden'],
-    );
-    $form['results-display']['field-list']['delvingsearch_the_list'][$t]['weight'] = array(
-      '#type' => 'weight',
-      '#default_value' => $defaults[$t]['weight'],
-      '#delta' => 20,
-    );
+    foreach ($data->xpath("//field[@xml='" . $t . "']") as $f) {
+      $search = implode('', $f->xpath("@search"));
+      if (strpos($search, '_facet')<1) {
+        $form['results-display']['field-list']['delvingsearch_the_list'][$t]['name'] = array(
+          '#markup' => implode('',$f->xpath("@xml")) . ' (' . t('!count records', array('!count' => implode('',$f->xpath("@docs")))) . ')'
+        );
+        $form['results-display']['field-list']['delvingsearch_the_list'][$t]['hidden'] = array(
+          '#type' => 'select',
+          '#options' => array('hidden' => t('Hidden'), 'visible' => t('Visible')),
+          '#default_value' => $defaults[$t]['hidden'],
+        );
+        $form['results-display']['field-list']['delvingsearch_the_list'][$t]['weight'] = array(
+          '#type' => 'weight',
+          '#default_value' => $defaults[$t]['weight'],
+          '#delta' => 20,
+        );
+      }
+    }
+    dsm($search);
+    
   }
   /**
    * RESULTS FACETS DISPLAY SETTINGS ***********************************************************************************
