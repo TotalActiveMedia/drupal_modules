@@ -369,7 +369,7 @@ function delvingsearch_block_view($delta = '') {
       $block['content'] = t('Search box goes here');
     case 'county':
       $block['subject'] = t('County');
-      $facet = delvingsearch_facet_get('COUNTY');
+      $facet = delvingsearch_facet_get('abm_county_facet');
       if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
         $facet['#attributes'] = array(
           'class' => 'delvingplacesorting',
@@ -379,7 +379,7 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'municipality':
       $block['subject'] = t('Municipality');
-      $facet = delvingsearch_facet_get('MUNICIPALITY');
+      $facet = delvingsearch_facet_get('abm_municipality_text');
       if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
         $facet['#attributes'] = array(
           'class' => 'delvingplacesorting',
@@ -389,7 +389,7 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'namedplace':
       $block['subject'] = t('Named Place');
-      $facet = delvingsearch_facet_get('NAMEDPLACE');
+      $facet = delvingsearch_facet_get('abm_namedPlace_facet');
       if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
         $facet['#attributes'] = array(
           'class' => 'delvingplacesorting',
@@ -399,7 +399,7 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'aboutperson':
       $block['subject'] = t('About Person');
-      $facet = delvingsearch_facet_get('ABOUTPERSON');
+      $facet = delvingsearch_facet_get('abm_aboutPerson_facet');
       if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
         $facet['#attributes'] = array(
           'class' => 'delvingplacesorting',
@@ -409,7 +409,7 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'provider':
       $block['subject'] = t('Provider');
-      $facet = delvingsearch_facet_get('PROVIDER');
+      $facet = delvingsearch_facet_get('europeana_provider_facet');
       if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
         $facet['#attributes'] = array(
           'class' => 'delvingplacesorting',
@@ -419,7 +419,7 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'dataprovider':
       $block['subject'] = t('Data Provider');
-      $facet = delvingsearch_facet_get('DATAPROVIDER');
+      $facet = delvingsearch_facet_get('europeana_dataProvider_facet');
       if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
         $facet['#attributes'] = array(
           'class' => 'delvingplacesorting',
@@ -429,7 +429,7 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'type':
       $block['subject'] = t('Type');
-      $facet = delvingsearch_facet_get('TYPE');
+      $facet = delvingsearch_facet_get('europeana_type_facet');
       if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
         $facet['#attributes'] = array(
           'class' => 'delvingplacesorting',
