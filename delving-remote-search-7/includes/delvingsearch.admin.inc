@@ -110,25 +110,25 @@ function delvingsearch_admin_settings($form, &$form_state)
   $form['results-display']['field-list'] = array(
     '#type' => 'fieldset',
     '#title' => t('Customize fields'),
-    '#description' => t('Change these settings to manipulate the display order of the fields per object on the result page. This only applies for list view. Thumbnail, title and description is required and can not be changed or hidden through this interface.'),
+    '#description' => t('Change these settings to manipulate the display order of the fields per object on the result page. This only applies for list view. Thumbnail, title and description is required and can not be changed or hidden through this interface. The number in parantheses show the number of records with data in this field.'),
   );
   $defaults = variable_get('delvingsearch_the_list',0);
   $lang = variable_get('delving_api_language', DELVING_API_LANGUAGE);
   $apiurl = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
   //TODO: CHANGE THIS URL TO THE ?EXPLAIN PARAMETER WHEN SJOERD IS READY!
-  $xml = drupal_http_request($apiurl . '?query=none&lang=' . $lang);
+  $xml = drupal_http_request($apiurl . '?explain&lang=' . $lang);
   $fields = array();
   $exclude = array(
       "europeana:object",
       "dc:title",
       "dc:description",
-      "europeana:uri",
+      "delving:pmhId",
       "europeana:isShownAt",
-    );
+  );
   if ($xml->code == 200): {
     $data = simplexml_load_string($xml->data);
-    foreach ($data->xpath("//drupal/field") as $item) {
-      $field = implode('',$item->xpath("value"));
+    foreach ($data->xpath("//fields/field") as $item) {
+      $field = implode('', $item->xpath("@xml"));
       if (in_array($field, $exclude)): {
         //discard these from field list. They should be left alone anyway.
       }
@@ -150,7 +150,7 @@ function delvingsearch_admin_settings($form, &$form_state)
   );
   foreach ($fields as $t=>$key) {
     $form['results-display']['field-list']['delvingsearch_the_list'][$t]['name'] = array(
-      '#markup' => implode('',$data->xpath("//field[value='" . $t . "']/key"))
+      '#markup' => implode('',$data->xpath("//field[@xml='" . $t . "']/@xml")) . ' (' . t('!count records', array('!count' => implode('',$data->xpath("//field[@xml='" . $t . "']/@docs")))) . ')'
     );
     $form['results-display']['field-list']['delvingsearch_the_list'][$t]['hidden'] = array(
       '#type' => 'select',

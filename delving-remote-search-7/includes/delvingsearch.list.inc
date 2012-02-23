@@ -24,22 +24,33 @@ function delvingsearch_show_list($xml, $query)
       "#uri" => 'delving:pmhId',
       "#isShownAt" => "europeana:isShownAt",
     );
-    //get all field variables from the settings form
+    // get all field variables from the settings form
     $vars = variable_get('delvingsearch_the_list',0);
-    //Sort it based on weight. Actually it ends up getting sorted first on visibility,
-    //then weight, but either way works since we are excluding hidden fields.
-    asort($vars);
-    foreach ($vars as $field=>$value) {
-      if ($value['hidden'] == 'hidden'): {
-        //Don't render the ones that are hidden
+    // Sort it based on weight. Actually it ends up getting sorted first on
+    // visibility, then weight, but either way works since we are excluding
+    // hidden fields.
+    if ($vars !== 0) {
+      asort($vars);
+      foreach ($vars as $field=>$value) {
+        if ($value['hidden'] == 'hidden'): {
+          // Don't render the ones that are hidden
+        }
+        else: {
+          $use_field = str_replace(':', '_', $field);
+          foreach ($data->xpath("//fields/field") as $f) {
+            $row = implode('', $f->xpath("value"));
+            if (strpos($row, $use_field)>0) {
+              $key = trim(implode('', $f->xpath("key")));
+              $layout[$key] = $field;
+            }
+          }
+          // Darn. The api now uses whitespace and underscores for : uncomment this, and use the above.
+          //$key = implode('', $data->xpath("//fields/field[value[matches = '"  . $use_field . "']/key"));
+          //$layout[$key] = $field;
+        }
+        endif;
       }
-      else: {
-        $key = implode('', $data->xpath("/results/layout/drupal/field[value='" . $field . "']/key"));
-        $layout[$key] = $field;
-      }
-      endif;
     }
-    
     pager_default_initialize($total_records, $num_per_page);
 
     $output = '<div id="delving">';

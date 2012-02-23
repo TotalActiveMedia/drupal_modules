@@ -49,7 +49,7 @@ function delvingsearch_show_item($xml)
     $output .= '</div>';
     $output .= '<div class="result-object">';
     $output .= '<div class="result-object-img">';
-    foreach ($data->xpath("/result/item") as $item) {
+    foreach ($data->xpath("/result/item/fields") as $item) {
       $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
       $title = implode('', $item->xpath($layout["#title"]));
       $prefix = str_replace('%/%', '', variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
