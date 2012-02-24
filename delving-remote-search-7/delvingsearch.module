@@ -104,11 +104,11 @@ function delvingsearch_menu() {
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/delvingsearch.admin.inc'
   );
-  /* $items['delving/ajax/county'] = array(
+  $items['delving/ajax'] = array(
     'page callback' => '_delvingsearch_county_autocomplete',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
-  ); */
+  );
   $items[variable_get('delving_search_results_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)] = array(
     'title' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),
     'description' => 'Page for searching remote Delving Framework API.',
@@ -184,18 +184,18 @@ function delvingsearch_form($form, &$form_state) {
     $results .= delvingsearch_show_list($data, $query);
   }
   $facet = array(
-      'COUNTY' => '',
-      'TYPE' => '',
-      'MUNICIPALITY' => '',
-    );
+    'abm_county_facet' => '',
+    'abm_namedPlace_facet' => '',
+    'europeana_type_facet' => '',
+  );
   if (!empty($qps['query'])): {
     foreach ($result->xpath("//breadcrumb") as $t) {
-      $name = implode('',$t->xpath('@field'));
+      $name = implode('', $t->xpath('@field'));
       if (empty($name)): {
-        $query = implode('',$t->xpath('@value'));
+        $query = implode('', $t->xpath('@value'));
       }
       else: {
-        $facet[$name] = implode('',$t->xpath('@value')); 
+        $facet[$name] = implode('', $t->xpath('@value')); 
       }
       endif;
     }
@@ -203,8 +203,9 @@ function delvingsearch_form($form, &$form_state) {
   else: {
     $query = '';
   }
+  
   endif;
-    
+
   $form['query'] = array(
     '#type' => 'textfield',
     '#title' => t('Enter a search term'),
@@ -226,24 +227,26 @@ function delvingsearch_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('County'),
     '#size' => 60,
-    '#default_value' => $facet['COUNTY'],
+    '#default_value' => $facet['abm_county_facet'],
     '#maxlength' => 256,
-    /* '#autocomplete_path' => 'delving/ajax/county', */
+    '#autocomplete_path' => 'delving/ajax/abm_county_facet',
 	);
-  $form['advanced']['municipality'] = array(
+  $form['advanced']['named_place'] = array(
     '#type' => 'textfield',
-    '#title' => t('Municipality'),
+    '#title' => t('Named place'),
     '#size' => 60,
-    '#default_value' => $facet['MUNICIPALITY'],
+    '#default_value' => $facet['abm_namedPlace_facet'],
     '#maxlength' => 256,
+    '#autocomplete_path' => 'delving/ajax/abm_namedPlace_facet',
   );
   $form['advanced']['type'] = array(
     '#type' => 'select',
     '#title' => t('Search by type'),
-    '#default_value' => $facet['TYPE'],
+    '#default_value' => $facet['europeana_type_facet'],
     '#options' => array('' => t('All'), 'IMAGE' => t('Images'), 'TEXT' => t('Text'), 'VIDEO' => t('Video')),
   );
   $form['#suffix'] = $results;
+
   return $form;
 }
 
@@ -256,12 +259,12 @@ function delvingsearch_form_submit($form, &$form_state) {
   global $base_url;
   $redirect_url = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH);
   if (!empty($form_state['values']['query'])): { $redirect_url .= '?query=' . $form_state['values']['query']; }
-  //If the query was empty, let's search for all values. Maybe the user enterent some constrains, who knows?
+  // If the query was empty, let's search for all values. Maybe the user enterent some constrains, who knows?
   else: $redirect_url .= '?query=*:*';
   endif;
-  if (!empty($form_state['values']['county'])) { $redirect_url .= '&qf[]=COUNTY:' . $form_state['values']['county']; }
-  if (!empty($form_state['values']['municipality'])) { $redirect_url .= '&qf[]=MUNICIPALITY:' . $form_state['values']['municipality']; }
-  if (!empty($form_state['values']['type'])) { $redirect_url .= '&qf[]=TYPE:' . $form_state['values']['type']; }
+  if (!empty($form_state['values']['county'])) { $redirect_url .= '&qf[]=abm_county_facet:' . $form_state['values']['county']; }
+  if (!empty($form_state['values']['named_place'])) { $redirect_url .= '&qf[]=abm_namedPlace_facet:' . $form_state['values']['named_place']; }
+  if (!empty($form_state['values']['type'])) { $redirect_url .= '&qf[]=europeana_type_facet:' . $form_state['values']['type']; }
   $form_state['redirect'] = $redirect_url;
 }
 
@@ -452,7 +455,7 @@ function delvingsearch_block_view($delta = '') {
       break;
   }
   // Only display the block if it actually has any content
-  if (count($block['content']['#items']) > 0) {
+  if (count($block['content']) > 0) {
     return $block;
   }
 //  return $block;
@@ -670,14 +673,18 @@ function delvingsearch_breadcrumbs() {
     $i = 1;
     foreach ($breadcrumbs as $crumb) {
 
-      $text = $crumb;
+      $field = implode('', $crumb->xpath("@field"));
+      $text = implode('', $crumb->xpath("@i18n")) . ': ' . implode('', $crumb->xpath("@value"));
+      if (empty($field)) {
+        $text = $crumb;
+      }
       $href = url(variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)) . '?query=' . str_replace('query=', '', $crumb['href']);
 
       if ($i != $numItems) {
-        $out .= '<a class="crumb" href="' . $href . '">' . $crumb . '</a>> ';
+        $out .= '<a class="crumb" href="' . $href . '">' . $text . '</a>> ';
       }
       else {
-        $out .= $crumb;
+        $out .= $text;
       }
 
       $i++;
@@ -688,11 +695,17 @@ function delvingsearch_breadcrumbs() {
     return $out;
   }
 }
-//TODO: Autocomplete the county. maybe some other?
-/* function _delvingsearch_county_autocomplete($string) {
+
+function _delvingsearch_county_autocomplete($type, $string) {
   $api_url = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
-  $response = drupal_http_request($api_url . '?some-magic-parameter' . urlencode($query) . '&format=json');
+  $response = drupal_http_request($api_url . '?explain=fieldValue&field=' . $type . '&value=' . urlencode($string) . '&format=json');
   $matches = array();
-  $matches['eirik'] = 'eirik';
+  if ($response->code == 200) {
+    $json = json_decode($response->data);
+    foreach ($json->results as $result) {
+      $matches[$result->value] = $result->value . ' (' . t('!count hits', array('!count' => $result->count)) . ')';
+    }
+  }
+  
   drupal_json_output($matches);
-} */
+}
