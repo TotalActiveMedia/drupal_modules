@@ -46,7 +46,6 @@ function delvingsearch_show_list($xml, $query)
         endif;
       }
     }
-    dsm($layout);
     pager_default_initialize($total_records, $num_per_page);
 
     $output = '<div id="delving">';
