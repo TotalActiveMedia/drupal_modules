@@ -12,7 +12,7 @@ define('DELVING_SEARCH_RESULTS_TITLE_LENGTH', '');
 define('DELVING_SEARCH_RESULTS_DISPLAY_STYLE', 'list');
 define('DELVING_SEARCH_RESULTS_DESCRIPTION_LENGTH', '');
 define('DELVING_SEARCH_THUMB_WIDTH', '165');
-define('DELVING_SEARCH_ITEM_PAGE_PATH', 'delving/search/item/%delvingsearch_obj');
+define('DELVING_SEARCH_ITEM_PAGE_PATH', 'delving/search/item/%delvingsearch_obj/%');
 define('DELVING_SEARCH_THUMB_VIEWER_HEIGHT', '165');
 define('DELVING_SEARCH_ITEM_PAGE_RETURN_TO_RESULTS', 'Return to results');
 define('DELVING_SEARCH_ITEM_VIEW_PATH', 'drupal');
@@ -127,7 +127,8 @@ function delvingsearch_menu() {
     'title' => variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH),
     'description' => 'Page for showing an individual search result item',
     'page callback' => 'delvingsearch_load_item',
-    'page arguments' => array(3),
+    'page arguments' => array($first_arg),
+    'load arguments' => array($second_arg),
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
@@ -140,11 +141,11 @@ function delvingsearch_menu() {
  *
  * Displays the page(s) and calls necessary functions needed to run the page functionality
  */
-function delvingsearch_obj_load($arg1) {
+function delvingsearch_obj_load($arg1, $arg2) {
   drupal_add_css(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.css');
   //drupal_add_js(drupal_get_path('module', 'delvingsearch') . '/delvingsearch.js');
   module_load_include('inc', 'delvingsearch', 'includes/delvingsearch.item');
-  $obj_id = $arg1;
+  $obj_id = $arg1 . '/' . $arg2;
   $xml = delvingapi_get_item($obj_id);
   return $xml;
 }

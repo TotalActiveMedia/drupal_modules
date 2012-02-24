@@ -118,7 +118,7 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
 function delvingapi_get_item($obj_id = NULL) {
   $target = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
   $language = variable_get('delving_api_language', DELVING_API_LANGUAGE);
-  $url = $target . '?id=' . $obj_id . '&lang=' . $language;
+  $url = $target . '?id=' . $obj_id . '&lang=' . $language . '&idType=legacy';
   $results = delvingapi_do_search($url);
   return $results;
 }
