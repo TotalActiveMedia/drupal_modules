@@ -21,7 +21,7 @@ function delvingsearch_show_list($xml, $query)
       "#thumbnail" => "europeana:object",
       "#title" => "dc:title",
       "#description" => "dc:description",
-      "#uri" => 'delving:pmhId',
+      "#uri" => 'europeana:uri',
       "#isShownAt" => "europeana:isShownAt",
     );
     // get all field variables from the settings form
@@ -37,20 +37,16 @@ function delvingsearch_show_list($xml, $query)
         }
         else: {
           $use_field = str_replace(':', '_', $field);
-          foreach ($data->xpath("//fields/field") as $f) {
-            $row = implode('', $f->xpath("value"));
-            if (strpos($row, $use_field)>0) {
-              $key = trim(implode('', $f->xpath("key")));
-              $layout[$key] = $field;
-            }
-          }
           // Darn. The api now uses whitespace and underscores for : uncomment this, and use the above.
-          //$key = implode('', $data->xpath("//fields/field[value[matches = '"  . $use_field . "']/key"));
-          //$layout[$key] = $field;
+          if ($data->xpath("//fields/field[value='"  . $use_field . "']/key")) {
+            $key = implode('', $data->xpath("//fields/field[value='"  . $use_field . "']/key"));
+            $layout[$key] = $field;
+          }
         }
         endif;
       }
     }
+    dsm($layout);
     pager_default_initialize($total_records, $num_per_page);
 
     $output = '<div id="delving">';
@@ -102,7 +98,7 @@ function delvingsearch_show_list($xml, $query)
             $link_attributes['target'] = "_blank";
             break;
           default:
-            $prefix = str_replace('%delvingsearch_obj%', '', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
+            $prefix = str_replace('%delvingsearch_obj/%', '', variable_get('delving_search_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
             $uri = $prefix . implode('', $item->xpath($layout["#uri"]));
             break;
         }
