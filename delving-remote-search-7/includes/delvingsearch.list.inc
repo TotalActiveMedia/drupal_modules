@@ -21,6 +21,7 @@ function delvingsearch_show_list($xml, $query)
       "#thumbnail" => "europeana:object",
       "#title" => "dc:title",
       "#description" => "dc:description",
+      "#uri" => "europeana:uri",
     );
     foreach ($data->xpath("/results/layout/drupal/field") as $field) {
       $layout[(string)$field->key] = (string)$field->value;
@@ -47,7 +48,7 @@ function delvingsearch_show_list($xml, $query)
 
       $count = 1;
 
-      foreach ($data->xpath("/results/items/item") as $item) {
+      foreach ($data->xpath("/results/items/item/fields") as $item) {
 
         // THUMBNAIL SETTINGS ********************************************************************************************
         $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
