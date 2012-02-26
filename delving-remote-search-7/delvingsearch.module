@@ -187,7 +187,7 @@ function delvingsearch_form($form, &$form_state) {
     'abm_county_facet' => '',
     'abm_namedPlace_facet' => '',
     'europeana_type_facet' => '',
-    'abm_municipality_text' => '',
+    'abm_municipality_facet' => '',
   );
   if (!empty($qps['query'])): {
     foreach ($result->xpath("//breadcrumb") as $t) {
@@ -244,9 +244,9 @@ function delvingsearch_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Municipality'),
     '#size' => 60,
-    '#default_value' => $facet['abm_municipality_text'],
+    '#default_value' => $facet['abm_municipality_facet'],
     '#maxlength' => 256,
-    '#autocomplete_path' => 'delving/ajax/abm_municipality_text',
+    '#autocomplete_path' => 'delving/ajax/abm_municipality_facet',
   );
   $form['advanced']['type'] = array(
     '#type' => 'select',
@@ -273,7 +273,7 @@ function delvingsearch_form_submit($form, &$form_state) {
   endif;
   if (!empty($form_state['values']['county'])) { $redirect_url .= '&qf[]=abm_county_facet:' . $form_state['values']['county']; }
   if (!empty($form_state['values']['named_place'])) { $redirect_url .= '&qf[]=abm_namedPlace_facet:' . $form_state['values']['named_place']; }
-  if (!empty($form_state['values']['municipality'])) { $redirect_url .= '&qf[]=abm_municipality_text:' . $form_state['values']['municipality']; }
+  if (!empty($form_state['values']['municipality'])) { $redirect_url .= '&qf[]=abm_municipality_facet:' . $form_state['values']['municipality']; }
   if (!empty($form_state['values']['type'])) { $redirect_url .= '&qf[]=europeana_type_facet:' . $form_state['values']['type']; }
   $form_state['redirect'] = $redirect_url;
 }
@@ -393,7 +393,7 @@ function delvingsearch_block_view($delta = '') {
       break;
     case 'municipality':
       $block['subject'] = t('Municipality');
-      $facet = delvingsearch_facet_get('abm_municipality_text');
+      $facet = delvingsearch_facet_get('abm_municipality_facet');
       if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
         $facet['#attributes'] = array(
           'class' => 'delvingplacesorting',
@@ -628,26 +628,20 @@ function delvingsearch_facet_get($facet_name) {
           $options = array();
           $options['attributes']['class'] = 'selected';
           $facetname = trim($facet['name']);
-          if (!empty($facet_link)) {
-            if ($facetname == 'TYPE'): {
-              $link = t(trim($link['value'])) . ' (' . $link['count'] . ')';
+          if ($link['isSelected'] != 'true') {
+            $testrepeat = implode($items);
+            $stringtotest = trim($link);
+            $postest = (strpos($testrepeat, $stringtotest));
+            if ($postest == false) {
+              $items[] = '<input type="checkbox">' . l(trim($link), $furl) . '<span style="display:none" class="delvingcount">' . $link['count'] . '</span>';
             }
-            endif;
-            if ($link['isSelected'] != 'true') {
-              $testrepeat = implode($items);
-              $stringtotest = trim($link);
-              $postest = (strpos($testrepeat, $stringtotest));
-              if ($postest == false) {
-                $items[] = '<input type="checkbox">' . l(trim($link), $furl) . '<span style="display:none" class="delvingcount">' . $link['count'] . '</span>';
-              }
-            }
-            else {
-              $testrepeat = implode($items);
-              $stringtotest = trim($link);
-              $postest = (strpos($testrepeat, $stringtotest));
-              if ($postest == false) {
-                $items[] = '<input type="checkbox" checked>' . l(trim($link), $furl, $options) . '<span style="display:none" class="delvingcount">' . $link['count'] . '</span>';
-              }
+          }
+          else {
+            $testrepeat = implode($items);
+            $stringtotest = trim($link);
+            $postest = (strpos($testrepeat, $stringtotest));
+            if ($postest == false) {
+              $items[] = '<input type="checkbox" checked>' . l(trim($link), $furl, $options) . '<span style="display:none" class="delvingcount">' . $link['count'] . '</span>';
             }
           }
         }
