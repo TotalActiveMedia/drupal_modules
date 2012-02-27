@@ -604,16 +604,17 @@ function delvingsearch_europeana_get() {
   else {
     return;
   }
-  dsm($query);
   $xml = drupal_http_request('http://kulturnett2.delving.org:9000/organizations/delving/proxy/europeana/search?query=' . $query . '&format=json');
   if ($xml->code == 200) {
     $data = simplexml_load_string($xml->data);
     $items = array();
     foreach ($data->xpath("//fields") as $field) {
       $link = implode('', $field->xpath("guid"));
-      dsm($link);
+      $title = implode('', $field->xpath("enclosure/@url"));
+      $items[] = l($title, $link);
     }
   }
+
   else {
     // Deal with HTTP errors
     switch ($xml->code) {
@@ -625,6 +626,11 @@ function delvingsearch_europeana_get() {
         break;
     }
   }
+  $content = array(
+    '#theme' => 'item_list',
+    '#items' => $items
+  );
+  return $content;
   
 }
 
