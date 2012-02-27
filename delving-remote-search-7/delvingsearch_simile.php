@@ -1,6 +1,6 @@
  <html>
  <head>
-    <title>Norvegiana JSONP test</title>
+    <title>Delving Simile view</title>
 
     <script src="http://api.simile-widgets.org/exhibit/2.2.0/exhibit-api.js"
             type="text/javascript"></script>
@@ -31,7 +31,7 @@
     </style>
  </head> 
  <body>
-    <h1>Norvegiana JSONP test</h1>
+    <h1>Delving Simile view</h1>
     <table width="100%">
         <tr valign="top">
 		
@@ -55,7 +55,7 @@
 		<div ex:role="view"
      ex:viewClass="Timeline"
      ex:start=".created"
-     ex:colorKey=".dc_type">
+     ex:colorKey=".type">
  </div>
 				<div ex:role="view"></div><div ex:role="view" viewclass="Map" latlng=".geography" center="61.439209,5.973408" zoom="4" ex:mapConstructor="eirikmap"></div>
 				

@@ -250,12 +250,13 @@ var dest = new Proj4js.Proj('WGS84');     //destination coordinates in LCC, sout
 //Proj4js.transform(source, dest, p);      //do the transformation.  x and y are modified in place
 <?php 
 $usethis = $_GET['query'];
-$eirik = file_get_contents('http://kulturnett2.delving.org:9000/organizations/delving/search?query=' . $usethis . '&format=json&sortBy=random_162');?>
+$eirik = file_get_contents('http://kulturnett2.delving.org:9000/organizations/delving/search?query=' . $usethis . '&format=simile&sortBy=random_162');?>
 var eirik = <?php echo $eirik ?>
 
 ;
-var eirik = eirik.result;
-$.each(eirik.items, function (i,n) {
+console.lo
+//var eirik = eirik.result;
+/*$.each(eirik.items, function (i,n) {
   e=0;
   $.each(n, function (j, m) {
     //console.log(m)
@@ -266,10 +267,9 @@ $.each(eirik.items, function (i,n) {
     eirik.items[i][j] = m[0];
     
   })
-})
+})*/
 for (i=0;i<eirik['items'].length;i++) {
-	if (!eirik['items'][i]['label']) { eirik['items'][i]['label'] = eirik['items'][i]['dc_title'] }
- eirik['items'][i]['id'] = eirik['items'][i]['europeana_uri']
+	if (!eirik['items'][i]['label']) { eirik['items'][i]['label'] = eirik['items'][i]['dc_title'] } 
 	if (eirik['items'][i]['geography']) {
 		var taden = eirik['items'][i]['geography'][0];
 //		if (taden.indexOf("(")>-1) {
@@ -286,7 +286,7 @@ for (i=0;i<eirik['items'].length;i++) {
 //	}	else { eirik['items'][i]['geography'][0] = ''; }
 	}
 	else {
-	//gå videre som om ingenting har hendt
+	//gÃ‚ videre som om ingenting har hendt
 	};
 }
 e=0;
@@ -302,7 +302,7 @@ for (i=0;i<eirik['items'].length;i++) {
 	var e = e+1;
 	}
 	else {
-	//gå videre som om ingenting har hendt
+	//gÃ‚ videre som om ingenting har hendt
 	};
 }
 SimileAjax.jQuery(document).ready(function() {
