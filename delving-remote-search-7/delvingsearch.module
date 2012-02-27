@@ -487,9 +487,6 @@ function delvingsearch_block_view($delta = '') {
       return $block;
     }
   }
-  if (count($block['content']['#items']) > 0) {
-    return $block;
-  }
 //  return $block;
 
 }
@@ -769,7 +766,7 @@ function delvingsearch_theme() {
       'file' => 'includes/delvingsearch.admin.inc',
     ),
   );
-
+}
 function _delvingsearch_county_autocomplete($type, $string) {
   $api_url = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
   $response = drupal_http_request($api_url . '?explain=fieldValue&field=' . $type . '&value=' . urlencode($string) . '&format=json');
