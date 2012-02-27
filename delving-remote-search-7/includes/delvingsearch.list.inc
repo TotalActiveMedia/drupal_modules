@@ -180,6 +180,8 @@ function delvingsearch_show_list($xml, $query)
       $output .= '</div>';
       $output .= theme('pager', $variables);
       $output .= '<div id="pb-delving">' . l('Search Powered by Delving', 'http://www.delving.eu', array('attributes' => array('target' => '_blank'))) . '</div>';
+      $similelink = drupal_get_path('module', 'delvingsearch') . '/delvingsearch_simile.php';
+      $output .= '<div id="pb-delving">' . l(t('Show as simle view'), $similelink, array('attributes' => array('target' => '_blank'), 'query' => array('query' => $query))) . '</div>';
     }
     else {
       $output .= t('No results found. Please try another search');
