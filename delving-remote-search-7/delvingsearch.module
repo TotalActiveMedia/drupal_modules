@@ -347,6 +347,13 @@ function delvingsearch_block_info() {
     'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
+  $blocks['europeana_item'] = array(
+    'info' => t('Delving: Related hits in europeana'),
+    'status' => 0,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'delving/search/item/*',
+    'cache' => DRUPAL_NO_CACHE,
+  );
   for ($i = 1; $i < 4; $i++) {
     $blocks['wiki-'.$i] = array(
       'info' => t('Delving: Wikipedia Search Results: ' . $i),
@@ -450,6 +457,10 @@ function delvingsearch_block_view($delta = '') {
         );
       }
       $block['content'] = $facet;
+      break;
+    case 'europeana_item':
+      $block['subject'] = t('Related hits in europeana');
+      $block['content'] = delvingsearch_europeana_get();
       break;
     case 'wiki-1':
       $block['subject'] = t('More Results from ...');
@@ -584,6 +595,37 @@ function delvingsearch_wiki_get($wiki_index)
   }
 
   }
+}
+
+function delvingsearch_europeana_get() {
+  if (isset($_COOKIE['delving-query']) && $_COOKIE['delving-query'] != "*:*") {
+    $query = $_COOKIE['delving-query'];
+  }
+  else {
+    return;
+  }
+  dsm($query);
+  $xml = drupal_http_request('http://kulturnett2.delving.org:9000/organizations/delving/proxy/europeana/search?query=' . $query . '&format=json');
+  if ($xml->code == 200) {
+    $data = simplexml_load_string($xml->data);
+    $items = array();
+    foreach ($data->xpath("//fields") as $field) {
+      $link = implode('', $field->xpath("guid"));
+      dsm($link);
+    }
+  }
+  else {
+    // Deal with HTTP errors
+    switch ($xml->code) {
+      case 401:
+        drupal_set_message(t('Yikes! A 401. Do we have the correct target url?'));
+        break;
+      default:
+        drupal_set_message(t('Something went wrong @error', array('@error' => 'HTTP ' . $response->code . ': ' . strip_tags($response->data),)), 'error');
+        break;
+    }
+  }
+  
 }
 
 function delvingsearch_facets() {
