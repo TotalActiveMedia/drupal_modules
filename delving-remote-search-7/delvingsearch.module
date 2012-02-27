@@ -104,7 +104,11 @@ function delvingsearch_menu() {
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/delvingsearch.admin.inc'
   );
-
+  $items['delving/ajax'] = array(
+    'page callback' => '_delvingsearch_county_autocomplete',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
   $items[variable_get('delving_search_results_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)] = array(
     'title' => variable_get('delving_search_page_name', DELVING_SEARCH_PAGE_NAME),
     'description' => 'Page for searching remote Delving Framework API.',
@@ -167,24 +171,88 @@ function delvingsearch_form($form, &$form_state) {
   $results = '';
   //i'm guessing the admin variable search page name goes here
   drupal_set_title(variable_get('delving_search_page_name'));
-
+  
   // there is a query in the URL, do a search and fill up $html
   if (!empty($qps['query'])) {
     $query = $qps['query'];
+    drupal_add_js(drupal_get_path('module','delvingsearch') . '/delvingsearch.js');
+    drupal_add_js(drupal_get_path('module','delvingsearch') . '/jquery.tinysort.js');
     $data = delvingapi_get_list($query, $qps);
-    $results = delvingsearch_show_list($data, $query);
+    $result = delving_static_response_cache();
+    $result = simplexml_load_string($result);
+    $results = delvingsearch_make_tabs($result, $qps);
+    $results .= delvingsearch_show_list($data, $query);
   }
+  $facet = array(
+    'abm_county_facet' => '',
+    'abm_namedPlace_facet' => '',
+    'europeana_type_facet' => '',
+    'abm_municipality_facet' => '',
+  );
+  if (!empty($qps['query'])): {
+    foreach ($result->xpath("//breadcrumb") as $t) {
+      $name = implode('', $t->xpath('@field'));
+      if (empty($name)): {
+        $query = implode('', $t->xpath('@value'));
+      }
+      else: {
+        $facet[$name] = implode('', $t->xpath('@value')); 
+      }
+      endif;
+    }
+  }
+  else: {
+    $query = '';
+  }
+  
+  endif;
 
   $form['query'] = array(
     '#type' => 'textfield',
     '#title' => t('Enter a search term'),
     '#size' => 60,
+    '#default_value' => urldecode($query),
     '#maxlength' => 256,
-    '#required' => TRUE,
   );
   $form['submit_query'] = array(
     '#type' => 'submit',
     '#value' => t('Find'),
+  );
+  $form['advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced search settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['advanced']['county'] = array(
+    '#type' => 'textfield',
+    '#title' => t('County'),
+    '#size' => 60,
+    '#default_value' => $facet['abm_county_facet'],
+    '#maxlength' => 256,
+    '#autocomplete_path' => 'delving/ajax/abm_county_facet',
+  );
+  $form['advanced']['named_place'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Named place'),
+    '#size' => 60,
+    '#default_value' => $facet['abm_namedPlace_facet'],
+    '#maxlength' => 256,
+    '#autocomplete_path' => 'delving/ajax/abm_namedPlace_facet',
+  );
+  $form['advanced']['municipality'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Municipality'),
+    '#size' => 60,
+    '#default_value' => $facet['abm_municipality_facet'],
+    '#maxlength' => 256,
+    '#autocomplete_path' => 'delving/ajax/abm_municipality_facet',
+  );
+  $form['advanced']['type'] = array(
+    '#type' => 'select',
+    '#title' => t('Search by type'),
+    '#default_value' => $facet['europeana_type_facet'],
+    '#options' => array('' => t('All'), 'IMAGE' => t('Images'), 'TEXT' => t('Text'), 'VIDEO' => t('Video')),
   );
   $form['#suffix'] = $results;
   
@@ -199,7 +267,14 @@ function delvingsearch_form_submit($form, &$form_state) {
   // This way when a query is resubmitted using the pager or facet refinement, the same process is followed each time
   global $base_url;
   $redirect_url = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH);
-  $redirect_url .= '?query=' . $form_state['values']['query'];
+  if (!empty($form_state['values']['query'])): { $redirect_url .= '?query=' . $form_state['values']['query']; }
+  // If the query was empty, let's search for all values. Maybe the user enterent some constrains, who knows?
+  else: $redirect_url .= '?query=*:*';
+  endif;
+  if (!empty($form_state['values']['county'])) { $redirect_url .= '&qf[]=abm_county_facet:' . $form_state['values']['county']; }
+  if (!empty($form_state['values']['named_place'])) { $redirect_url .= '&qf[]=abm_namedPlace_facet:' . $form_state['values']['named_place']; }
+  if (!empty($form_state['values']['municipality'])) { $redirect_url .= '&qf[]=abm_municipality_facet:' . $form_state['values']['municipality']; }
+  if (!empty($form_state['values']['type'])) { $redirect_url .= '&qf[]=europeana_type_facet:' . $form_state['values']['type']; }
   $form_state['redirect'] = $redirect_url;
 }
 
@@ -272,6 +347,13 @@ function delvingsearch_block_info() {
     'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
+  $blocks['europeana_item'] = array(
+    'info' => t('Delving: Related hits in europeana'),
+    'status' => 0,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'delving/search/item/*',
+    'cache' => DRUPAL_NO_CACHE,
+  );
   for ($i = 1; $i < 4; $i++) {
     $blocks['wiki-'.$i] = array(
       'info' => t('Delving: Wikipedia Search Results: ' . $i),
@@ -297,38 +379,88 @@ function delvingsearch_block_view($delta = '') {
     'subject' => '',
     'content' => '',
   );
-
+  global $base_path;
+  $settings['delvingsearch']['modulepath'] = drupal_get_path('module', 'delvingsearch');
+  drupal_add_js($settings, 'setting');
+  $numfilter = variable_get('delvingsearch_sortbox_number_limit', 20);
+  $sorttoggle = variable_get('delvingsearch_sort_buttons', 0);
   switch ($delta) {
     case 'delving-search':
       $block['subject'] = t('Search');
       $block['content'] = t('Search box goes here');
     case 'county':
       $block['subject'] = t('County');
-      $block['content'] = delvingsearch_facet_get('COUNTY');
+      $facet = delvingsearch_facet_get('abm_county_facet');
+      if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
+        $facet['#attributes'] = array(
+          'class' => 'delvingplacesorting',
+        );
+      }
+      $block['content'] = $facet;
       break;
     case 'municipality':
       $block['subject'] = t('Municipality');
-      $block['content'] = delvingsearch_facet_get('MUNICIPALITY');
+      $facet = delvingsearch_facet_get('abm_municipality_facet');
+      if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
+        $facet['#attributes'] = array(
+          'class' => 'delvingplacesorting',
+        );
+      }
+      $block['content'] = $facet;
       break;
     case 'namedplace':
       $block['subject'] = t('Named Place');
-      $block['content'] = delvingsearch_facet_get('NAMEDPLACE');
+      $facet = delvingsearch_facet_get('abm_namedPlace_facet');
+      if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
+        $facet['#attributes'] = array(
+          'class' => 'delvingplacesorting',
+        );
+      }
+      $block['content'] = $facet;
       break;
     case 'aboutperson':
       $block['subject'] = t('About Person');
-      $block['content'] = delvingsearch_facet_get('ABOUTPERSON');
+      $facet = delvingsearch_facet_get('abm_aboutPerson_facet');
+      if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
+        $facet['#attributes'] = array(
+          'class' => 'delvingplacesorting',
+        );
+      }
+      $block['content'] = $facet;
       break;
     case 'provider':
       $block['subject'] = t('Provider');
-      $block['content'] = delvingsearch_facet_get('PROVIDER');
+      $facet = delvingsearch_facet_get('europeana_provider_facet');
+      if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
+        $facet['#attributes'] = array(
+          'class' => 'delvingplacesorting',
+        );
+      }
+      $block['content'] = $facet;
       break;
     case 'dataprovider':
       $block['subject'] = t('Data Provider');
-      $block['content'] = delvingsearch_facet_get('DATAPROVIDER');
+      $facet = delvingsearch_facet_get('europeana_dataProvider_facet');
+      if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
+        $facet['#attributes'] = array(
+          'class' => 'delvingplacesorting',
+        );
+      }
+      $block['content'] = $facet;
       break;
     case 'type':
       $block['subject'] = t('Type');
-      $block['content'] = delvingsearch_facet_get('TYPE');
+      $facet = delvingsearch_facet_get('europeana_type_facet');
+      if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
+        $facet['#attributes'] = array(
+          'class' => 'delvingplacesorting',
+        );
+      }
+      $block['content'] = $facet;
+      break;
+    case 'europeana_item':
+      $block['subject'] = t('Related hits in europeana');
+      $block['content'] = delvingsearch_europeana_get();
       break;
     case 'wiki-1':
       $block['subject'] = t('More Results from ...');
@@ -344,13 +476,70 @@ function delvingsearch_block_view($delta = '') {
       break;
   }
   // Only display the block if it actually has any content
-  if (count($block['content']['#items']) > 0) {
-    return $block;
+  if (!empty($block['content']) > 0) {
+    if (count($block['content']['#items']) > 0) {
+      return $block;
+    }
   }
 //  return $block;
 
 }
-
+function delvingsearch_make_tabs($result, $qps) {
+  $tab = '';
+  foreach ($result->xpath("//facet") as $t) {
+    $facetname = implode('',$t->xpath("@name"));
+    if ($facetname == 'TYPE' && empty($tabsdone)): {
+      //Don't act on the first <facet>, it contains the result set only, not including the possibility to extend to other types.
+      $tabsdone = 1;
+    }
+    elseif ($facetname == 'TYPE' && !empty($tabsdone)): {
+      $tab .= '<div class="delvingtabs">';
+      global $base_url;
+      $opt['attributes']['class'] = 'menutab';
+      if (strpos($qps['qf'], 'TYPE')>0): {
+        $qfs = explode('&qf[]', $qps['qf']);
+        $allqf = '';
+        foreach($qfs as $q) {
+          if (empty($q)): {
+            //skip the empty qfs in the array
+          }
+          elseif (strpos($q, 'TYPE:')): {
+            $allqf .= '';
+          }
+          else: {
+            $allqf .= '&qf[]' . $q;
+          }
+          endif;
+        }
+        $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $qps['query'] . $allqf;
+      }
+      else: {
+        $opt['attributes']['class'] .= ' active';
+        $allqf = $qps['qf'];
+        $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $qps['query'] . $qps['qf'];
+      }
+      endif;
+      $tab .= l(t('All'), $furl, $opt);;
+      foreach ($t->xpath("link") as $l) {
+        $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $qps['query'] . $allqf . '&qf[]=TYPE:' . implode('',$l->xpath('@value'));
+        $options['attributes']['class'] = 'menutab';
+        //If the type is already selected, let's make it different looking and clickable to remove the constrain.
+        if (implode('',$l->xpath('@isSelected')) == 'true') {
+          $options['attributes']['class'] .= ' active';
+          $removethis = '&qf[]=TYPE:' . implode('',$l->xpath('@value'));
+          $qf = str_replace($removethis, '', $qps['qf']);
+          $furl = $base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH) . '?query=' . $qps['query'] . $qf;
+        }
+        $tab .= l(implode('',$l->xpath('@value')) . ' (' . implode('',$l->xpath('@count')) . ')', $furl, $options);
+        /* $tab['type'] = implode('',$l->xpath('@value'));
+        $tab[$i]['count'] = implode('',$l->xpath('@count')); */
+      }
+    $tab .= '</div>';
+    }
+    endif;
+  }
+  return $tab;
+}
 
 function delvingsearch_wiki_get($wiki_index)
 {
@@ -375,10 +564,15 @@ function delvingsearch_wiki_get($wiki_index)
     if (!empty($data->query->search)) {
       $items_raw = $data->query->search;
       $items = array();
-      $i = 0;
+      if (empty($item->snippet)) {
+        $item->snippet = '';
+        $snippet = '';
+      }
+      else {
+        $snippet = strip_tags($item->snippet);
+      }
       foreach($items_raw as $item){
-         $items[] = '<a title="'. strip_tags($item->snippet) .'" href="' . $target_url .  $item->title . '">' . $item->title . '</a>';
-        $i++;
+         $items[] = '<a title="'. $snippet .'" href="' . $target_url .  $item->title . '">' . $item->title . '</a>';
       }
       // Give back
       $content = array(
@@ -401,6 +595,43 @@ function delvingsearch_wiki_get($wiki_index)
   }
 
   }
+}
+
+function delvingsearch_europeana_get() {
+  if (isset($_COOKIE['delving-query']) && $_COOKIE['delving-query'] != "*:*") {
+    $query = $_COOKIE['delving-query'];
+  }
+  else {
+    return;
+  }
+  $xml = drupal_http_request('http://kulturnett2.delving.org:9000/organizations/delving/proxy/europeana/search?query=' . $query . '&format=json');
+  if ($xml->code == 200) {
+    $data = simplexml_load_string($xml->data);
+    $items = array();
+    foreach ($data->xpath("//fields") as $field) {
+      $link = implode('', $field->xpath("guid"));
+      $title = implode('', $field->xpath("enclosure/@url"));
+      $items[] = l($title, $link);
+    }
+  }
+
+  else {
+    // Deal with HTTP errors
+    switch ($xml->code) {
+      case 401:
+        drupal_set_message(t('Yikes! A 401. Do we have the correct target url?'));
+        break;
+      default:
+        drupal_set_message(t('Something went wrong @error', array('@error' => 'HTTP ' . $response->code . ': ' . strip_tags($response->data),)), 'error');
+        break;
+    }
+  }
+  $content = array(
+    '#theme' => 'item_list',
+    '#items' => $items
+  );
+  return $content;
+  
 }
 
 function delvingsearch_facets() {
@@ -444,12 +675,21 @@ function delvingsearch_facet_get($facet_name) {
           $furl = url($base_url . '/' . variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)) . '?query=' . $terms . $facet_link;
           $options = array();
           $options['attributes']['class'] = 'selected';
-          if (!empty($facet_link)) {
-            if ($link['isSelected'] != 'true') {
-              $items[] = l(trim($link), $furl);
+          $facetname = trim($facet['name']);
+          if ($link['isSelected'] != 'true') {
+            $testrepeat = implode($items);
+            $stringtotest = trim($link);
+            $postest = (strpos($testrepeat, $stringtotest));
+            if ($postest == false) {
+              $items[] = '<input type="checkbox">' . l(trim($link), $furl) . '<span style="display:none" class="delvingcount">' . $link['count'] . '</span>';
             }
-            else {
-              $items[] = l(trim($link), $furl, $options);
+          }
+          else {
+            $testrepeat = implode($items);
+            $stringtotest = trim($link);
+            $postest = (strpos($testrepeat, $stringtotest));
+            if ($postest == false) {
+              $items[] = '<input type="checkbox" checked>' . l(trim($link), $furl, $options) . '<span style="display:none" class="delvingcount">' . $link['count'] . '</span>';
             }
           }
         }
@@ -487,14 +727,18 @@ function delvingsearch_breadcrumbs() {
     $i = 1;
     foreach ($breadcrumbs as $crumb) {
 
-      $text = $crumb;
+      $field = implode('', $crumb->xpath("@field"));
+      $text = implode('', $crumb->xpath("@i18n")) . ': ' . implode('', $crumb->xpath("@value"));
+      if (empty($field)) {
+        $text = $crumb;
+      }
       $href = url(variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH)) . '?query=' . str_replace('query=', '', $crumb['href']);
 
       if ($i != $numItems) {
-        $out .= '<a class="crumb" href="' . $href . '">' . $crumb . '</a>> ';
+        $out .= '<a class="crumb" href="' . $href . '">' . $text . '</a>> ';
       }
       else {
-        $out .= $crumb;
+        $out .= $text;
       }
 
       $i++;
@@ -516,4 +760,17 @@ function delvingsearch_theme() {
       'file' => 'includes/delvingsearch.admin.inc',
     ),
   );
+
+function _delvingsearch_county_autocomplete($type, $string) {
+  $api_url = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
+  $response = drupal_http_request($api_url . '?explain=fieldValue&field=' . $type . '&value=' . urlencode($string) . '&format=json');
+  $matches = array();
+  if ($response->code == 200) {
+    $json = json_decode($response->data);
+    foreach ($json->results as $result) {
+      $matches[$result->value] = $result->value . ' (' . t('!count hits', array('!count' => $result->count)) . ')';
+    }
+  }
+  
+  drupal_json_output($matches);
 }

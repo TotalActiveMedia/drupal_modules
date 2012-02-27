@@ -82,7 +82,7 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
   $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
 
   // Do some housekeeping on the query before sending it on its way
-  $search_terms = urlencode(str_replace(' ', '+', $query));
+  $search_terms = urlencode($query);
 
   // Put the search term(s) in a cookie for re-use on the object page
   setcookie("delving-query", $query);
@@ -142,7 +142,6 @@ function delvingapi_do_search($url) {
       // Cache response and set semaphore for use by blocks.
       delving_static_response_cache($data);
       delving_has_searched(TRUE);
-
       return $data;
     }
     else {
