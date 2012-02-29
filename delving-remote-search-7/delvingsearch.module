@@ -189,6 +189,7 @@ function delvingsearch_form($form, &$form_state) {
     'europeana_type_facet' => '',
     'abm_municipality_facet' => '',
   );
+  $collapsed = TRUE;
   if (!empty($qps['query'])): {
     foreach ($result->xpath("//breadcrumb") as $t) {
       $name = implode('', $t->xpath('@field'));
@@ -196,7 +197,8 @@ function delvingsearch_form($form, &$form_state) {
         $query = implode('', $t->xpath('@value'));
       }
       else: {
-        $facet[$name] = implode('', $t->xpath('@value')); 
+        $facet[$name] = implode('', $t->xpath('@value'));
+        $collapsed = FALSE;
       }
       endif;
     }
@@ -222,7 +224,7 @@ function delvingsearch_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => t('Advanced search settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => $collapsed,
   );
   $form['advanced']['county'] = array(
     '#type' => 'textfield',
@@ -486,13 +488,9 @@ function delvingsearch_block_view($delta = '') {
 }
 function delvingsearch_make_tabs($result, $qps) {
   $tab = '';
-  foreach ($result->xpath("//facet") as $t) {
+  foreach ($result->xpath("//facets/facet") as $t) {
     $facetname = implode('',$t->xpath("@name"));
-    if ($facetname == 'TYPE' && empty($tabsdone)): {
-      //Don't act on the first <facet>, it contains the result set only, not including the possibility to extend to other types.
-      $tabsdone = 1;
-    }
-    elseif ($facetname == 'TYPE' && !empty($tabsdone)): {
+    if ($facetname == 'europeana_type_facet'): {
       $tab .= '<div class="delvingtabs">';
       global $base_url;
       $opt['attributes']['class'] = 'menutab';
