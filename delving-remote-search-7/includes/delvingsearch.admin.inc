@@ -183,18 +183,33 @@ function delvingsearch_admin_settings($form, &$form_state)
       '1' => t('On'),
       '0' => t('Off'),
     ),
-    '#default_value' => variable_get('delvingsearch_sort_buttons',0),
+    '#default_value' => variable_get('delvingsearch_sort_buttons', 0),
   );
   $form['results-display']['facets-display']['delvingsearch_sortbox_number_limit'] = array(
     '#type' => 'textfield',
     '#title' => t('Number of hits to trigger sort buttons'),
-    '#default_value' => variable_get('delvingsearch_sortbox_number_limit',20),
+    '#default_value' => variable_get('delvingsearch_sortbox_number_limit', 20),
     '#states' => array(
       'visible' => array(
         ':input[name="delvingsearch_sort_buttons"]' => array('checked' => TRUE),
       ),
     ),
   );
+  $form['results-display']['simile'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Simile view',
+  );
+  $form['results-display']['simile']['delvingsearch_simile_view'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Simile view on result lists'),
+    '#options' => array(
+      '1' => t('On'),
+      '0' => t('Off'),
+    ),
+    '#default_value' => variable_get('delvingsearch_simile_view', 0),
+    '#description' => t('<strong>NOTICE: </strong>This feature is customizable, and should not be enabled if you have not configured your Simile files accordingly.')
+  );
+  
   /**
    *  OBJECT / ITEM PAGE SETTINGS **************************************************************************************
    */

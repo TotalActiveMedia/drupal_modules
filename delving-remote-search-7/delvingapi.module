@@ -10,7 +10,7 @@
  */
 
 //define('DELVING_SETTINGS_MENU_PATH', 'admin/config/search/delving');
-define('DELVING_API_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
+define('DELVING_API_REMOTE_URL', 'http://kulturnett2.delving.org:9000/organizations/delving/search');
 define('DELVING_API_RESULTS_NR_ITEMS', 12);
 define('DELVING_API_DIGITAL_OBJECT', TRUE);
 define('DELVING_API_HQFS', '');

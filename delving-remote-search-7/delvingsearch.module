@@ -254,6 +254,10 @@ function delvingsearch_form($form, &$form_state) {
     '#default_value' => $facet['europeana_type_facet'],
     '#options' => array('' => t('All'), 'IMAGE' => t('Images'), 'TEXT' => t('Text'), 'VIDEO' => t('Video')),
   );
+  $form['advanced']['submit_query2'] = array(
+    '#type' => 'submit',
+    '#value' => t('Find'),
+  );
   $form['#suffix'] = $results;
   
   return $form;
@@ -389,6 +393,8 @@ function delvingsearch_block_view($delta = '') {
       if (delving_has_searched() == TRUE) {
         break;
       }
+      // A small hack to make the query search form element not be too wide, and at the same time avoiding to include the whole delving stylesheet.
+      drupal_add_css('#block-delvingsearch-search .form-text { width: 100%; }', $option['type'] = 'inline');
       $block['content'] = drupal_get_form('delvingsearch_form');
       break;
     case 'county':
@@ -610,13 +616,15 @@ function delvingsearch_europeana_get() {
   else {
     return;
   }
-  $xml = drupal_http_request('http://kulturnett2.delving.org:9000/organizations/delving/proxy/europeana/search?query=' . $query . '&format=json');
+  $api_url = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
+  $api_url = str_replace('/search', '/proxy/europeana/search', $api_url);
+  $xml = drupal_http_request($api_url . '?query=' . $query . '&format=json');
   if ($xml->code == 200) {
     $data = simplexml_load_string($xml->data);
     $items = array();
     foreach ($data->xpath("//fields") as $field) {
       $link = implode('', $field->xpath("guid"));
-      $title = implode('', $field->xpath("enclosure/@url"));
+      $title = implode('', $field->xpath("title"));
       $items[] = l($title, $link);
     }
   }
