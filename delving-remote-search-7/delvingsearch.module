@@ -189,6 +189,7 @@ function delvingsearch_form($form, &$form_state) {
     'europeana_type_facet' => '',
     'abm_municipality_facet' => '',
   );
+  $collapsed = TRUE;
   if (!empty($qps['query'])): {
     foreach ($result->xpath("//breadcrumb") as $t) {
       $name = implode('', $t->xpath('@field'));
@@ -196,7 +197,8 @@ function delvingsearch_form($form, &$form_state) {
         $query = implode('', $t->xpath('@value'));
       }
       else: {
-        $facet[$name] = implode('', $t->xpath('@value')); 
+        $facet[$name] = implode('', $t->xpath('@value'));
+        $collapsed = FALSE;
       }
       endif;
     }
@@ -222,7 +224,7 @@ function delvingsearch_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => t('Advanced search settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => $collapsed,
   );
   $form['advanced']['county'] = array(
     '#type' => 'textfield',
