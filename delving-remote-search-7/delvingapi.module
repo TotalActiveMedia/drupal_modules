@@ -91,7 +91,7 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
   $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
   // Add query contstraints
   if ($has_digital_object == TRUE) {
-    $url .= '&hqf=HASDIGITALOBJECT:true';
+    $url .= '&hqf=delving_hasDigitalObject:true';
   }
   // Add hidden query facets
   if (!empty($hqfs)) {
