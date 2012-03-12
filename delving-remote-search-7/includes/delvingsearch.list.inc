@@ -183,7 +183,14 @@ function delvingsearch_show_list($xml, $query)
       $simile = variable_get('delvingsearch_simile_view', 0);
       if ($simile == 1) {
         $similelink = drupal_get_path('module', 'delvingsearch') . '/delvingsearch_simile.php';
-        $output .= '<div id="pb-delving">' . l(t('Show as simile view'), $similelink, array('attributes' => array('target' => '_blank'), 'query' => array('query' => $query))) . '</div>';
+        $qp = delvingapi_get_query_params();
+        $qfs = explode('&qf[]=', $qp['qf']);
+        $querysimile = array('query' => $query, 'start' => $qp['start']);
+        $querysimile['qf'] = '';
+        foreach($qfs as $q) {
+          $querysimile['qf'] .= '&' . $q;
+        }
+        $output .= '<div id="pb-delving">' . l(t('Show as simile view'), $similelink, array('attributes' => array('target' => '_blank'), 'query' => $querysimile)) . '</div>';
       }
     }
     else {

@@ -249,55 +249,40 @@ var dest = new Proj4js.Proj('WGS84');     //destination coordinates in LCC, sout
 //var p = new Proj4js.Point(1056504,7841801);   //any object will do as long as it has 'x' and 'y' properties
 //Proj4js.transform(source, dest, p);      //do the transformation.  x and y are modified in place
 <?php 
-$usethis = $_GET['query'];
-$eirik = file_get_contents('http://kulturnett2.delving.org:9000/organizations/delving/search?query=' . $usethis . '&format=simile&sortBy=random_162');?>
-var eirik = <?php echo $eirik ?>
+$usethis = parse_url($_SERVER["REQUEST_URI"], PHP_URL_QUERY);
+$results = file_get_contents('http://kulturnett2.delving.org:9000/organizations/delving/search?' . $usethis . '&format=simile');?>
+var results = <?php echo $results; ?>
 
-;
-console.lo
-//var eirik = eirik.result;
-/*$.each(eirik.items, function (i,n) {
-  e=0;
-  $.each(n, function (j, m) {
-    //console.log(m)
-    eirik.items[i][j] = '';
+for (i=0;i<results['items'].length;i++) {
+  // Give a label to objects with no name:
+  if (!results['items'][i]['label']) { results['items'][i]['label'] = results['items'][i]['link'] } 
+  if (results['items'][i]['geography']) {
+    // First, format the geo points correctly
+    var geo = results['items'][i]['geography'][0];
+    var pos1 = geo.indexOf("(")+1;
+    var pos2 = geo.indexOf(")");
+    var sliced_geo = geo.slice(pos1, pos2);
+    var new_geo = sliced_geo.slice(sliced_geo.indexOf(',')+1)
     
-    j = j.replace(':', '_');
-    console.log(j);
-    eirik.items[i][j] = m[0];
-    
-  })
-})*/
-for (i=0;i<eirik['items'].length;i++) {
-	if (!eirik['items'][i]['label']) { eirik['items'][i]['label'] = eirik['items'][i]['dc_title'] } 
-	if (eirik['items'][i]['geography']) {
-		var taden = eirik['items'][i]['geography'][0];
-//		if (taden.indexOf("(")>-1) {
-			var nr1 = taden.indexOf("(")+1;
-			var nr2 = taden.indexOf(")");
-			var eirikk = taden.slice(nr1,nr2);
-			var lengdetest = eirikk.slice(eirikk.indexOf(',')+1)
-			
-			if (lengdetest.length>7) { var eirikk = eirikk.slice(0,-1) }
-			var p = new Proj4js.Point(eirikk);
-			Proj4js.transform(source, dest, p);      //do the transformation.  x and y are modified in place
-			var nyttpunkt = p.y + ', ' + p.x;
-			eirik['items'][i]['geography'][0] = nyttpunkt;
-//	}	else { eirik['items'][i]['geography'][0] = ''; }
-	}
-	else {
-	//gÂ videre som om ingenting har hendt
-	};
+    if (new_geo.length>7) { var sliced_geo = sliced_geo.slice(0,-1) }
+    var p = new Proj4js.Point(sliced_geo);
+    Proj4js.transform(source, dest, p);      //do the transformation.  x and y are modified in place
+    var nyttpunkt = p.y + ', ' + p.x;
+    results['items'][i]['geography'][0] = nyttpunkt;
+  }
+  else {
+    // Do nothing.
+  };
 }
 e=0;
-for (i=0;i<eirik['items'].length;i++) {
-	if (eirik['items'][i]['dc:created']) {
-		var taden = eirik['items'][i]['dc:created'];
-		if (taden.indexOf('start')>-1) {
-			var nr1 = taden.indexOf("=")+1;
-			var nr2 = taden.indexOf(";");
-			var eirikk = taden.slice(nr1,nr2);
-			eirik['items'][i]['created'] = eirikk;
+for (i=0;i<results['items'].length;i++) {
+	if (results['items'][i]['created']) {
+		var created = results['items'][i]['created'];
+		if (created.indexOf('start')>-1) {
+			var nr1 = created.indexOf("=")+1;
+			var nr2 = created.indexOf(";");
+			var sliced_created = created.slice(nr1,nr2);
+			results['items'][i]['created'] = sliced_created;
 		}
 	var e = e+1;
 	}
@@ -330,7 +315,7 @@ SimileAjax.jQuery(document).ready(function() {
     };
 
     window.database = Exhibit.Database.create();
-    window.database.loadData(eirik);
+    window.database.loadData(results);
     window.database.loadDataLinks(fLoadSubmissions);
 
 }); 

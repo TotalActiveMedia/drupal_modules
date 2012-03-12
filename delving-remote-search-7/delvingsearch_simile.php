@@ -76,7 +76,19 @@
         </tr>
     </table>
 
-<script src="delvingsearch_simile_prepare.php?query=<?php echo $_GET['query'] ?>"></script>
+<script src="delvingsearch_simile_prepare.php?query=<?php
+$string = parse_url($_SERVER["REQUEST_URI"], PHP_URL_QUERY);
+$qfs = explode('&', $_GET['qf']);
+$allqf = '';
+foreach($qfs as $q) {
+			if (empty($q)) {
+						// Skip
+			}
+			else {
+			  $allqf .= '&qf[]=' . $q;
+			}
+}
+echo $_GET['query'] . $allqf . '&start=' . $_GET['start']; ?>"></script>
 
 	</body>
  </html>
