@@ -10,7 +10,7 @@
  */
 
 //define('DELVING_SETTINGS_MENU_PATH', 'admin/config/search/delving');
-define('DELVING_API_REMOTE_URL', 'http://norvegiana2.delving.org/services/api/search');
+define('DELVING_API_REMOTE_URL', 'http://kulturnett2.delving.org:9000/organizations/delving/search');
 define('DELVING_API_RESULTS_NR_ITEMS', 12);
 define('DELVING_API_DIGITAL_OBJECT', TRUE);
 define('DELVING_API_HQFS', '');
@@ -82,7 +82,7 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
   $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
 
   // Do some housekeeping on the query before sending it on its way
-  $search_terms = urlencode(str_replace(' ', '+', $query));
+  $search_terms = urlencode($query);
 
   // Put the search term(s) in a cookie for re-use on the object page
   setcookie("delving-query", $query);
@@ -91,7 +91,7 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
   $url = $target . '?start=' . $start . '&rows=' . $rows . '&query=' . $search_terms . str_replace(" ", "+", $query_facets);
   // Add query contstraints
   if ($has_digital_object == TRUE) {
-    $url .= '&hqf=HASDIGITALOBJECT:true';
+    $url .= '&hqf=delving_hasDigitalObject:true';
   }
   // Add hidden query facets
   if (!empty($hqfs)) {
@@ -118,7 +118,7 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
 function delvingapi_get_item($obj_id = NULL) {
   $target = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
   $language = variable_get('delving_api_language', DELVING_API_LANGUAGE);
-  $url = $target . '?id=' . $obj_id . '&lang=' . $language;
+  $url = $target . '?id=' . $obj_id . '&lang=' . $language . '&idType=legacy';
   $results = delvingapi_do_search($url);
   return $results;
 }
@@ -142,7 +142,6 @@ function delvingapi_do_search($url) {
       // Cache response and set semaphore for use by blocks.
       delving_static_response_cache($data);
       delving_has_searched(TRUE);
-
       return $data;
     }
     else {

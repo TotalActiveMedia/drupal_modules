@@ -12,7 +12,7 @@ header('Content-Type: text/html; charset=utf-8');
 
 function delvingsearch_admin_settings($form, &$form_state)
 {
-
+  drupal_add_js(drupal_get_path('module', 'delvingsearch') . '/delvingsearch_admin.js');
   $options_dl = array('grid' => t('grid'), 'list' => t('list'));
   $options_hyperlink_button = array(1 => t('Button'), 0 => t('Regular hyperlink'));
   $options_oc = array(1 => t('show'), 0 => t('hide'));
@@ -107,7 +107,66 @@ function delvingsearch_admin_settings($form, &$form_state)
     '#maxlength' => 3,
     '#default_value' => variable_get('delving_search_thumb_viewer_height', DELVING_SEARCH_THUMB_VIEWER_HEIGHT),
   );
-
+  $form['results-display']['field-list'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Customize fields'),
+    '#description' => t('Change these settings to manipulate the display order and visibility of the fields per object on the result page. This only applies for list view. Thumbnail, title and description is required and can not be changed or hidden through this interface. The number in parantheses show the number of records with data in this field.'),
+  );
+  $defaults = variable_get('delvingsearch_the_list',0);
+  $lang = variable_get('delving_api_language', DELVING_API_LANGUAGE);
+  $apiurl = variable_get('delving_api_remote_url', DELVING_API_REMOTE_URL);
+  $xml = drupal_http_request($apiurl . '?explain&lang=' . $lang);
+  $fields = array();
+  $exclude = array(
+      "europeana:object",
+      "dc:title",
+      "dc:description",
+      "delving:pmhId",
+      "europeana:isShownAt",
+  );
+  if ($xml->code == 200): {
+    $data = simplexml_load_string($xml->data);
+    foreach ($data->xpath("//fields/field") as $item) {
+      $field = implode('', $item->xpath("@xml"));
+      if (in_array($field, $exclude)): {
+        //discard these from field list. They should be left alone anyway.
+      }
+      else: {
+        $weight = '';
+        if (!empty($defaults[$field]['weight'])) {
+          $weight = $defaults[$field]['weight'];
+        }
+        $fields[$field] = $weight;
+      }
+      endif;
+    }
+  }
+  endif;
+  asort($fields);
+  $form['results-display']['field-list']['delvingsearch_the_list'] = array(
+    '#tree' => TRUE,
+    '#theme' => 'delvingsearch_admin_settings',
+  );
+  foreach ($fields as $t=>$key) {
+    foreach ($data->xpath("//field[@xml='" . $t . "']") as $f) {
+      $search = implode('', $f->xpath("@search"));
+      if (strpos($search, '_facet')<1) {
+        $form['results-display']['field-list']['delvingsearch_the_list'][$t]['name'] = array(
+          '#markup' => implode('',$f->xpath("@xml")) . ' (' . t('!count records', array('!count' => implode('',$f->xpath("@docs")))) . ')'
+        );
+        $form['results-display']['field-list']['delvingsearch_the_list'][$t]['hidden'] = array(
+          '#type' => 'select',
+          '#options' => array('hidden' => t('Hidden'), 'visible' => t('Visible')),
+          '#default_value' => $defaults[$t]['hidden'],
+        );
+        $form['results-display']['field-list']['delvingsearch_the_list'][$t]['weight'] = array(
+          '#type' => 'weight',
+          '#default_value' => $defaults[$t]['weight'],
+          '#delta' => 20,
+        );
+      }
+    }
+  }
   /**
    * RESULTS FACETS DISPLAY SETTINGS ***********************************************************************************
    */
@@ -117,7 +176,40 @@ function delvingsearch_admin_settings($form, &$form_state)
   );
 
   $form['results-display']['facets-display']['#description'] = '<p>' . t('The display of the Facets blocks ("Refine Search") can be configured on the <strong class="drupal_link_admin_settings"><a href="' . url('admin/structure/block') . '">Blocks Configuration Page</a></strong>.') . '</p>';
-
+  $form['results-display']['facets-display']['delvingsearch_sort_buttons'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sort option for facet blocks'),
+    '#options' => array(
+      '1' => t('On'),
+      '0' => t('Off'),
+    ),
+    '#default_value' => variable_get('delvingsearch_sort_buttons', 0),
+  );
+  $form['results-display']['facets-display']['delvingsearch_sortbox_number_limit'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of hits to trigger sort buttons'),
+    '#default_value' => variable_get('delvingsearch_sortbox_number_limit', 20),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="delvingsearch_sort_buttons"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  $form['results-display']['simile'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Simile view',
+  );
+  $form['results-display']['simile']['delvingsearch_simile_view'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Simile view on result lists'),
+    '#options' => array(
+      '1' => t('On'),
+      '0' => t('Off'),
+    ),
+    '#default_value' => variable_get('delvingsearch_simile_view', 0),
+    '#description' => t('<strong>NOTICE: </strong>This feature is a <em>proof of concept</em>. It is customizable/configurable via the source-code, and should <strong>not</strong> be enabled if you have not configured your Simile files accordingly. Experience with the <strong><a href="http://www.simile-widgets.org/" target="_blank">Simile project</a></strong> is recommended.')
+  );
+  
   /**
    *  OBJECT / ITEM PAGE SETTINGS **************************************************************************************
    */
@@ -182,7 +274,7 @@ function delvingsearch_admin_settings($form, &$form_state)
   );
   $form['item-page']['original-context-options']['delving_search_item_show_in_original_context'] = array(
     '#type' => 'radios',
-    '#title' => t('Show "Original Context" field afdadfasfsdf'),
+    '#title' => t('Show "Original Context" field'),
     '#default_value' => variable_get('delving_search_item_show_in_original_context', DELVING_SEARCH_ITEM_SHOW_IN_ORIGINAL_CONTEXT),
     '#options' => $options_oc,
     '#description' => t('By choosing "show" a link will be created (if the field is available) which will open the object in a new window in it\'s original context.')
@@ -278,7 +370,54 @@ function delvingsearch_admin_settings($form, &$form_state)
   }
 
   $form['#validate'][] = 'delving_search_validate_numeric';
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save changes'));
   return system_settings_form($form);
+}
+
+/**
+ * @param $variables
+ *   An associative array containing:
+ *   - form: A render element representing the form.
+ *
+ * @ingroup themeable
+ */
+function theme_delvingsearch_admin_settings($variables) {
+  $form = $variables['form'];
+  $test = array();
+  $defaults = variable_get('delvingsearch_the_list',0);
+  foreach (element_children($form) as $id) {
+    $test[$id] = $defaults[$id]['weight'];
+  }
+  asort($test);
+  drupal_add_tabledrag('delving-fields', 'order', 'sibling', 'delving-fields-weight');
+
+  $rows = array();
+  foreach (element_children($form) as $id) {
+    $form[$id]['weight']['#attributes']['class'] = array('delving-fields-weight');
+    $rows[] = array(
+      'data' => array(
+        drupal_render($form[$id]['name']),
+        drupal_render($form[$id]['weight']),
+        drupal_render($form[$id]['hidden']),
+      ),
+      'class' => array('draggable'),
+    );
+  }
+  $header = array(t('Name'), t('Weight'), t('Visibilty'));
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'delving-fields')));
+
+  return $output;
+}
+
+/**
+ * Callback element needs only select the portion of the form to be updated.
+ * Since #ajax['callback'] return can be HTML or a renderable array (or an
+ * array of commands), we can just return a piece of the form.
+ */
+function delving_show_object_page_input($form, $form_state)
+{
+  return $form['item-page']['delving_search_item_object_page']['delving_search_item_external_url'];
 }
 
 function delving_search_validate_numeric($form, &$form_state){

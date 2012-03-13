@@ -1,14 +1,12 @@
 <?php
 
-function delvingsearch_show_item($xml)
-{
+function delvingsearch_show_item($xml) {
   if (empty($xml)): { 
     delvingsearch_set_page_title(t('Error'));
     $output = '<div id="delving" class="object">' . t('There was a problem displaying this item. Sorry!') . '</div>'; 
   }
   else: {
     $data = simplexml_load_string($xml);
-
   //  drupal_set_message($xml);
 
     $layout = array(
@@ -49,7 +47,7 @@ function delvingsearch_show_item($xml)
     $output .= '</div>';
     $output .= '<div class="result-object">';
     $output .= '<div class="result-object-img">';
-    foreach ($data->xpath("/result/item") as $item) {
+    foreach ($data->xpath("/result/item/fields") as $item) {
       $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
       $title = implode('', $item->xpath($layout["#title"]));
       $prefix = str_replace('%/%', '', variable_get('delving_item_page_path', DELVING_SEARCH_ITEM_PAGE_PATH));
@@ -58,11 +56,18 @@ function delvingsearch_show_item($xml)
       $img_width = variable_get('delving_search_object_img_width', DELVING_SEARCH_OBJECT_IMG_WIDTH);
 
       if ($thumbnail) {
-        $output .= '<img width="' . $img_width . '" src="' . $thumbnail . '" alt="'. $title .'"/>';
+        $shown_by = implode('', $item->xpath('europeana:isShownBy'));
+        if(empty($shown_by)): {
+          $output .= '<img width="' . $img_width . '" src="' . $thumbnail . '" alt="'. $title .'"/>';
+        }
+        else: {
+          $output .= l('<img width="' . $img_width . '" src="' . $thumbnail . '" alt="'. $title .'"/>', trim($shown_by), array('html' => TRUE, 'attributes' => array('title' => t('Show original image'))));
+        }
+        endif;
       }
       else {
        $thumbnail = base_path() . drupal_get_path('module', 'delvingsearch') . '/img/no-image.png';
-       $output .= l('<img width="' . $img_width . '" src="' . $thumbnail . '"/>', $uri, array('html' => TRUE));
+       $output .= '<img width="' . $img_width . '" src="' . $thumbnail . '"/>';
       }
       $output .= '</div>'; // result-object-img
       $output .= '<div class="result-object-meta">';

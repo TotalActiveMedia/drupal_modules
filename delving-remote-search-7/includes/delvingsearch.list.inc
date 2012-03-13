@@ -21,12 +21,31 @@ function delvingsearch_show_list($xml, $query)
       "#thumbnail" => "europeana:object",
       "#title" => "dc:title",
       "#description" => "dc:description",
+      "#uri" => 'europeana:uri',
+      "#isShownAt" => "europeana:isShownAt",
     );
-    foreach ($data->xpath("/results/layout/drupal/field") as $field) {
-      $layout[(string)$field->key] = (string)$field->value;
+    // get all field variables from the settings form
+    $vars = variable_get('delvingsearch_the_list',0);
+    // Sort it based on weight. Actually it ends up getting sorted first on
+    // visibility, then weight, but either way works since we are excluding
+    // hidden fields.
+    if ($vars !== 0) {
+      asort($vars);
+      foreach ($vars as $field=>$value) {
+        if ($value['hidden'] == 'hidden'): {
+          // Don't render the ones that are hidden
+        }
+        else: {
+          $use_field = str_replace(':', '_', $field);
+          // Darn. The api now uses whitespace and underscores for : uncomment this, and use the above.
+          if ($data->xpath("//fields/field[value='"  . $use_field . "']/key")) {
+            $key = implode('', $data->xpath("//fields/field[value='"  . $use_field . "']/key"));
+            $layout[$key] = $field;
+          }
+        }
+        endif;
+      }
     }
-
-
     pager_default_initialize($total_records, $num_per_page);
 
     $output = '<div id="delving">';
@@ -47,7 +66,7 @@ function delvingsearch_show_list($xml, $query)
 
       $count = 1;
 
-      foreach ($data->xpath("/results/items/item") as $item) {
+      foreach ($data->xpath("/results/items/item/fields") as $item) {
 
         // THUMBNAIL SETTINGS ********************************************************************************************
         $thumbnail = implode('', $item->xpath($layout["#thumbnail"]));
@@ -161,6 +180,18 @@ function delvingsearch_show_list($xml, $query)
       $output .= '</div>';
       $output .= theme('pager', $variables);
       $output .= '<div id="pb-delving">' . l('Search Powered by Delving', 'http://www.delving.eu', array('attributes' => array('target' => '_blank'))) . '</div>';
+      $simile = variable_get('delvingsearch_simile_view', 0);
+      if ($simile == 1) {
+        $similelink = drupal_get_path('module', 'delvingsearch') . '/delvingsearch_simile.php';
+        $qp = delvingapi_get_query_params();
+        $qfs = explode('&qf[]=', $qp['qf']);
+        $querysimile = array('query' => $query, 'start' => $qp['start']);
+        $querysimile['qf'] = '';
+        foreach($qfs as $q) {
+          $querysimile['qf'] .= '&' . $q;
+        }
+        $output .= '<div id="pb-delving">' . l(t('Show as simile view'), $similelink, array('attributes' => array('target' => '_blank'), 'query' => $querysimile)) . '</div>';
+      }
     }
     else {
       $output .= t('No results found. Please try another search');
