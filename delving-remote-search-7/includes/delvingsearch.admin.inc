@@ -110,7 +110,7 @@ function delvingsearch_admin_settings($form, &$form_state)
   $form['results-display']['field-list'] = array(
     '#type' => 'fieldset',
     '#title' => t('Customize fields'),
-    '#description' => t('Change these settings to manipulate the display order of the fields per object on the result page. This only applies for list view. Thumbnail, title and description is required and can not be changed or hidden through this interface. The number in parantheses show the number of records with data in this field.'),
+    '#description' => t('Change these settings to manipulate the display order and visibility of the fields per object on the result page. This only applies for list view. Thumbnail, title and description is required and can not be changed or hidden through this interface. The number in parantheses show the number of records with data in this field.'),
   );
   $defaults = variable_get('delvingsearch_the_list',0);
   $lang = variable_get('delving_api_language', DELVING_API_LANGUAGE);
@@ -207,7 +207,7 @@ function delvingsearch_admin_settings($form, &$form_state)
       '0' => t('Off'),
     ),
     '#default_value' => variable_get('delvingsearch_simile_view', 0),
-    '#description' => t('<strong>NOTICE: </strong>This feature is customizable, and should not be enabled if you have not configured your Simile files accordingly.')
+    '#description' => t('<strong>NOTICE: </strong>This feature is a <em>proof of concept</em>. It is customizable/configurable via the source-code, and should <strong>not</strong> be enabled if you have not configured your Simile files accordingly. Experience with the <strong><a href="http://www.simile-widgets.org/" target="_blank">Simile project</a></strong> is recommended.')
   );
   
   /**
