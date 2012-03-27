@@ -75,6 +75,8 @@ function delvingsearch_show_item($xml) {
         if (substr($key, 0, 1) != '#') {
           $value_array = $item->xpath($value);
           if ($value_array) {
+            $field_value = str_replace(':', '_', $value);
+            $key = implode('', $item->xpath('//field[value="' . $field_value . '"]/key'));
             $value = implode(', ', $value_array);
 
   //          $output .= '<label>' . $key . ': </label><span>' . check_plain(trim($value)) . '</span>';
