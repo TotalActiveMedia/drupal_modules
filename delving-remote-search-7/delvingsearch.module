@@ -352,6 +352,20 @@ function delvingsearch_block_info() {
     'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
     'cache' => DRUPAL_NO_CACHE,
   );
+  $blocks['dc_subject'] = array(
+    'info' => t('Delving Facets: DC:Subject'),
+    'status' => 0,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  $blocks['dc_type'] = array(
+    'info' => t('Delving Facets: DC:Type'),
+    'status' => 0,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => variable_get('delving_search_page_path', DELVING_SEARCH_RESULTS_PAGE_PATH),
+    'cache' => DRUPAL_NO_CACHE,
+  );
   $blocks['europeana_item'] = array(
     'info' => t('Delving: Related hits in europeana'),
     'status' => 0,
@@ -462,6 +476,26 @@ function delvingsearch_block_view($delta = '') {
     case 'type':
       $block['subject'] = t('Type');
       $facet = delvingsearch_facet_get('europeana_type_facet');
+      if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
+        $facet['#attributes'] = array(
+          'class' => 'delvingplacesorting',
+        );
+      }
+      $block['content'] = $facet;
+      break;
+    case 'dc_type':
+      $block['subject'] = t('Type');
+      $facet = delvingsearch_facet_get('dc_type_facet');
+      if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
+        $facet['#attributes'] = array(
+          'class' => 'delvingplacesorting',
+        );
+      }
+      $block['content'] = $facet;
+      break;
+    case 'dc_subject':
+      $block['subject'] = t('Subject');
+      $facet = delvingsearch_facet_get('dc_subject_facet');
       if ($sorttoggle == 1 && $numfilter < count($facet['#items'])) {
         $facet['#attributes'] = array(
           'class' => 'delvingplacesorting',
