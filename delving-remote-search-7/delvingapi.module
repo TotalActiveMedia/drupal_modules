@@ -78,9 +78,24 @@ function delvingapi_get_list($query = NULL, $qps = NULL) {
   $language = variable_get('delving_api_language', DELVING_API_LANGUAGE);
 
   $hqfs = variable_get('delving_api_hqfs', DELVING_API_HQFS);
-  // remove the [] from the qf[] key before being sent to search api
-  $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
 
+  // Urlencode every facet value, to get the strange characters alright.
+  $facets = explode('&qf[]=', $qps['qf']);
+  $facet_query = array();
+  foreach ($facets as $facet) {
+    if (empty($facet)) {
+      // 
+    }
+    else {
+      $facets_split = explode(':', $facet);
+      $facet_query[$facets_split[0]] = $facets_split[1];
+    }
+  }
+  $query_facets = '';
+  foreach ($facet_query as $key => $value) {
+    $query_facets .= '&qf=' . $key . ':' . urlencode($value);
+  }
+  // $query_facets = str_replace('qf[]=', 'qf=', $qps['qf']);
   // Do some housekeeping on the query before sending it on its way
   $search_terms = urlencode($query);
 
