@@ -169,9 +169,7 @@ function delvingsearch_form($form, &$form_state) {
   // grab query parameters if there are any
   $qps = delvingapi_get_query_params();
   $results = '';
-  //i'm guessing the admin variable search page name goes here
-  drupal_set_title(variable_get('delving_search_page_name'));
-  
+
   // there is a query in the URL, do a search and fill up $html
   if (!empty($qps['query'])) {
     $query = $qps['query'];
@@ -190,24 +188,21 @@ function delvingsearch_form($form, &$form_state) {
     'abm_municipality_facet' => '',
   );
   $collapsed = TRUE;
-  if (!empty($qps['query'])): {
+  if (!empty($qps['query']) && !empty($result)) {
     foreach ($result->xpath("//breadcrumb") as $t) {
       $name = implode('', $t->xpath('@field'));
-      if (empty($name)): {
+      if (empty($name)) {
         $query = implode('', $t->xpath('@value'));
       }
-      else: {
+      else {
         $facet[$name] = implode('', $t->xpath('@value'));
         $collapsed = FALSE;
       }
-      endif;
     }
   }
-  else: {
+  else {
     $query = '';
   }
-  
-  endif;
 
   $form['query'] = array(
     '#type' => 'textfield',
@@ -500,6 +495,11 @@ function delvingsearch_block_view($delta = '') {
 }
 function delvingsearch_make_tabs($result, $qps) {
   $tab = '';
+  if (empty($result)) {
+    // Probably something wrong in the query, let's not try to iterate over the
+    // results.
+    return;
+  }
   foreach ($result->xpath("//facet") as $t) {
     $facetname = implode('',$t->xpath("@name"));
     if ($facetname == 'TYPE' && empty($tabsdone)): {
