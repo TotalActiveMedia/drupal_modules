@@ -1,9 +1,9 @@
 <?php
 
 function delvingsearch_show_item($xml) {
-  if (empty($xml)): { 
+  if (empty($xml)): {
     delvingsearch_set_page_title(t('Error'));
-    $output = '<div id="delving" class="object">' . t('There was a problem displaying this item. Sorry!') . '</div>'; 
+    $output = '<div id="delving" class="object">' . t('There was a problem displaying this item. Sorry!') . '</div>';
   }
   else: {
     $data = simplexml_load_string($xml);
@@ -76,11 +76,9 @@ function delvingsearch_show_item($xml) {
           $value_array = $item->xpath($value);
           if ($value_array) {
             $field_value = str_replace(':', '_', $value);
-            $key = implode('', $item->xpath('//field[value="' . $field_value . '"]/key'));
+            $key = implode('', $item->xpath('//field[name="' . $field_value . '"]/i18n'));
             $value = implode(', ', $value_array);
-
-  //          $output .= '<label>' . $key . ': </label><span>' . check_plain(trim($value)) . '</span>';
-            $output .= '<dl>';
+            $output .= '<dl class="' . $field_value . '">';
             $output .= '<dt>' . $key . ': </dt><dd>' . check_plain(trim($value)) . '</dd>';
             $output .= '</dl>';
           }
@@ -92,10 +90,10 @@ function delvingsearch_show_item($xml) {
         $output .= l(t("Show in original context"), trim($originalContext), array('attributes' => $link_attributes));
       }
 
-      
+
       $output .= '</div>'; // result-object-meta
-      
-      
+
+
       $output .= '</div>'; // result-object
       $social_enabled = variable_get('delving_search_social_widget_display', DELVING_SEARCH_SOCIAL_WIDGET_DISPLAY);
       if ($social_enabled = '1') {
@@ -138,8 +136,7 @@ function delvingsearch_show_item($xml) {
   return $output;
 }
 
-function delvingsearch_set_page_title($title)
-{
+function delvingsearch_set_page_title($title) {
   drupal_set_title($title, $output = CHECK_PLAIN);
 }
 
