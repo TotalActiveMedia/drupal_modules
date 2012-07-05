@@ -8,8 +8,8 @@
  */
 function delvingsearch_show_list($xml, $query)
 {
-  if (empty($xml)): { 
-    $output = '<div style="clear:both">' . t('There was a problem showing the search results. Please try another search phrase.') . '</div>'; 
+  if (empty($xml)): {
+    $output = '<div style="clear:both">' . t('There was a problem showing the search results. Please try another search phrase.') . '</div>';
   }
   else: {
     $data = simplexml_load_string($xml);
@@ -38,8 +38,8 @@ function delvingsearch_show_list($xml, $query)
         else: {
           $use_field = str_replace(':', '_', $field);
           // Darn. The api now uses whitespace and underscores for : uncomment this, and use the above.
-          if ($data->xpath("//fields/field[value='"  . $use_field . "']/key")) {
-            $key = implode('', $data->xpath("//fields/field[value='"  . $use_field . "']/key"));
+          if ($data->xpath("//fields/field[name='"  . $use_field . "']/i18n")) {
+            $key = implode('', $data->xpath("//fields/field[name='"  . $use_field . "']/i18n"));
             $layout[$key] = $field;
           }
         }
